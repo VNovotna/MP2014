@@ -1,0 +1,77 @@
+{**
+ * My Application layout template.
+ *
+ * @param string   $basePath web base path
+ * @param string   $robots   tell robots how to index the content of a page (optional)
+ * @param array    $flashes  flash messages
+ *}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="description" content="">
+        <meta name="robots" content="{$robots}" n:ifset="$robots">
+
+        <title>{block title|striptags}Should be overwriten{/block}</title>
+
+        <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css">
+        <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
+        <link rel="shortcut icon" href="{$basePath}/favicon.ico">
+	{block head}{/block}
+    </head>
+
+    <body>
+        <script> document.documentElement.className+=' js' </script>
+
+        <div id="header">
+            <div id="header-inner">
+                <div class="title"><a n:href="Homepage:">Home</a></div>
+                <div n:if="$user->isLoggedIn()" class="icon user">
+                    {$user->getIdentity()->jmeno} {$user->getIdentity()->prijmeni} | <a n:href="logOut!">Odhlásit</a>
+                </div>
+            </div>
+        </div>
+        <div id="container">
+            <div n:if="$user->isLoggedIn()" id="sidebar">
+                <h2>Menu</h2>
+                <div class="task-lists">
+                    <ul>
+                        <li n:if="$user->isInRole('merch')"><a n:href="Visit:create">Vyplnit návštěvu</a></li>
+                        <li><a n:href="Visit:view">Zobrazit návštěvy</a></li>
+                        <li n:if="$user->isInRole('admin')"><a n:href="Summary:decide">Týdenní přehled</a></li>                        
+                        {if $user->isInRole('admin')}
+                        Seznamy
+                        <ul>
+                            <li n:if="$user->isInRole('admin')"><a n:href="Store:">- prodejen</a></li>
+                            <li n:if="$user->isInRole('admin')"><a n:href="Product:">- výrobků</a></li>
+                            <li n:if="$user->isInRole('admin')"><a n:href="User:">- uživatelů</a></li>
+                        </ul>
+                        {/if}
+                    </ul>
+                </div>
+            </div>
+            <div id="content">
+                {snippet flashMessages}
+                <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+                {/snippet}
+		{include #content}
+            </div>
+
+            <div id="footer">
+                PHP {=PHP_VERSION} |{ifset $_SERVER['SERVER_SOFTWARE']}Server {$_SERVER['SERVER_SOFTWARE']}{/ifset} | Nette Framework {=Nette\Framework::VERSION}
+            </div>
+        </div>
+	{block scripts}
+        <script src="{$basePath}/js/jquery.js"></script>
+        <script src="{$basePath}/js/netteForms.js"></script>
+        <script src="{$basePath}/js/nette.ajax.js"></script>
+        <script src="{$basePath}/js/main.js"></script>
+        <script>
+        $(function () {
+            $.nette.init();
+        });
+        </script>
+	{/block}
+    </body>
+</html>
