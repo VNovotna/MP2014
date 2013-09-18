@@ -27,7 +27,7 @@
             <div id="header-inner">
                 <div class="title"><a n:href="Homepage:">Home</a></div>
                 <div n:if="$user->isLoggedIn()" class="icon user">
-                    {$user->getIdentity()->jmeno} {$user->getIdentity()->prijmeni} | <a n:href="logOut!">Odhlásit</a>
+                    {$user->getIdentity()->username}| <a n:href="logOut!">Odhlásit</a>
                 </div>
             </div>
         </div>
@@ -36,17 +36,7 @@
                 <h2>Menu</h2>
                 <div class="task-lists">
                     <ul>
-                        <li n:if="$user->isInRole('merch')"><a n:href="Visit:create">Vyplnit návštěvu</a></li>
-                        <li><a n:href="Visit:view">Zobrazit návštěvy</a></li>
-                        <li n:if="$user->isInRole('admin')"><a n:href="Summary:decide">Týdenní přehled</a></li>                        
-                        {if $user->isInRole('admin')}
-                        Seznamy
-                        <ul>
-                            <li n:if="$user->isInRole('admin')"><a n:href="Store:">- prodejen</a></li>
-                            <li n:if="$user->isInRole('admin')"><a n:href="Product:">- výrobků</a></li>
-                            <li n:if="$user->isInRole('admin')"><a n:href="User:">- uživatelů</a></li>
-                        </ul>
-                        {/if}
+                        <li n:if="$user->isInRole('merch')"><a n:href="Visit:create">Status</a></li>
                     </ul>
                 </div>
             </div>

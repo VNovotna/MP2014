@@ -10,13 +10,9 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator {
 
     /** @var Nette\Database\Connection */
     private $database;
-    
-    /** @var DB\UserRepository */
-    private $userRepo;
 
     public function __construct(Nette\Database\Connection $database) {
         $this->database = $database;
-        $this->userRepo = $this->context->userRepository;
     }
 
     /**
@@ -26,8 +22,7 @@ class Authenticator extends Nette\Object implements Security\IAuthenticator {
      */
     public function authenticate(array $credentials) {
         list($username, $password) = $credentials;
-        //$row = $this->database->table('users')->where('username', $username)->fetch();
-        $row = $this->userRepo->findByName($username)->fetch();
+        $row = $this->database->table('user')->where('username', $username)->fetch();
 
         if (!$row) {
             throw new Security\AuthenticationException('The username is incorrect.', self::IDENTITY_NOT_FOUND);

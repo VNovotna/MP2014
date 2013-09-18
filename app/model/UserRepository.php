@@ -12,7 +12,7 @@ class UserRepository extends Repository {
 
     /**
      * @param string $username
-     * @return Nette\Database\Table\Selection
+     * @return Nette\Database\Table\Selection or FALSE if nothing found
      */
     public function findByName($username) {
         return $this->findAll()->where('username', $username)->fetch();
@@ -63,7 +63,7 @@ class UserRepository extends Repository {
      * @return array
      */
     public function getPossibleRoles() {
-        return array('admin' => 'Administrátor', 'op' => 'OP');
+        return array('default' => 'default', 'admin' => 'Administrátor', 'op' => 'OP');
     }
 
     /**

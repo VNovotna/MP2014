@@ -7,9 +7,7 @@ use Nette\Application\UI\Form;
  */
 class SignPresenter extends BasePresenter {
 
-    /**
-     * @var DB\UserRepository
-     */
+    /** @var DB\UserRepository */
     private $userRepo;
 
     protected function startup() {
@@ -32,7 +30,6 @@ class SignPresenter extends BasePresenter {
     }
 
     /**
-     * 
      * @param \Nette\Application\UI\Form $form
      */
     public function signInFormSubmitted(Form $form) {
@@ -51,7 +48,6 @@ class SignPresenter extends BasePresenter {
     }
 
     /**
-     * 
      * @return \Nette\Application\UI\Form
      */
     protected function createComponentSignUpForm() {
@@ -75,13 +71,12 @@ class SignPresenter extends BasePresenter {
     }
 
     /**
-     * 
      * @param \Nette\Application\UI\Form $form
      */
     public function signUpFormSubmitted(Form $form) {
         try {
             $values = $form->getValues();
-            if ($this->userRepo->findByName($values->username)->count() == 0) {
+            if ($this->userRepo->findByName($values->username) == FALSE) {
                 $this->userRepo->addUser($values->username, $values->password);
                 $this->flashMessage('Uživatel zaregistrován', 'success');
                 $this->redirect('Sign:in');
@@ -92,4 +87,5 @@ class SignPresenter extends BasePresenter {
             $form->addError($e->getMessage());
         }
     }
+
 }

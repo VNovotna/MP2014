@@ -27,7 +27,7 @@ abstract class Repository extends Nette\Object {
             preg_match('#(\w+)Repository$#', get_class($this), $m);
             $tableName = lcfirst($m[1]);
         }
-        return $this->connection->table($tableName);
+        return $this->database->table($tableName);
     }
 
     /**
