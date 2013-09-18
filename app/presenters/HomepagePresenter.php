@@ -3,12 +3,18 @@
 /**
  * Homepage presenter.
  */
-class HomepagePresenter extends BasePresenter
-{
+class HomepagePresenter extends SecuredPresenter {
 
-	public function renderDefault()
-	{
-		$this->template->anyVariable = 'any value';
-	}
+    /** @var DB\UserRepository */
+    private $userRepo;
+
+    protected function startup() {
+        parent::startup();
+        $this->userRepo = $this->context->userRepository;
+    }
+
+    public function renderDefault() {
+        $this->template->anyVariable = 'any value';
+    }
 
 }

@@ -1,63 +1,95 @@
 <?php
 
-use Nette\Application\UI;
-
+use Nette\Application\UI\Form;
 
 /**
- * Sign in/out presenters.
+ * Sign in/up presenters.
  */
-class SignPresenter extends BasePresenter
-{
+class SignPresenter extends BasePresenter {
 
+    /**
+     * @var DB\UserRepository
+     */
+    private $userRepo;
 
-	/**
-	 * Sign-in form factory.
-	 * @return Nette\Application\UI\Form
-	 */
-	protected function createComponentSignInForm()
-	{
-		$form = new UI\Form;
-		$form->addText('username', 'Username:')
-			->setRequired('Please enter your username.');
+    protected function startup() {
+        parent::startup();
+        $this->userRepo = $this->context->userRepository;
+    }
 
-		$form->addPassword('password', 'Password:')
-			->setRequired('Please enter your password.');
+    /**
+     * Sign-in form factory.
+     * @return Nette\Application\UI\Form
+     */
+    protected function createComponentSignInForm() {
+        $form = new Form();
+        $form->addText('username', 'Jméno:', 30, 20);
+        $form->addPassword('password', 'Heslo:', 30);
+        $form->addCheckbox('persistent', 'Pamatovat si mě na tomto počítači');
+        $form->addSubmit('login', 'Přihlásit se');
+        $form->onSuccess[] = $this->signInFormSubmitted;
+        return $form;
+    }
 
-		$form->addCheckbox('remember', 'Keep me signed in');
+    /**
+     * 
+     * @param \Nette\Application\UI\Form $form
+     */
+    public function signInFormSubmitted(Form $form) {
+        try {
+            $user = $this->getUser();
+            $values = $form->getValues();
+            if ($values->persistent) {
+                $user->setExpiration('+30 days', FALSE);
+            }
+            $user->login($values->username, $values->password);
+            $this->flashMessage('Přihlášení bylo úspěšné.', 'success');
+            $this->redirect('Homepage:');
+        } catch (NS\AuthenticationException $e) {
+            $form->addError('Neplatné uživatelské jméno nebo heslo.');
+        }
+    }
 
-		$form->addSubmit('send', 'Sign in');
+    /**
+     * 
+     * @return \Nette\Application\UI\Form
+     */
+    protected function createComponentSignUpForm() {
+        $form = new Form;
+        $form->addText('username', 'Login:')
+                ->addRule(Form::FILLED, 'Zadejte prosím uživatelské jméno.')
+                ->addRule(Form::PATTERN, 'Login musí obsahovat pouze malá písmena bez diakritiky a čísla.', '[a-z_0-9]+')
+                ->addRule(Form::MAX_LENGTH, 'Login může být maximálně %d znaků dlouhý', 20);
 
-		// call method signInFormSucceeded() on success
-		$form->onSuccess[] = $this->signInFormSucceeded;
-		return $form;
-	}
+        $form->addPassword('password', 'Heslo:')
+                ->addRule(Form::FILLED, 'Zadejte prosím heslo.')
+                ->addRule(Form::MIN_LENGTH, 'Heslo musí mít alespoň %d znaků.', 6);
 
+        $form->addPassword('verify', 'Ověření hesla:')
+                ->addRule(Form::EQUAL, 'Hesla se neshodují.', $form['password']);
 
-	public function signInFormSucceeded($form)
-	{
-		$values = $form->getValues();
+        $form->addSubmit('send', 'Registrovat');
 
-		if ($values->remember) {
-			$this->getUser()->setExpiration('14 days', FALSE);
-		} else {
-			$this->getUser()->setExpiration('20 minutes', TRUE);
-		}
+        $form->onSuccess[] = $this->signUpFormSubmitted;
+        return $form;
+    }
 
-		try {
-			$this->getUser()->login($values->username, $values->password);
-			$this->redirect('Homepage:');
-
-		} catch (Nette\Security\AuthenticationException $e) {
-			$form->addError($e->getMessage());
-		}
-	}
-
-
-	public function actionOut()
-	{
-		$this->getUser()->logout();
-		$this->flashMessage('You have been signed out.');
-		$this->redirect('in');
-	}
-
+    /**
+     * 
+     * @param \Nette\Application\UI\Form $form
+     */
+    public function signUpFormSubmitted(Form $form) {
+        try {
+            $values = $form->getValues();
+            if ($this->userRepo->findByName($values->username)->count() == 0) {
+                $this->userRepo->addUser($values->username, $values->password);
+                $this->flashMessage('Uživatel zaregistrován', 'success');
+                $this->redirect('Sign:in');
+            } else {
+                $this->flashMessage('Zvolený login již existuje', 'error');
+            }
+        } catch (AuthenticationException $e) {
+            $form->addError($e->getMessage());
+        }
+    }
 }

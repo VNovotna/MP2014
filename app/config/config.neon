@@ -5,32 +5,26 @@
 # http://nette.org/security-warning
 #
 common:
-	parameters:
+    parameters:
 
-	php:
-		date.timezone: Europe/Prague
-		# zlib.output_compression: yes
+    php:
+        date.timezone: Europe/Prague
+        # zlib.output_compression: yes
 
-	nette:
-		application:
-			errorPresenter: Error
+    nette:
+        application:
+            errorPresenter: Error
+        database:
+            dsn: 'sqlite:%appDir%/sql.sqlite'
+        session:
+            expiration: 14 days
+    services:
+        authenticator: Authenticator
+        routerFactory: RouterFactory
+        router: @routerFactory::createRouter
+        userRepository: DB\UserRepository
 
-		database:
-			dsn: 'mysql:host=localhost;dbname=test'
-			user:
-			password:
-
-		session:
-			expiration: 14 days
-
-
-	services:
-		authenticator: Authenticator
-		routerFactory: RouterFactory
-		router: @routerFactory::createRouter
-
-
-	factories:
+    factories:
 
 
 production < common:

@@ -13,7 +13,7 @@
         <meta name="description" content="">
         <meta name="robots" content="{$robots}" n:ifset="$robots">
 
-        <title>{block title|striptags}Should be overwriten{/block}</title>
+        <title>{block title|striptags} Should be overwriten {/block}</title>
 
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
@@ -23,7 +23,6 @@
 
     <body>
         <script> document.documentElement.className+=' js' </script>
-
         <div id="header">
             <div id="header-inner">
                 <div class="title"><a n:href="Homepage:">Home</a></div>
@@ -57,7 +56,6 @@
                 {/snippet}
 		{include #content}
             </div>
-
             <div id="footer">
                 PHP {=PHP_VERSION} |{ifset $_SERVER['SERVER_SOFTWARE']}Server {$_SERVER['SERVER_SOFTWARE']}{/ifset} | Nette Framework {=Nette\Framework::VERSION}
             </div>
