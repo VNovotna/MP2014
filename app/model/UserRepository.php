@@ -59,14 +59,6 @@ class UserRepository extends Repository {
     }
 
     /**
-     * Kind of hardcoded. But no idea how to make it better
-     * @return array
-     */
-    public function getPossibleRoles() {
-        return array('default' => 'default', 'admin' => 'Administrátor', 'op' => 'OP');
-    }
-
-    /**
      * @param int $id
      * @param string $password
      */

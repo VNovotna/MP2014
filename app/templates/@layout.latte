@@ -33,10 +33,19 @@
         </div>
         <div id="container">
             <div n:if="$user->isLoggedIn()" id="sidebar">
-                <h2>Menu</h2>
                 <div class="task-lists">
+                    <h2>Server</h2>
                     <ul>
-                        <li n:if="$user->isInRole('merch')"><a n:href="Visit:create">Status</a></li>
+                        <li><a n:href="Status:">Stav serveru</a></li>
+                        <li><a n:href="None:">Příkazy</a></li>
+                        <li><a n:href="None:">Záloha</a></li>
+                        <li><a n:href="None:">Hráči</a></li>
+                        <li><a n:href="None:">Nastavení</a></li>
+                    </ul>
+                    <h2>Správce</h2>
+                    <ul>
+                         <li><a n:href="None:">Nastavení</a></li>
+                         <li><a n:href="None:">Uživatelé</a></li>
                     </ul>
                 </div>
             </div>
