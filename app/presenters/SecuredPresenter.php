@@ -35,7 +35,7 @@ abstract class SecuredPresenter extends BasePresenter {
         $acl->allow('op', 'server-settings', 'view');
         $acl->allow('owner', 'server-settings', 'edit');
         $acl->allow('admin', \Nette\Security\Permission::ALL, array('view', 'edit'));
-        
+
         return $acl;
     }
 

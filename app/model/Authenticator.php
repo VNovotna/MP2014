@@ -6,12 +6,12 @@ use Nette\Security,
 /**
  * Users authenticator.
  */
-class Authenticator extends Nette\Object implements Security\IAuthenticator {
+class Authenticator extends \Nette\Object implements Security\IAuthenticator {
 
-    /** @var Nette\Database\Connection */
+    /** @var \Nette\Database\Connection */
     private $database;
 
-    public function __construct(Nette\Database\Connection $database) {
+    public function __construct(\Nette\Database\Connection $database) {
         $this->database = $database;
     }
 

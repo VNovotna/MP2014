@@ -1,8 +1,6 @@
 <?php
 namespace DB;
 
-use Nette;
-
 /**
  * 
  * @author viky
