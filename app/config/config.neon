@@ -22,7 +22,9 @@ common:
         routerFactory: RouterFactory
         router: @routerFactory::createRouter
         userRepository: DB\UserRepository
+        serverRepository: DB\ServerRepository
         authenticator: Authenticator
+        serverCommander: ServerCommander
 
     factories:
 
