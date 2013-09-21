@@ -60,7 +60,7 @@ abstract class SecuredPresenter extends BasePresenter {
         $acl->addRole('player');
         $acl->addRole('op', 'player');
         $acl->addRole('owner', 'op');
-        $acl->addRole('admin', 'owner');
+        $acl->addRole('admin');
         //resource
         $acl->addResource('status');
         $acl->addResource('commands');
@@ -71,8 +71,11 @@ abstract class SecuredPresenter extends BasePresenter {
         $acl->allow('op', 'commands', 'edit');
         $acl->allow('op', 'server-settings', 'view');
         $acl->allow('owner', 'server-settings', 'edit');
-        $acl->allow('admin', \Nette\Security\Permission::ALL, array('view', 'edit'));
-
+        $acl->allow('admin');
+//        dump($acl->isAllowed('player','status', 'view'));
+//        dump($acl->isAllowed('player', 'commands', 'edit'));
+//        dump($acl->isAllowed('admin', 'server-settings'));
+//        dump($acl->isAllowed('op', 'server-settings', 'edit'));
         return $acl;
     }
 
