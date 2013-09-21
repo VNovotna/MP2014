@@ -26,14 +26,14 @@
         <div id="header">
             <div id="header-inner">
                 <div class="title">
-                    {ifset $userServers}
+                    {if isset($userServers) and isset($activeServer)}
                         <nav>
                             <ul>
                                 <li>
-                                    <a href="#">{$userServers->fetch()->name} ⇩</a>
+                                    <a n:href="Status">{$activeServer} ⇩</a>
                                     <ul>
                                     {foreach $userServers as $server}
-                                        <li><a n:href="Homepage:">{$server->name}</a></li>
+                                        <li><a n:href="switchServer! $server->id">{$server->name}</a></li>
                                     {/foreach}
                                     </ul>
                                 </li>
@@ -41,30 +41,34 @@
                         </nav>
                       {else}
                         <span>MC server wrapper</span>
-                       {/ifset}
+                      {/if}
                 </div>
                 <div n:if="$user->isLoggedIn()" class="icon user">
                     {$user->getIdentity()->username}| <a n:href="logOut!">Odhlásit</a>
                 </div>
             </div>
         </div>
-        {dump}
         <div id="container">
             <div n:if="$user->isLoggedIn()" id="sidebar">
                 <div class="task-lists">
                     <h2>Server</h2>
                     <ul>
+                        {ifset $activeServer}
                         <li><a n:href="Status:">Stav serveru</a></li>
                         <li><a n:href="Commands:">Příkazy</a></li>
                         <li><a n:href="Backup:">Záloha</a></li>
                         <li><a n:href="Players:">Hráči</a></li>
                         <li><a n:href="GameSettings:">Nastavení</a></li>
+                        {/ifset}
+                        <li><a n:href="Create:">Nový server</a></li>
                     </ul>
+                    {if $user->isInRole('admin')}
                     <h2>Správce</h2>
                     <ul>
                         <li><a n:href="SystemSettings:">Nastavení</a></li>
                         <li><a n:href="Users:">Uživatelé</a></li>
                     </ul>
+                    {/if}
                 </div>
             </div>
             <div id="content">

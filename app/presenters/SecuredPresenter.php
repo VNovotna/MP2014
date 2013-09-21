@@ -7,11 +7,17 @@
  */
 abstract class SecuredPresenter extends BasePresenter {
 
-    /**  
+    /**
      * @var int
      * @persistent
      */
-    protected $userServerId;
+    public $selectedServerId;
+
+    /** @var \DB\UserRepository */
+    private $userRepo;
+
+    /** @var DB\ServerRepository */
+    private $serverRepo;
 
     protected function startup() {
         parent::startup();
@@ -19,7 +25,32 @@ abstract class SecuredPresenter extends BasePresenter {
             $this->flashMessage("Na zobrazení této stránky je potřeba se přihlásit", "error");
             $this->redirect('Sign:in');
         } else {
+            //set authorizator
             $this->user->setAuthorizator($this->defineACL());
+            //repos
+            $this->userRepo = $this->context->userRepository;
+            $this->serverRepo = $this->context->serverRepository;
+            //check persistent
+            $this->checkServerOwner();
+            $this->checkPersistent();
+        }
+    }
+
+    private function checkPersistent() {
+        if ($this->selectedServerId == 0) {
+            $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
+            if (count($servers) != 0) {
+                $srv = $servers->fetch();
+                $this->selectedServerId = $srv->id;
+                $this->flashMessage("Vybrán server $srv->name ", 'info');
+            }
+        }
+    }
+
+    private function checkServerOwner() {
+        $server = $this->serverRepo->findBy(array('user_id' => $this->user->id, 'id' => $this->selectedServerId));
+        if (count($server) == 0) {
+            $this->selectedServerId = 0;
         }
     }
 
@@ -49,13 +80,24 @@ abstract class SecuredPresenter extends BasePresenter {
         $this->user->logout();
         $this->redirect('Sign:in');
     }
-    
-    public function handleSwitchServer($id){
-        
+
+    /**
+     * switch selected server to given id
+     * @param int $id
+     */
+    public function handleSwitchServer($id) {
+        $this->selectedServerId = $id;
+        $this->redirect('this');
     }
 
     public function renderDefault() {
-        $servers = $this->context->serverRepository->findBy(array('user_id' => $this->user->id));
+        $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
+        if ($this->selectedServerId != 0) {
+            $srvname = $this->serverRepo->findBy(array('id' => $this->selectedServerId))->fetch();
+            $this->template->activeServer = $srvname->name;
+        } else {
+            $this->template->activeServer = NULL;
+        }
         $this->template->userServers = $servers;
     }
 
