@@ -13,8 +13,8 @@ abstract class SecuredPresenter extends BasePresenter {
      */
     public $selectedServerId;
 
-    /** @var \DB\UserRepository */
-    private $userRepo;
+    /** @var Nette\Security\Permission */
+    public $acl;
 
     /** @var DB\ServerRepository */
     private $serverRepo;
@@ -27,8 +27,7 @@ abstract class SecuredPresenter extends BasePresenter {
         } else {
             //set authorizator
             $this->user->setAuthorizator($this->defineACL());
-            //repos
-            $this->userRepo = $this->context->userRepository;
+            //repo
             $this->serverRepo = $this->context->serverRepository;
             //check persistent
             $this->checkServerOwner();
@@ -72,10 +71,6 @@ abstract class SecuredPresenter extends BasePresenter {
         $acl->allow('op', 'server-settings', 'view');
         $acl->allow('owner', 'server-settings', 'edit');
         $acl->allow('admin');
-//        dump($acl->isAllowed('player','status', 'view'));
-//        dump($acl->isAllowed('player', 'commands', 'edit'));
-//        dump($acl->isAllowed('admin', 'server-settings'));
-//        dump($acl->isAllowed('op', 'server-settings', 'edit'));
         return $acl;
     }
 
@@ -85,11 +80,17 @@ abstract class SecuredPresenter extends BasePresenter {
     }
 
     /**
-     * switch selected server to given id
+     * switch selected server and user roles
      * @param int $id
      */
     public function handleSwitchServer($id) {
         $this->selectedServerId = $id;
+        //switch roles
+        $newRoles = array($this->user->identity->serverRoles[$id]);
+        if ($this->user->isInRole('admin')) {
+            $newRoles[] = 'admin';
+        }
+        $this->user->getIdentity()->roles = $newRoles;
         $this->redirect('this');
     }
 
