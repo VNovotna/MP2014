@@ -46,4 +46,12 @@ abstract class Repository extends Nette\Object {
         return $this->getTable()->where($by);
     }
 
+    /**
+     * return table row with id == $id
+     * @return Nette\Database\Table\Selection
+     */
+    public function findById($id) {
+        return $this->findBy(array('id' => $id));
+    }
+
 }
