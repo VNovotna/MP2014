@@ -7,6 +7,12 @@
  */
 abstract class SecuredPresenter extends BasePresenter {
 
+    /**  
+     * @var int
+     * @persistent
+     */
+    protected $userServerId;
+
     protected function startup() {
         parent::startup();
         if (!$this->user->isLoggedIn()) {
@@ -42,6 +48,15 @@ abstract class SecuredPresenter extends BasePresenter {
     public function handleLogOut() {
         $this->user->logout();
         $this->redirect('Sign:in');
+    }
+    
+    public function handleSwitchServer($id){
+        
+    }
+
+    public function renderDefault() {
+        $servers = $this->context->serverRepository->findBy(array('user_id' => $this->user->id));
+        $this->template->userServers = $servers;
     }
 
 }

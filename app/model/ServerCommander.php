@@ -22,15 +22,17 @@ class ServerCommander extends \Nette\Object {
 
     /**
      * starts screen with name $screenName and server runnig inside
-     * @param string $startupScript absolute path to startup script
+     * @param string $jarPath absolute path to server folder
+     * @param string $jarName name of server .jar
      * @param string $screenName default 'mcs', usefull with more than one server
      * @return array usually empty if command was successfull
      */
-    public function startServer($startupScript, $screenName = 'mcs') {
+    public function startServer($jarPath, $jarName, $screenName = 'mcs') {
         //should generate startup script
         //should check if screen with specified name is not running already
         $output = array();
-        exec('screen -dmS ' . $screenName . ' ' . $startupScript, $output);
+        $exec = './../libs/start.sh ' . $jarPath . ' ' . $jarName . ' ' . $screenName;
+        exec($exec, $output);
         return $output;
     }
 
@@ -42,6 +44,15 @@ class ServerCommander extends \Nette\Object {
     public function stopServer($screenName = 'mcs') {
         $output = $this->issueCommand('stop', $screenName);
         return $output;
+    }
+
+    /**
+     * @param string $screenName
+     * @return boolean
+     */
+    public function isServerRunning($screenName = 'mcs') {
+        
+        return FALSE;
     }
 
 }

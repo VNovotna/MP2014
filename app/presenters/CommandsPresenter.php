@@ -9,19 +9,24 @@ class CommandsPresenter extends SecuredPresenter {
 
     /** @var ServerCommander */
     private $serverCmd;
+    
+    /** @var DB\ServerRepository */
+    private $serverRepo;
 
-    public function startup() {
+    protected function startup() {
         parent::startup();
         $this->serverCmd = $this->context->serverCommander;
+        $this->serverRepo = $this->context->serverRepository;
     }
 
     public function handleStartServer() {
-        $out = $this->serverCmd->startServer('/home/viky/mcs/start.sh');
+        $out = $this->serverCmd->startServer('/home/viky/mcs/','minecraft_server.13w38c.jar');
         if ($out == NULL) {
             $this->flashMessage('Server started', 'success');
         } else {
             $this->flashMessage(implode(" \n", $out), 'error');
         }
+        //$this->redirect('this');
     }
 
     public function handleStopServer() {
@@ -31,6 +36,7 @@ class CommandsPresenter extends SecuredPresenter {
         } else {
             $this->flashMessage(implode(" \n", $out), 'error');
         }
+        $this->redirect('this');
     }
 
 }

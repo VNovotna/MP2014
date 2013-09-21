@@ -4,7 +4,7 @@
  * @param string   $basePath web base path
  * @param string   $robots   tell robots how to index the content of a page (optional)
  * @param array    $flashes  flash messages
- *}
+*}
 
 <!DOCTYPE html>
 <html>
@@ -18,19 +18,37 @@
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
-	{block head}{/block}
+        {block head}{/block}
     </head>
 
     <body>
-        <script> document.documentElement.className+=' js' </script>
+        <script> document.documentElement.className += ' js'</script>
         <div id="header">
             <div id="header-inner">
-                <div class="title"><a n:href="Homepage:">Home</a></div>
+                <div class="title">
+                    {ifset $userServers}
+                        <nav>
+                            <ul>
+                                <li>
+                                    <a href="#">{$userServers->fetch()->name} ⇩</a>
+                                    <ul>
+                                    {foreach $userServers as $server}
+                                        <li><a n:href="Homepage:">{$server->name}</a></li>
+                                    {/foreach}
+                                    </ul>
+                                </li>
+                            </ul>
+                        </nav>
+                      {else}
+                        <span>MC server wrapper</span>
+                       {/ifset}
+                </div>
                 <div n:if="$user->isLoggedIn()" class="icon user">
                     {$user->getIdentity()->username}| <a n:href="logOut!">Odhlásit</a>
                 </div>
             </div>
         </div>
+        {dump}
         <div id="container">
             <div n:if="$user->isLoggedIn()" id="sidebar">
                 <div class="task-lists">
@@ -44,31 +62,31 @@
                     </ul>
                     <h2>Správce</h2>
                     <ul>
-                         <li><a n:href="SystemSettings:">Nastavení</a></li>
-                         <li><a n:href="Users:">Uživatelé</a></li>
+                        <li><a n:href="SystemSettings:">Nastavení</a></li>
+                        <li><a n:href="Users:">Uživatelé</a></li>
                     </ul>
                 </div>
             </div>
             <div id="content">
                 {snippet flashMessages}
-                <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+                    <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
                 {/snippet}
-		{include #content}
+                {include #content}
             </div>
             <div id="footer">
                 PHP {=PHP_VERSION} |{ifset $_SERVER['SERVER_SOFTWARE']}Server {$_SERVER['SERVER_SOFTWARE']}{/ifset} | Nette Framework {=Nette\Framework::VERSION}
             </div>
         </div>
-	{block scripts}
+        {block scripts}
         <script src="{$basePath}/js/jquery.js"></script>
         <script src="{$basePath}/js/netteForms.js"></script>
         <script src="{$basePath}/js/nette.ajax.js"></script>
         <script src="{$basePath}/js/main.js"></script>
         <script>
-        $(function () {
-            $.nette.init();
-        });
+            $(function() {
+                $.nette.init();
+            });
         </script>
-	{/block}
+        {/block}
     </body>
 </html>
