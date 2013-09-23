@@ -32,6 +32,7 @@ abstract class SecuredPresenter extends BasePresenter {
             //check persistent
             $this->checkServerOwner();
             $this->checkPersistent();
+            $this->switchRoles($this->selectedServerId);
         }
     }
 
@@ -86,12 +87,18 @@ abstract class SecuredPresenter extends BasePresenter {
     public function handleSwitchServer($id) {
         $this->selectedServerId = $id;
         //switch roles
-        $newRoles = array($this->user->identity->serverRoles[$id]);
-        if ($this->user->isInRole('admin')) {
-            $newRoles[] = 'admin';
-        }
-        $this->user->getIdentity()->roles = $newRoles;
+        $this->switchRoles($id);
         $this->redirect('this');
+    }
+
+    private function switchRoles($id) {
+        if (isset($this->user->identity->serverRoles[$id])) {
+            $newRoles = array($this->user->identity->serverRoles[$id]);
+            if ($this->user->isInRole('admin')) {
+                $newRoles[] = 'admin';
+            }
+            $this->user->getIdentity()->roles = $newRoles;
+        }
     }
 
     public function renderDefault() {
