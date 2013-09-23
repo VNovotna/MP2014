@@ -13,9 +13,6 @@ abstract class SecuredPresenter extends BasePresenter {
      */
     public $selectedServerId;
 
-    /** @var Nette\Security\Permission */
-    public $acl;
-
     /** @var DB\ServerRepository */
     private $serverRepo;
 

@@ -28,6 +28,20 @@ class ServerRepository extends Repository {
             throw new PDOException;
         }
     }
+
+    /**
+     * @param int $serverId
+     * @return \Nette\Database\Table\Selection
+     * @throws PDOException
+     */
+    public function getRunParams($serverId) {
+        try {
+            return $this->getTable()->where('id', $serverId)->fetch();
+        } catch (PDOException $e) {
+            throw new PDOException;
+        }
+    }
+
     /**
      * sets runtime has for running server identification
      * @param int $serverId
@@ -38,14 +52,23 @@ class ServerRepository extends Repository {
     public function setRuntimeHash($serverId, $hash) {
         try {
             $this->getTable()->where('id', $serverId)->update(array(
-                'hash' => $hash
+                'runhash' => $hash
             ));
             return TRUE;
         } catch (PDOException $e) {
             throw new PDOException;
         }
     }
-    public function generateRuntimeHash(){
+
+    public function getRuntimeHash($serverId) {
+        try {
+            return $this->getTable()->where('id', $serverId)->fetch()->runhash;
+        } catch (PDOException $e) {
+            throw new PDOException;
+        }
+    }
+
+    public function generateRuntimeHash() {
         return \Nette\Utils\Strings::random();
     }
 
