@@ -14,24 +14,13 @@ class CommandsPresenter extends SecuredPresenter {
     private $serverRepo;
 
     /** @var string */
-    private $runtimeHash;
+    protected $runtimeHash;
 
     protected function startup() {
         parent::startup();
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
         $this->runtimeHash = $this->serverRepo->getRuntimeHash($this->selectedServerId);
-        if ($this->runtimeHash != "") {
-            if ($this->serverCmd->isServerRunning($this->runtimeHash)) {
-                $this->flashMessage('Server is running');
-            } else {
-                $this->flashMessage('Server died :\'(', 'error');
-                $this->runtimeHash = NULL;
-                $this->serverRepo->setRuntimeHash($this->selectedServerId, '');
-            }
-        } else {
-            $this->flashMessage('Server is down');
-        }
     }
 
     public function beforeRender() {
@@ -79,8 +68,24 @@ class CommandsPresenter extends SecuredPresenter {
         }
     }
 
+    public function actionDefault() {
+        if ($this->runtimeHash != "") {
+            $this->redirect('Commands:started');
+        }
+    }
+
+    public function actionStarted() {
+        if ($this->runtimeHash == "") {
+            $this->redirect('Commands:');
+        }
+    }
+
     public function renderDefault() {
-        parent::renderDefault();
+        
+    }
+
+    public function renderStarted() {
+        
     }
 
 }

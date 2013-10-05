@@ -16,6 +16,9 @@ abstract class SecuredPresenter extends BasePresenter {
     /** @var DB\ServerRepository */
     private $serverRepo;
 
+    /** @var string */
+    protected $runtimeHash;
+
     protected function startup() {
         parent::startup();
         if (!$this->user->isLoggedIn()) {
@@ -26,10 +29,21 @@ abstract class SecuredPresenter extends BasePresenter {
             $this->user->setAuthorizator($this->defineACL());
             //repo
             $this->serverRepo = $this->context->serverRepository;
+            $this->runtimeHash = $this->serverRepo->getRuntimeHash($this->selectedServerId);
             //check persistent
             $this->checkServerOwner();
             $this->checkPersistent();
             $this->switchRoles($this->selectedServerId);
+            //check if is server running
+            $this->isServerAlive();
+        }
+    }
+
+    private function isServerAlive() {
+        if ($this->runtimeHash != "" and $this->context->serverCommander->isServerRunning($this->runtimeHash) == FALSE) {
+            $this->flashMessage('Server died :\'(', 'error');
+            $this->runtimeHash = NULL;
+            $this->serverRepo->setRuntimeHash($this->selectedServerId, '');
         }
     }
 
@@ -98,7 +112,7 @@ abstract class SecuredPresenter extends BasePresenter {
         }
     }
 
-    public function renderDefault() {
+    public function beforeRender() {
         $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
         if ($this->selectedServerId != 0) {
             $srvname = $this->serverRepo->findBy(array('id' => $this->selectedServerId))->fetch();
