@@ -13,8 +13,4 @@ class HomepagePresenter extends SecuredPresenter {
         $this->userRepo = $this->context->userRepository;
     }
 
-    public function renderDefault() {
-        parent::renderDefault();
-    }
-
 }
