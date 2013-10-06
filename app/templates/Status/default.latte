@@ -7,6 +7,25 @@
 {else}
     Server is down<br>
 {/if}
-<textarea style="width: 700px; height: 632px;">
-{foreach $logs as $line}{$line}{/foreach}
-</textarea>
+<fieldset>
+    <legend>log:</legend>
+    <div style="width: 698px; height: 632px; overflow-y: scroll; overflow-x: hidden; position: relative; top:-10px;">
+        {foreach $logs as $line}
+            <span n:class='$iterator->odd ? "odd log" : "even log"'>
+                {!$line}<br>
+            </span>
+        {/foreach}
+    </div>
+</fieldset>
+{/block}
+{block head}
+<style>
+    span.log{
+        display: inline-block;
+        width: 700px;
+    }
+    span.odd{
+        background-color: #f4f4f4;
+    }
+</style>
+{/block}

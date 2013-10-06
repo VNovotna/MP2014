@@ -27,7 +27,7 @@ class StatusPresenter extends SecuredPresenter {
     public function renderDefault() {
         $this->template->running = $this->runtimeHash != NULL ? TRUE : FALSE;
         $logModel = new LogModel('/home/viky/mcs/logs/');
-        $this->template->logs = $logModel->getAll();
+        $this->template->logs = $logModel->makeColorful($logModel->getAll());
     }
 
 }

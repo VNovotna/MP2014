@@ -5,7 +5,7 @@
  * 
  * @author viky
  */
-class LogModel extends \Nette\Object{
+class LogModel extends \Nette\Object {
 
     /**
      * @var Finder
@@ -32,6 +32,32 @@ class LogModel extends \Nette\Object{
 
     public function getInfos() {
         
+    }
+
+    /**
+     * make log files colorful
+     * @param array $logArray
+     * @return array
+     */
+    public static function makeColorful($logArray) {
+        foreach ($logArray as $i => $line) {
+            if (preg_match("/^\[(\d{2}):(\d{2}):(\d{2})\]/", $line, $out)) {
+                $logArray[$i] = "<span style='color:green'>" . $out[0] . "</span>" . substr($line, 10);
+            }
+            if (preg_match("# \[.*/INFO\]:#", $logArray[$i], $out)) {
+                $replaceWith = "<span style='color:blue'>" . $out[0] . "</span>";
+                $logArray[$i] = str_replace($out[0], $replaceWith, $logArray[$i]);
+            }
+            if (preg_match("# \[.*/ERROR\]:#", $logArray[$i], $out)) {
+                $replaceWith = "<span style='color:darkred'>" . $out[0] . "</span>";
+                $logArray[$i] = str_replace($out[0], $replaceWith, $logArray[$i]);
+            }
+            if (preg_match("# \[.*/WARN\]:#", $logArray[$i], $out)) {
+                $replaceWith = "<span style='color:red'>" . $out[0] . "</span>";
+                $logArray[$i] = str_replace($out[0], $replaceWith, $logArray[$i]);
+            }
+        }
+        return $logArray;
     }
 
 }
