@@ -4,9 +4,9 @@
 <h1 n:block=title>Stav serveru</h1>
 {if $running}
     Server is running<br>
-    <textarea>
-    Tu budó logy
-    </textarea>
 {else}
-    Server is down
+    Server is down<br>
 {/if}
+<textarea style="width: 700px; height: 632px;">
+{foreach $logs as $line}{$line}{/foreach}
+</textarea>

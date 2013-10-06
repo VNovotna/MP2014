@@ -18,13 +18,16 @@ class StatusPresenter extends SecuredPresenter {
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
         $this->runtimeHash = $this->serverRepo->getRuntimeHash($this->selectedServerId);
+    }
 
+    public function actionDefault() {
+        
     }
 
     public function renderDefault() {
         $this->template->running = $this->runtimeHash != NULL ? TRUE : FALSE;
-        $pokus = new LogModel('/home/viky/mcs/');
-        dump($pokus->getAll());
+        $logModel = new LogModel('/home/viky/mcs/logs/');
+        $this->template->logs = $logModel->getAll();
     }
 
 }

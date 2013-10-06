@@ -69,7 +69,7 @@ class ServerRepository extends Repository {
     }
 
     public function generateRuntimeHash() {
-        return \Nette\Utils\Strings::random(10,'A-Za-z');
+        return \Nette\Utils\Strings::random(10, 'A-Za-z');
     }
 
 }

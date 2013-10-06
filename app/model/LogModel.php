@@ -12,7 +12,7 @@ class LogModel extends \Nette\Object{
      */
     protected $finder;
 
-    public function __construct($filePath, $fileMask = 'server.log*', $exclude = '*lck') {
+    public function __construct($filePath, $fileMask = 'latest.log*', $exclude = '*lck') {
         $this->finder = Finder::findFiles($fileMask)->exclude($exclude)->in($filePath);
     }
 
