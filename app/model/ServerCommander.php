@@ -1,7 +1,7 @@
 <?php
 
 /**
- * ServerCommander is able to start/stop server, passes commands and read logs.
+ * ServerCommander is able to start/stop server, pass commands and backup server
  * (Or it should be able of doing this)
  * @author viky
  */
@@ -71,20 +71,42 @@ class ServerCommander extends \Nette\Object {
      * @param string $runtimeHash
      * @return boolean
      */
-    public function backup($path, $runtimeHash) {
+    public function backup($path, $runtimeHash = NULL) {
+        $date = new Nette\DateTime();
+        $filename = $date->format('Y-m-d_H:i');
         if ($this->isServerRunning($runtimeHash)) {
-            echo "saving running";
-            $date = new Nette\DateTime();
-            $filename = $date->format('Y-m-d_H:i');
-            $phar = new PharData('/home/viky/mcs/backups/' . $filename . '.zip');
-            $this->issueCommand('save-all', $runtimeHash);
-            $this->issueCommand('save-off', $runtimeHash);
-            $phar->buildFromDirectory('/home/viky/mcs/world');
-            $this->issueCommand('save-on', $runtimeHash);
-            return TRUE;
+            return $this->backupRunning($path, $runtimeHash, $filename);
         } else {
-            throw new Nette\NotImplementedException;
+            return $this->backupSwitchedOff($path, $filename);
         }
+    }
+
+    /**
+     * Internal. Backup running server
+     * @param string $path
+     * @param string $hash runtimeHash
+     * @param string $filename
+     * @return boolean
+     */
+    private function backupRunning($path, $hash, $filename) {
+        $phar = new PharData($path . 'backups/' . $filename . '.zip');
+        $this->issueCommand('save-all', $hash);
+        $this->issueCommand('save-off', $hash);
+        $phar->buildFromDirectory($path . 'world/');
+        $this->issueCommand('save-on', $hash);
+        return TRUE;
+    }
+
+    /**
+     * Internal. Backup server when it's not running
+     * @param string $path
+     * @param string $filename
+     * @return boolean
+     */
+    private function backupSwitchedOff($path, $filename) {
+        $phar = new PharData($path . 'backups/' . $filename . '.zip');
+        $phar->buildFromDirectory($path . 'world/');
+        return TRUE;
     }
 
 }
