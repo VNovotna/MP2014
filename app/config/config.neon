@@ -25,6 +25,7 @@ common:
         serverRepository: DB\ServerRepository
         authenticator: Authenticator
         serverCommander: ServerCommander
+        backupModel: BackupModel
 
     factories:
 

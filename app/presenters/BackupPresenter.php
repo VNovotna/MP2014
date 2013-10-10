@@ -12,11 +12,14 @@ class BackupPresenter extends SecuredPresenter {
 
     /** @var \DB\ServerRepository */
     private $serverRepo;
+        /** @var BackupModel */
+    private $backupModel;
 
     protected function startup() {
         parent::startup();
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
+        $this->backupModel = $this->context->backupModel;
         if (!$this->user->isAllowed('commands', 'edit')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
@@ -26,7 +29,7 @@ class BackupPresenter extends SecuredPresenter {
     public function handleMakeBackup() {
         $path = $this->serverRepo->getRunParams($this->selectedServerId)->path;
         dump($path);
-        if ($this->serverCmd->backup($path, $this->runtimeHash)) {
+        if ($this->backupModel->backup($path, $this->runtimeHash)) {
             $this->flashMessage('Záloha úspěšná', 'success');
         } else {
             $this->flashMessage('Něco se nepovedlo :/', 'error');

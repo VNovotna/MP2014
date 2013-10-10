@@ -64,49 +64,4 @@ class ServerCommander extends \Nette\Object {
         }
         return FALSE;
     }
-
-    /**
-     * Backup world/ folder. Provide runtime hash when you want to save running server
-     * @param string $path path to folder with minecraft
-     * @param string $runtimeHash
-     * @return boolean
-     */
-    public function backup($path, $runtimeHash = NULL) {
-        $date = new Nette\DateTime();
-        $filename = $date->format('Y-m-d_H:i');
-        if ($this->isServerRunning($runtimeHash)) {
-            return $this->backupRunning($path, $runtimeHash, $filename);
-        } else {
-            return $this->backupSwitchedOff($path, $filename);
-        }
-    }
-
-    /**
-     * Internal. Backup running server
-     * @param string $path
-     * @param string $hash runtimeHash
-     * @param string $filename
-     * @return boolean
-     */
-    private function backupRunning($path, $hash, $filename) {
-        $phar = new PharData($path . 'backups/' . $filename . '.zip');
-        $this->issueCommand('save-all', $hash);
-        $this->issueCommand('save-off', $hash);
-        $phar->buildFromDirectory($path . 'world/');
-        $this->issueCommand('save-on', $hash);
-        return TRUE;
-    }
-
-    /**
-     * Internal. Backup server when it's not running
-     * @param string $path
-     * @param string $filename
-     * @return boolean
-     */
-    private function backupSwitchedOff($path, $filename) {
-        $phar = new PharData($path . 'backups/' . $filename . '.zip');
-        $phar->buildFromDirectory($path . 'world/');
-        return TRUE;
-    }
-
 }
