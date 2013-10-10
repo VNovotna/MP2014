@@ -58,4 +58,18 @@ class BackupModel extends Nette\Object {
         return TRUE;
     }
 
+    /**
+     * Return array of existing backup files 
+     * @param string $path
+     * @return array of SplFileInfo 
+     */
+    public function getBackups($path) {
+        $files = array();
+        $finder = Finder::findFiles('*.zip')->in($path.'backups/');
+        foreach ($finder->orderByName() as $file) {
+            $files[] = $file->getBasename();
+        }
+        return array_reverse($files);
+    }
+
 }

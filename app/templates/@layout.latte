@@ -18,6 +18,17 @@
         <link rel="stylesheet" media="screen,projection,tv" href="{$basePath}/css/screen.css">
         <link rel="stylesheet" media="print" href="{$basePath}/css/print.css">
         <link rel="shortcut icon" href="{$basePath}/favicon.ico">
+        <style>
+            #ajax-spinner {
+                display: none;
+                position: absolute;
+                width: 14px;
+                height: 14px;
+                padding: 3px;
+                background: white url('../images/spinner.gif') no-repeat 50% 50%;
+                z-index: 123456;
+            }
+        </style>
         {block head}{/block}
     </head>
 
@@ -34,7 +45,7 @@
                                     <ul>
                                         {foreach $userServers as $server}
                                             <li><a n:href="switchServer! $server->id">{$server->name}</a></li>
-                                        {/foreach}
+                                            {/foreach}
                                     </ul>
                                 </li>
                             </ul>
@@ -59,7 +70,7 @@
                             <li><a n:href="Backup:">Záloha</a></li>
                             <li><a n:href="Players:">Hráči</a></li>
                             <li><a n:href="GameSettings:">Nastavení</a></li>
-                        {/ifset}
+                            {/ifset}
                         <li><a n:href="Create:">Nový server</a></li>
                     </ul>
                     {if $user->isInRole('admin')}
@@ -75,7 +86,10 @@
                 {snippet flashMessages}
                     <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
                 {/snippet}
-                {include #content}
+                <div id='ajax-spinner'></div>
+                <div id='to-hide'>
+                    {include #content}
+                </div>
             </div>
             <div id="footer">
                 PHP {=PHP_VERSION} |{ifset $_SERVER['SERVER_SOFTWARE']}Server {$_SERVER['SERVER_SOFTWARE']}{/ifset} | Nette Framework {=Nette\Framework::VERSION}
@@ -90,6 +104,17 @@
             $(function() {
                 $.nette.init();
                     });
+            $.nette.ext('spinner', {
+                init: function() {},
+                before: function(settings, ui, e) {
+                    $('#ajax-spinner').show();
+                    $('#to-hide').hide();
+                },
+                complete: function() {
+                    $('#ajax-spinner').hide();
+                    $('#to-hide').show();
+                }
+            });
         </script>
         {/block}
     </body>
