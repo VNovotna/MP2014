@@ -22,10 +22,10 @@
             #ajax-spinner {
                 display: none;
                 position: absolute;
-                width: 14px;
-                height: 14px;
-                padding: 3px;
-                background: white url('../images/spinner.gif') no-repeat 50% 50%;
+                width: 740px;
+                height: 75%;
+                padding: 0px;
+                background: rgba(255,255,255,0.8) url('../images/spinner.gif') no-repeat 50% 50%;
                 z-index: 123456;
             }
         </style>
@@ -87,9 +87,7 @@
                     <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
                 {/snippet}
                 <div id='ajax-spinner'></div>
-                <div id='to-hide'>
-                    {include #content}
-                </div>
+                {include #content}
             </div>
             <div id="footer">
                 PHP {=PHP_VERSION} |{ifset $_SERVER['SERVER_SOFTWARE']}Server {$_SERVER['SERVER_SOFTWARE']}{/ifset} | Nette Framework {=Nette\Framework::VERSION}
@@ -108,11 +106,9 @@
                 init: function() {},
                 before: function(settings, ui, e) {
                     $('#ajax-spinner').show();
-                    $('#to-hide').hide();
                 },
                 complete: function() {
                     $('#ajax-spinner').hide();
-                    $('#to-hide').show();
                 }
             });
         </script>
