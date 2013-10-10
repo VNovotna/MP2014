@@ -39,7 +39,7 @@ class CommandsPresenter extends SecuredPresenter {
             //set correct values from settings
             $params = $this->serverRepo->getRunParams($this->selectedServerId);
             $out = $this->serverCmd->startServer($params->path, $params->executable, $this->runtimeHash);
-            if ($out == NULL) {
+            if ($out === array()) {
                 $this->flashMessage('Server started', 'success');
             } else {
                 $this->flashMessage(implode(" \n", $out), 'error');
@@ -78,14 +78,6 @@ class CommandsPresenter extends SecuredPresenter {
         if ($this->runtimeHash == "") {
             $this->redirect('Commands:');
         }
-    }
-
-    public function renderDefault() {
-        
-    }
-
-    public function renderStarted() {
-        
     }
 
 }
