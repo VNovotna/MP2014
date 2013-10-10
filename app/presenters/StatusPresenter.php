@@ -25,8 +25,7 @@ class StatusPresenter extends SecuredPresenter {
     }
 
     public function renderDefault() {
-        $this->template->running = $this->runtimeHash != NULL ? TRUE : FALSE;
-        //TODO: read logs from right folder
+//        $this->template->running = $this->runtimeHash != NULL ? TRUE : FALSE;
         $path = $this->serverRepo->getRunParams($this->selectedServerId)->path;
         try {
             $logModel = new LogModel($path . 'logs/');

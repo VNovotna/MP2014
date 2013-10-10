@@ -32,16 +32,16 @@
                                 <li>
                                     <a n:href="Status:">{$activeServer} ⇩</a>
                                     <ul>
-                                    {foreach $userServers as $server}
-                                        <li><a n:href="switchServer! $server->id">{$server->name}</a></li>
-                                    {/foreach}
+                                        {foreach $userServers as $server}
+                                            <li><a n:href="switchServer! $server->id">{$server->name}</a></li>
+                                        {/foreach}
                                     </ul>
                                 </li>
                             </ul>
                         </nav>
-                      {else}
+                    {else}
                         <span>MC server wrapper</span>
-                      {/if}
+                    {/if}
                 </div>
                 <div n:if="$user->isLoggedIn()" class="icon user">
                     {$user->getIdentity()->username}| <a n:href="logOut!">Odhlásit</a>
@@ -54,20 +54,20 @@
                     <h2>Server</h2>
                     <ul>
                         {ifset $activeServer}
-                        <li><a n:href="Status:">Stav</a></li>
-                        <li><a n:href="Commands:">Příkazy</a></li>
-                        <li><a n:href="Backup:">Záloha</a></li>
-                        <li><a n:href="Players:">Hráči</a></li>
-                        <li><a n:href="GameSettings:">Nastavení</a></li>
+                            <li><a n:href="Status:">Stav <span n:class="$running ? 'icon tick' : 'icon delete'"></span></a></li>
+                            <li><a n:href="Commands:">Příkazy</a></li>
+                            <li><a n:href="Backup:">Záloha</a></li>
+                            <li><a n:href="Players:">Hráči</a></li>
+                            <li><a n:href="GameSettings:">Nastavení</a></li>
                         {/ifset}
                         <li><a n:href="Create:">Nový server</a></li>
                     </ul>
                     {if $user->isInRole('admin')}
-                    <h2>Správce</h2>
-                    <ul>
-                        <li><a n:href="SystemSettings:">Nastavení</a></li>
-                        <li><a n:href="Users:">Uživatelé</a></li>
-                    </ul>
+                        <h2>Správce</h2>
+                        <ul>
+                            <li><a n:href="SystemSettings:">Nastavení</a></li>
+                            <li><a n:href="Users:">Uživatelé</a></li>
+                        </ul>
                     {/if}
                 </div>
             </div>
@@ -89,7 +89,7 @@
         <script>
             $(function() {
                 $.nette.init();
-            });
+                    });
         </script>
         {/block}
     </body>

@@ -74,7 +74,7 @@ abstract class SecuredPresenter extends BasePresenter {
         $acl->addRole('admin');
         //resource
         $acl->addResource('status');
-        $acl->addResource('commands');
+        $acl->addResource('commands'); //ops rights + backup
         $acl->addResource('server-settings');
         $acl->addResource('system');
         //rules
@@ -121,6 +121,7 @@ abstract class SecuredPresenter extends BasePresenter {
             $this->template->activeServer = NULL;
         }
         $this->template->userServers = $servers;
+        $this->template->running = $this->runtimeHash != NULL ? TRUE : FALSE;
     }
 
 }
