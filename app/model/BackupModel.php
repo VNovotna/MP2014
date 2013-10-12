@@ -65,11 +65,48 @@ class BackupModel extends Nette\Object {
      */
     public function getBackups($path) {
         $files = array();
-        $finder = Finder::findFiles('*.zip')->in($path.'backups/');
+        $finder = Finder::findFiles('*.zip')->in($path . 'backups/');
         foreach ($finder->orderByName() as $file) {
             $files[] = $file->getBasename();
         }
         return array_reverse($files);
+    }
+
+    /**
+     * stops server, delete world/, restore backup, and start server
+     * stoping and starting server will be omitted if the server is down
+     * @param string $path to minecraft folder ('backup/' will be added automaticaly)
+     * @param string $file name of the backup file
+     * @return boolean TRUE when successful
+     * @throws \Nette\FileNotFoundException
+     */
+    public function restore($path, $file) {
+        if (file_exists($path . 'backups/' . $file)) {
+            return FALSE;
+        } else {
+            //throw new \Nette\FileNotFoundException;
+            return FALSE;
+        }
+    }
+
+    /**
+     * remove given file, intended only for deleting backup files
+     * @param string $path to minecraft folder ('backup/' will be added automaticaly)
+     * @param string $file name of the backup file
+     * @return boolean TRUE when successful
+     * @throws \Nette\FileNotFoundException
+     */
+    public function removeFile($path, $file) {
+        if (file_exists($path . 'backups/' . $file)) {
+            exec('rm ' . $path . 'backups/' . $file, $output);
+            if ($output === array()) {
+                return TRUE;
+            } else {
+                return $output;
+            }
+        } else { //no such file
+            return FALSE;
+        }
     }
 
 }

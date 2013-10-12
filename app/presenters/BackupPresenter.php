@@ -42,7 +42,7 @@ class BackupPresenter extends SecuredPresenter {
     }
 
     public function handleRestoreBackup($file) {
-        $this->flashMessage('Něco se nepovedlo :/ '.$file, 'error');
+        $this->flashMessage('Něco se nepovedlo :/ ' . $file, 'error');
         if ($this->isAjax()) {
             $this->invalidateControl();
         } else {
@@ -51,7 +51,11 @@ class BackupPresenter extends SecuredPresenter {
     }
 
     public function handleDeleteBackup($file) {
-        $this->flashMessage('Něco se nepovedlo :/ '.$file, 'error');
+        if ($this->backupModel->removeFile($this->serverRepo->getPath($this->selectedServerId), $file)) {
+            $this->flashMessage('Záloha ' . $file . ' odstraněna', 'success');
+        } else {
+            $this->flashMessage('Něco se nepovedlo :/ ', 'error');
+        }
         if ($this->isAjax()) {
             $this->invalidateControl();
         } else {
