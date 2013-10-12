@@ -43,6 +43,15 @@ class ServerRepository extends Repository {
     }
 
     /**
+     * return server path
+     * @param int $serverId
+     * @return string /path/to/server/
+     */
+    public function getPath($serverId) {
+        return $this->getRunParams($serverId)->path;
+    }
+
+    /**
      * sets runtime has for running server identification
      * @param int $serverId
      * @param string $hash
