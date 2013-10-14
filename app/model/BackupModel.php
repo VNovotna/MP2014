@@ -77,14 +77,20 @@ class BackupModel extends Nette\Object {
      * stoping and starting server will be omitted if the server is down
      * @param string $path to minecraft folder ('backup/' will be added automaticaly)
      * @param string $file name of the backup file
+     * @param string $runtimeHash if is server running
      * @return boolean TRUE when successful
-     * @throws \Nette\FileNotFoundException
      */
-    public function restore($path, $file) {
+    public function restore($path, $file, $runtimeHash = NULL) {
         if (file_exists($path . 'backups/' . $file)) {
+            if ($runtimeHash !== NULL) {  //stop server
+                //$this->serverCmd->stopServer($runtimeHash);
+            }
+            //smazat world/
+            //rozbalit zálohu
+            //nastartovat
+
             return FALSE;
-        } else {
-            //throw new \Nette\FileNotFoundException;
+        } else {//no such file
             return FALSE;
         }
     }
@@ -94,7 +100,6 @@ class BackupModel extends Nette\Object {
      * @param string $path to minecraft folder ('backup/' will be added automaticaly)
      * @param string $file name of the backup file
      * @return boolean TRUE when successful
-     * @throws \Nette\FileNotFoundException
      */
     public function removeFile($path, $file) {
         if (file_exists($path . 'backups/' . $file)) {

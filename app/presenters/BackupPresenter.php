@@ -28,7 +28,7 @@ class BackupPresenter extends SecuredPresenter {
     }
 
     public function handleMakeBackup() {
-        $path = $this->serverRepo->getRunParams($this->selectedServerId)->path;
+        $path = $this->serverRepo->getPath($this->selectedServerId);
         if ($this->backupModel->backup($path, $this->runtimeHash)) {
             $this->flashMessage('Záloha úspěšná', 'success');
         } else {
@@ -42,7 +42,13 @@ class BackupPresenter extends SecuredPresenter {
     }
 
     public function handleRestoreBackup($file) {
-        $this->flashMessage('Něco se nepovedlo :/ ' . $file, 'error');
+        $path = $this->serverRepo->getPath($this->selectedServerId);
+        if ($this->backupModel->restore($path, $file, $this->runtimeHash)) {
+            sleep(10);
+            $this->flashMessage('Obnova úspěšná. Nebo až se to dopíše...', 'error');
+        } else {
+            $this->flashMessage('Něco se nepovedlo :/ ' . $file, 'error');
+        }
         if ($this->isAjax()) {
             $this->invalidateControl();
         } else {
