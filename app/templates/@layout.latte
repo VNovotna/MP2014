@@ -93,7 +93,6 @@
                 PHP {=PHP_VERSION} |{ifset $_SERVER['SERVER_SOFTWARE']}Server {$_SERVER['SERVER_SOFTWARE']}{/ifset} | Nette Framework {=Nette\Framework::VERSION}
             </div>
         </div>
-        {block scripts}
         <script src="{$basePath}/js/jquery.js"></script>
         <script src="{$basePath}/js/netteForms.js"></script>
         <script src="{$basePath}/js/nette.ajax.js"></script>
@@ -112,6 +111,6 @@
                 }
             });
         </script>
-        {/block}
+        {block scripts}{/block}
     </body>
 </html>

@@ -2,4 +2,58 @@
 {block content}
 
 <h1 n:block=title>Nastavení</h1>
-{control serverParams}
+
+<div>
+    <div id='menu'>
+        <ul>
+            <li><a href='#' onclick="$('[id*=page]').hide();
+                    $('#page-runtime').show();">runtime</a></li>
+            <li><a href='#' onclick="$('[id*=page]').hide();
+                    $('#page-prop').show();">prop</a></li>
+        </ul>
+    </div>
+    <div id='wrap'>
+        <div id='page-runtime'>
+            {control serverParams}
+        </div>
+        <div id='page-prop'>
+            server.properties
+        </div>
+    </div>
+</div>
+
+{/block}
+{block scripts}
+<script>$('#page-runtime').show();</script>
+{/block}
+{block head}
+<style>
+    div#wrap div{
+        display: none;
+    }
+    #menu{
+        background-color: #eeeeee;
+    }
+    #menu ul {
+        list-style-type: none;
+        height: 30px;
+        width: 666px;
+        margin: auto;
+    }
+    #menu ul a {
+        padding-right: 16px;
+        padding-left: 16px;
+        display: block;
+        line-height: 30px;
+        text-decoration: none;
+        font-family: Georgia, "Times New Roman", Times, serif;
+        font-size: 21px;
+    }
+    #menu ul a:hover {
+        color: red;
+    }
+    #menu li {
+        float: left;
+    }
+</style>
+{/block}
