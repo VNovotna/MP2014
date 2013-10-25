@@ -60,7 +60,7 @@ class ServerCommander extends \Nette\Object {
     public function isServerRunning($runtimeHash) {
         exec("ps ax | grep 'SCREEN -dmS $runtimeHash'", $output);
         $outString = implode(" ", $output);
-        if(preg_match("#SCREEN -dmS ".$runtimeHash." java -jar#", $outString)){
+        if(preg_match("#SCREEN -dmS ".$runtimeHash." java #", $outString)){
             return TRUE;
         }
         return FALSE;
