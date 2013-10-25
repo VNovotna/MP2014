@@ -2,7 +2,7 @@
 
 /**
  * ServerCommander is able to start/stop server, pass commands and backup server
- * (Or it should be able of doing this)
+ * 
  * @author viky
  */
 class ServerCommander extends \Nette\Object {
@@ -43,7 +43,7 @@ class ServerCommander extends \Nette\Object {
     }
 
     /**
-     * stops server, if there is more than one server $runtimeHash is necessary
+     * stops server
      * @param string $runtimeHash
      * @return array usually empty if command was successfull
      */
@@ -58,8 +58,9 @@ class ServerCommander extends \Nette\Object {
      * @return boolean
      */
     public function isServerRunning($runtimeHash) {
-        exec("ps ux | grep 'SCREEN -dmS $runtimeHash'", $output);
-        if (count($output) == 3) {
+        exec("ps ax | grep 'SCREEN -dmS $runtimeHash'", $output);
+        $outString = implode(" ", $output);
+        if(preg_match("#SCREEN -dmS ".$runtimeHash." java -jar#", $outString)){
             return TRUE;
         }
         return FALSE;
