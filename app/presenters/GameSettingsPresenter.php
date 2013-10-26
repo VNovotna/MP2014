@@ -12,6 +12,9 @@ class GameSettingsPresenter extends SecuredPresenter {
     /** @var DB\ServerRepository */
     private $serverRepo;
 
+    /** @var FileModel */
+    private $fileModel;
+
     protected function startup() {
         parent::startup();
         if (!$this->user->isAllowed('server-settings', 'view') and !$this->user->isAllowed('server-settings', 'edit')) {
@@ -19,6 +22,7 @@ class GameSettingsPresenter extends SecuredPresenter {
             $this->redirect('Homepage:');
         }
         $this->serverRepo = $this->context->serverRepository;
+        $this->fileModel = $this->context->fileModel;
     }
 
     /**
@@ -33,7 +37,7 @@ class GameSettingsPresenter extends SecuredPresenter {
                 ->addRule(Form::FILLED, 'je nutné specifikovat cestu');
         $form->addText('executable', 'jméno .jar: ', 30)
                 ->addRule(Form::FILLED, 'je nutno specifikovat jméno .jar souboru');
-        $form->addSubmit('update', 'Upravit');
+        $form->addSubmit('update', 'Upravit')->setAttribute('class', 'ajax');
         if (!$this->user->isAllowed('server-settings', 'edit')) {
             $form['update']->setDisabled();
         }
@@ -60,7 +64,46 @@ class GameSettingsPresenter extends SecuredPresenter {
         } else {
             $this->flashMessage('Jako operátor nemáte právo editovat nastavení.', 'error');
         }
-        $this->redirect('this');
+        if ($this->isAjax()) {
+            $this->invalidateControl();
+        } else {
+            $this->redirect('this');
+        }
+    }
+
+    /**
+     * @return Nette\Application\UI\Form
+     */
+    protected function createComponentServerProps() {
+        $form = new Form();
+        $form->addTextArea('props', '', 70, 36);
+        $form->addSubmit('submit', 'Nastavit')->setAttribute('class', 'ajax');
+        $value = $this->fileModel->open($this->serverRepo->getPath($this->selectedServerId) . 'server.properties', TRUE);
+        $form->setValues(array('props' => implode('', $value)));
+        if (!$this->user->isAllowed('server-settings', 'edit')) {
+            $form['submit']->setDisabled();
+        }
+        $form->onSuccess[] = $this->serverPropsFormSubmitted;
+        return $form;
+    }
+
+    /**
+     * 
+     * @param \Nette\Application\UI\Form $form
+     */
+    public function serverPropsFormSubmitted(Form $form) {
+        if ($this->user->isAllowed('server-settings', 'edit')) {
+            $content = $form->getValues()->props;
+            $this->fileModel->write($content, $this->serverRepo->getPath($this->selectedServerId) . 'server.properties');
+            $this->flashMessage('Nastavení aktualizováno.', 'success');
+        } else {
+            $this->flashMessage('Nemáte právo editovat nastavení.', 'error');
+        }
+        if ($this->isAjax()) {
+            $this->invalidateControl();
+        } else {
+            $this->redirect('this');
+        }
     }
 
 }

@@ -1,33 +1,64 @@
 <?php
 
 /**
- * Description of FileModel
- *
+ * FileModel is intented to do all the dirty work with files
  * @author viky
  */
-abstract class FileModel {
+class FileModel {
 
     /**
-     * @var array 
+     * open and return whole file content
+     * @param string $file enter absolute path
+     * @param bool $ignoreNonExistent TRUE if want to create non existent files
+     * @return array each line of file on one line
+     * @throws Nette\FileNotFoundException
      */
-    protected $fileNames = array();
-
-    /**
-     * @var Finder
-     */
-    protected $finder;
-
-    /**
-     * 
-     * @param string $filePath
-     * @param string $fileMask
-     */
-    public function __construct($filePath, $fileMask) {
-        $finder = Finder::findFiles($fileMask)->in($filePath);
-        foreach ($finder as $name => $file) {
-            $this->fileNames[$name] = $file;
+    public function open($file, $ignoreNonExistent = FALSE) {
+        try {
+            return file($file);
+        } catch (Nette\FileNotFoundException $e) {
+            if ($ignoreNonExistent) {
+                fopen($file, 'c');
+                return array();
+            } else {
+                throw Nette\FileNotFoundException;
+            }
         }
-        $this->finder = $finder;
+    }
+
+    /**
+     * write content into a file, ignoring previous content
+     * @param array $content array of strings, each string representing a line
+     * @param string $file enter absolute path
+     * @param bool $ignoreNonExistent TRUE if want to create non existent files
+     * @return boolean
+     */
+    public function write($content, $file, $ignoreNonExistent = FALSE) {
+        try {
+            $handler = fopen($file, 'w');
+            fwrite($handler, $content);
+        } catch (Exception $ex) {
+            if ($ignoreNonExistent) {
+                $handler = fopen($file, 'c+');
+                fwrite($handler, $content);
+            } else {
+                throw Nette\FileNotFoundException;
+            }
+        }
+        return TRUE;
+    }
+
+    /**
+     * add content into a file
+     * @param array $content array of strings, each string representing a line
+     * @param string $file enter absolute path
+     * @param bool $ignoreNonExistent TRUE if want to create non existent files
+     * @return boolean
+     * @throws Nette\NotImplementedException
+     */
+    public function add($content, $file, $ignoreNonExistent = FALSE) {
+        throw Nette\NotImplementedException;
+        return TRUE;
     }
 
 }

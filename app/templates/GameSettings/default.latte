@@ -10,6 +10,8 @@
                     $('#page-runtime').show();">runtime</a></li>
             <li><a href='#' onclick="$('[id*=page]').hide();
                     $('#page-prop').show();">prop</a></li>
+            <li><a href='#' onclick="$('[id*=page]').hide();
+                    $('#page-ips').show();">banned ips</a></li>
         </ul>
     </div>
     <div id='wrap'>
@@ -17,7 +19,11 @@
             {control serverParams}
         </div>
         <div id='page-prop'>
-            server.properties
+            {control serverProps}
+            Poznámka: Pro uplatnění změn v <i>server.properties</i> je nutné restartovat sever.
+        </div>
+        <div id='page-ips'>
+            
         </div>
     </div>
 </div>

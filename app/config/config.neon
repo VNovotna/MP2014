@@ -9,7 +9,7 @@ common:
 
     php:
         date.timezone: Europe/Prague
-        # zlib.output_compression: yes
+        zlib.output_compression: yes
 
     nette:
         application:
@@ -26,6 +26,7 @@ common:
         authenticator: Authenticator
         serverCommander: ServerCommander
         backupModel: BackupModel
+        fileModel: FileModel
 
     factories:
 
