@@ -14,20 +14,20 @@ class FileEditor extends Nette\Application\UI\Control {
 
     /** @var FileModel */
     private $fileModel;
-
-    /** @var \Nette\Security\User */
-    private $user;
+    
+    /** @var bool */
+    private $allowedToEdit;
 
     /**
      * @param string $filePath
      * @param FileModel $fileModel
-     * @param \Nette\Security\User user
+     * @param bool $allowedToEdit
      */
-    public function __construct($filePath, $fileModel, $user) {
+    public function __construct($filePath, $fileModel, $allowedToEdit) {
         parent::__construct();
         $this->filePath = $filePath;
         $this->fileModel = $fileModel;
-        $this->user = $user;
+        $this->allowedToEdit = $allowedToEdit;
     }
 
     /**
@@ -39,7 +39,7 @@ class FileEditor extends Nette\Application\UI\Control {
         $form->addSubmit('submit', 'Nastavit')->setAttribute('class', 'ajax');
         $value = $this->fileModel->open($this->filePath, TRUE);
         $form->setValues(array('props' => implode('', $value)));
-        if (!$this->user->isAllowed('server-settings', 'edit')) {
+        if (!$this->allowedToEdit) {
             $form['submit']->setDisabled();
         }
         $form->onSuccess[] = $this->serverPropsFormSubmitted;
@@ -51,17 +51,17 @@ class FileEditor extends Nette\Application\UI\Control {
      * @param \Nette\Application\UI\Form $form
      */
     public function serverPropsFormSubmitted(Form $form) {
-        if ($this->user->isAllowed('server-settings', 'edit')) {
+        if ($this->allowedToEdit) {
             $content = $form->getValues()->props;
             $this->fileModel->write($content, $this->filePath);
-            $this->flashMessage('Nastavení aktualizováno.', 'success');
+            $this->getPresenter()->flashMessage('Nastavení aktualizováno.', 'success');
         } else {
             $this->flashMessage('Nemáte právo editovat nastavení.', 'error');
         }
-        if ($this->isAjax()) {
-            $this->invalidateControl();
+        if ($this->getPresenter()->isAjax()) {
+            $this->getPresenter()->invalidateControl();
         } else {
-            $this->redirect('this');
+            $this->getPresenter()->redirect('this');
         }
     }
 
