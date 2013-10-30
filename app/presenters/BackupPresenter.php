@@ -16,11 +16,15 @@ class BackupPresenter extends SecuredPresenter {
     /** @var BackupModel */
     private $backupModel;
 
+    /** @var string */
+    private $path;
+
     protected function startup() {
         parent::startup();
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
         $this->backupModel = $this->context->backupModel;
+        $this->path = $this->serverRepo->getPath($this->selectedServerId);
         if (!$this->user->isAllowed('commands', 'edit')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
@@ -42,8 +46,7 @@ class BackupPresenter extends SecuredPresenter {
     }
 
     public function handleRestoreBackup($file) {
-        $path = $this->serverRepo->getPath($this->selectedServerId);
-        if ($this->backupModel->restore($path, $file, $this->runtimeHash)) {
+        if ($this->backupModel->restore($this->path, $file, $this->runtimeHash)) {
             sleep(10);
             $this->flashMessage('Obnova úspěšná. Nebo až se to dopíše...', 'error');
         } else {
@@ -57,7 +60,7 @@ class BackupPresenter extends SecuredPresenter {
     }
 
     public function handleDeleteBackup($file) {
-        if ($this->backupModel->removeFile($this->serverRepo->getPath($this->selectedServerId), $file)) {
+        if ($this->backupModel->removeFile($this->path, $file)) {
             $this->flashMessage('Záloha ' . $file . ' odstraněna', 'success');
         } else {
             $this->flashMessage('Něco se nepovedlo :/ ', 'error');
@@ -69,9 +72,13 @@ class BackupPresenter extends SecuredPresenter {
         }
     }
 
+    public function handleDownload($file) {
+        $fr = new \Nette\Application\Responses\FileResponse($this->path .'backups/'. $file);
+        $this->sendResponse($fr);
+    }
+
     public function renderDefault() {
-        $path = $this->serverRepo->getRunParams($this->selectedServerId)->path;
-        $this->template->backups = $this->backupModel->getBackups($path);
+        $this->template->backups = $this->backupModel->getBackups($this->path);
     }
 
 }
