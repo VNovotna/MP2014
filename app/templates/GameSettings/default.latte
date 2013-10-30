@@ -12,6 +12,10 @@
                     $('#page-prop').show();">prop</a></li>
             <li><a href='#' onclick="$('[id*=page]').hide();
                     $('#page-ips').show();">banned ips</a></li>
+            <li><a href='#' onclick="$('[id*=page]').hide();
+                    $('#page-players').show();">banned players</a></li>
+            <li><a href='#' onclick="$('[id*=page]').hide();
+                    $('#page-white').show();">whitelist</a></li>
         </ul>
     </div>
     <div id='wrap'>
@@ -23,7 +27,13 @@
             Poznámka: Pro uplatnění změn v <i>server.properties</i> je nutné restartovat sever.
         </div>
         <div id='page-ips'>
-            
+            {control bannedIPs}
+        </div>
+        <div id='page-players'>
+            {control bannedPlayers}
+        </div>
+        <div id='page-white'>
+            {control whiteList}
         </div>
     </div>
 </div>

@@ -72,39 +72,29 @@ class GameSettingsPresenter extends SecuredPresenter {
     }
 
     /**
-     * @return Nette\Application\UI\Form
+     * @return FileEditor Component
      */
     protected function createComponentServerProps() {
-//        $form = new Form();
-//        $form->addTextArea('props', '', 70, 36);
-//        $form->addSubmit('submit', 'Nastavit')->setAttribute('class', 'ajax');
-//        $value = $this->fileModel->open($this->serverRepo->getPath($this->selectedServerId) . 'server.properties', TRUE);
-//        $form->setValues(array('props' => implode('', $value)));
-//        if (!$this->user->isAllowed('server-settings', 'edit')) {
-//            $form['submit']->setDisabled();
-//        }
-//        $form->onSuccess[] = $this->serverPropsFormSubmitted;
-//        return $form;
-        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'server.properties', $this->fileModel, $this->user);
+        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'server.properties', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
     }
-//
-//    /**
-//     * 
-//     * @param \Nette\Application\UI\Form $form
-//     */
-//    public function serverPropsFormSubmitted(Form $form) {
-//        if ($this->user->isAllowed('server-settings', 'edit')) {
-//            $content = $form->getValues()->props;
-//            $this->fileModel->write($content, $this->serverRepo->getPath($this->selectedServerId) . 'server.properties');
-//            $this->flashMessage('Nastavení aktualizováno.', 'success');
-//        } else {
-//            $this->flashMessage('Nemáte právo editovat nastavení.', 'error');
-//        }
-//        if ($this->isAjax()) {
-//            $this->invalidateControl();
-//        } else {
-//            $this->redirect('this');
-//        }
-//    }
 
+    /**
+     * @return FileEditor Component
+     */
+    protected function createComponentBannedIPs() {
+        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'banned-ips.txt', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
+    }
+
+    /**
+     * @return FileEditor Component
+     */
+    protected function createComponentBannedPlayers() {
+        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'banned-players.txt', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
+    }
+    /**
+     * @return FileEditor Component
+     */
+    protected function createComponentWhiteList() {
+        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'white-list.txt', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
+    }
 }
