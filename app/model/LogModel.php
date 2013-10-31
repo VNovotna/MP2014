@@ -16,22 +16,30 @@ class LogModel extends \Nette\Object {
         $this->finder = Finder::findFiles($fileMask)->exclude($exclude)->in($filePath);
     }
 
-    public function getAll() {
-        $i = 0;
+    /**
+     * @param int $maxLines zero means all
+     * @return array of strings
+     */
+    public function getAll($maxLines = 0) {
         $output = array();
         foreach ($this->finder->orderByMTime() as $value) {
             $output = array_merge($output, array_reverse(file($value)));
-            $i++;
         }
+        if ($maxLines > 0) {
+            $output = array_slice($output, 0, $maxLines);
+        }
+        array_walk($output, function(&$item) {
+            $item = htmlspecialchars($item);
+        });
         return $output;
     }
 
     public function getWarnings() {
-        
+        throw new Nette\NotImplementedException;
     }
 
     public function getInfos() {
-        
+        throw new Nette\NotImplementedException;
     }
 
     /**
