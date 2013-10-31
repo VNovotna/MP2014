@@ -68,6 +68,29 @@ class CommandsPresenter extends SecuredPresenter {
         }
     }
 
+    /**
+     * @return \Nette\Application\UI\Form
+     */
+    protected function createComponentCommandForm() {
+        $form = new Nette\Application\UI\Form();
+        $form->addText('command', 'Příkaz');
+        $form->addSubmit('send', 'Zadat');
+        $form->onSuccess[] = $this->commandFormSubmitted;
+        return $form;
+    }
+
+    public function commandFormSubmitted(Nette\Application\UI\Form $form) {
+        $command = $form->getValues()->command;
+        $this->serverCmd->issueCommand($command, $this->runtimeHash);
+        //TODO make it less ugly and more reliable
+        usleep(500000);
+        if ($this->isAjax()) {
+            $this->invalidateControl();
+        } else {
+            $this->redirect('this');
+        }
+    }
+
     public function actionDefault() {
         if ($this->runtimeHash != "") {
             $this->redirect('Commands:started');
@@ -77,6 +100,16 @@ class CommandsPresenter extends SecuredPresenter {
     public function actionStarted() {
         if ($this->runtimeHash == "") {
             $this->redirect('Commands:');
+        }
+    }
+
+    public function renderStarted() {
+        $path = $this->serverRepo->getPath($this->selectedServerId);
+        try {
+            $logModel = new LogModel($path . 'logs/');
+            $this->template->logs = LogModel::makeColorful($logModel->getAll(8));
+        } catch (UnexpectedValueException $e) {
+            $this->template->logs = array('nic nenalezeno');
         }
     }
 

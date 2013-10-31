@@ -17,7 +17,6 @@ class StatusPresenter extends SecuredPresenter {
         parent::startup();
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
-        //$this->runtimeHash = $this->serverRepo->getRuntimeHash($this->selectedServerId);
     }
 
     public function actionDefault() {
@@ -25,8 +24,7 @@ class StatusPresenter extends SecuredPresenter {
     }
 
     public function renderDefault() {
-//        $this->template->running = $this->runtimeHash != NULL ? TRUE : FALSE;
-        $path = $this->serverRepo->getRunParams($this->selectedServerId)->path;
+        $path = $this->serverRepo->getPath($this->selectedServerId);
         try {
             $logModel = new LogModel($path . 'logs/');
             $this->template->logs = LogModel::makeColorful($logModel->getAll());

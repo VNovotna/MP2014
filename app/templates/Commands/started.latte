@@ -4,3 +4,104 @@
 <h1 n:block=title>Příkazy</h1>
 <a n:href="stopServer!">stop</a>
 {$hash}
+
+<hr>
+
+<div class="ui-widget">
+    {form commandForm}
+        <fieldset>
+            <legend>Zadat příkaz</legend>
+        {input command size => 32}{input send class => ajax, onclick => "$('#frmcommandForm-command').val('')"}
+        <br>
+        <span id='synopsis'>&nbsp;</span>
+        </fieldset>
+    {/form}
+</div>
+{snippet output}
+    <div style="width: 698px; max-height: 300px; overflow-y: hidden; overflow-x: hidden;">
+        {foreach $logs as $line}
+            <span n:class='$iterator->odd ? "odd log" : "even log"'>
+                {!$line}<br>
+            </span>
+        {/foreach}
+    </div>
+{/snippet}
+{/block}
+{block head}
+<link rel="stylesheet" href="{$basePath}/css/jquery-ui-1.10.3.custom.min.css">
+<style>
+    .small { font-size: 12px;}
+</style>
+{/block}
+{block scripts}
+<script src="{$basePath}/js/jquery-ui-1.10.3.custom.min.js"></script>
+<script>
+$(function() {
+    var availableTags = [
+        {
+            value: "ban",
+            syn: "ban &lt;playername&gt; [reason]"
+        },{
+            value: "ban-ip",
+            syn: "ban-ip &lt;ip-address | playername&gt;"
+        },{
+            value: "banlist",
+            syn: "banlist [ips]"
+        },{
+            value: "deop",
+            syn: "deop &lt;playername&gt;"
+        },{
+            value: "kick",
+            syn: "kick &lt;playername&gt; [reason]"
+        },{
+            value: "list"
+        },{
+            value: "op",
+            syn: "op &lt;playername&gt;"
+        },{
+            value: "pardon",
+            syn: "pardon &lt;playername&gt;"
+        },{
+            value: "save-all"
+        },{
+            value: "save-off"
+        },{
+            value: "save-on"
+        },{
+            value: "setidletimeout",
+            syn: "setidletimeout Minutes until kick&gt;"
+        },{
+            value: "stop"
+        },{
+            value: "whitelist",
+            syn: "whitelist &lt;on|off|list|add|remove|reload&gt; [playername]"
+
+        },{
+            value: "achievement",
+            syn: "achievement give &lt;achievementname&gt; &lt;playername&gt;"
+        }
+    ];
+    $("#frmcommandForm-command").autocomplete({
+        minLength: 0,
+        source: availableTags,
+        focus: function( event, ui ) {
+            $( "#tags" ).val( ui.item.value );
+            return false;
+        },
+        select: function( event, ui ) {
+            $( "#frmcommandForm-command" ).val( ui.item.value );
+           if(typeof ui.item.syn == 'string' || ui.item.syn instanceof String){
+                $( "#synopsis" ).html( ui.item.syn );
+           }else{
+               $( "#synopsis" ).html( " " );
+           }
+            return false;
+        }
+    }).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
+      return $( "<li>" )
+        .append( "<a>" + item.value + "<br><span class='small'>" + item.syn + "</span></a>" )
+        .appendTo( ul );
+    };;
+});
+</script>
+{/block}
