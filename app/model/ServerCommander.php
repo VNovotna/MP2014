@@ -14,7 +14,7 @@ class ServerCommander extends \Nette\Object {
      * @return array usually empty if command was successfull
      */
     public function issueCommand($command, $runtimeHash) {
-        $exec = 'screen -S ' . $runtimeHash . ' -p 0 -X stuff `printf "' . $command . '\r"`';
+        $exec = 'screen -S ' . $runtimeHash . ' -p 0 -X stuff "`printf "' . $command . '\r"`"';
         exec($exec, $output);
         return $output;
     }
