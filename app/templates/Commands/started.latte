@@ -11,13 +11,14 @@
     {form commandForm}
         <fieldset>
             <legend>Zadat příkaz</legend>
-        {input command size => 32}{input send class => ajax, onclick => "$('#frmcommandForm-command').val('')"}
+        {input command size => 32}{input send class => ajax}
         <br>
         <span id='synopsis'>&nbsp;</span>
         </fieldset>
     {/form}
 </div>
 {snippet output}
+    <script>$('#frmcommandForm-command').val('');</script>
     <div style="width: 698px; max-height: 300px; overflow-y: hidden; overflow-x: hidden;">
         {foreach $logs as $line}
             <span n:class='$iterator->odd ? "odd log" : "even log"'>
@@ -98,10 +99,16 @@ $(function() {
             return false;
         }
     }).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
-      return $( "<li>" )
+      if(typeof item.syn == 'string' || item.syn instanceof String){
+        return $( "<li>" )
         .append( "<a>" + item.value + "<br><span class='small'>" + item.syn + "</span></a>" )
         .appendTo( ul );
-    };;
+      }else{
+        return $( "<li>" )
+        .append( "<a>" + item.value + "</a>" )
+        .appendTo( ul );
+      }
+    };
 });
 </script>
 {/block}
