@@ -11,14 +11,17 @@
     {form commandForm}
         <fieldset>
             <legend>Zadat příkaz</legend>
-        {input command size => 32}{input send class => ajax}
+        /{input command size => 32}{input send class => ajax}
         <br>
         <span id='synopsis'>&nbsp;</span>
         </fieldset>
     {/form}
 </div>
 {snippet output}
-    <script>$('#frmcommandForm-command').val('');</script>
+    <script>
+        $('#frmcommandForm-command').val('');
+        $('#synopsis').html("&nbsp;");
+    </script>
     <div style="width: 698px; max-height: 300px; overflow-y: hidden; overflow-x: hidden;">
         {foreach $logs as $line}
             <span n:class='$iterator->odd ? "odd log" : "even log"'>
@@ -40,8 +43,11 @@
 $(function() {
     var availableTags = [
         {
+            value: "achievement",
+            syn: "achievement give &lt;achievementname&gt; &lt;player&gt;"
+        },{
             value: "ban",
-            syn: "ban &lt;playername&gt; [reason]"
+            syn: "ban &lt;player&gt; [reason]"
         },{
             value: "ban-ip",
             syn: "ban-ip &lt;ip-address | playername&gt;"
@@ -49,19 +55,58 @@ $(function() {
             value: "banlist",
             syn: "banlist [ips]"
         },{
+            value: "clear",
+            syn: "clear &lt;player&gt; [item] [metadata]"
+        },{
+            value: "debug",
+            syn: "debug &lt;start|stop&gt;"
+        },{
+            value: "defaultgamemode",
+            syn: "defaultgamemode &lt;survival | creative | adventure&gt;"
+        },{
             value: "deop",
-            syn: "deop &lt;playername&gt;"
+            syn: "deop &lt;player&gt;"
+        },{
+            value: "difficulty",
+            syn: "difficulty &lt;peaceful | easy | normal | hard&gt;"
+        },{
+            value: "effect",
+            syn: "effect &lt;player&gt; &lt;effect&gt; [seconds] [amplifier]"
+        },{
+            value: "enchant",
+            syn: "enchant &lt;player&gt; &lt;enchantment ID&gt; [level]"
+        },{
+            value: "gamemode",
+            syn: "gamemode &lt;survival | creative | adventure&gt; [playername]"
+        },{
+            value: "gamerule",
+            syn: "gamerule &lt;rule name&gt; [true | false]"
+        },{
+            value: "give",
+            syn: "give &lt;player&gt; &lt;item&gt; [amount] [data] [dataTag]"
+        },{
+            value: "help",
+            syn: "help [page | command name]"
         },{
             value: "kick",
-            syn: "kick &lt;playername&gt; [reason]"
+            syn: "kick &lt;player&gt; [reason]"
         },{
             value: "list"
         },{
+            value: "me",
+            syn: "me &lt;some action&gt;"
+        },{
             value: "op",
-            syn: "op &lt;playername&gt;"
+            syn: "op &lt;player&gt;"
         },{
             value: "pardon",
-            syn: "pardon &lt;playername&gt;"
+            syn: "pardon &lt;player&gt;"
+        },{
+            value: "pardon-ip",
+            syn: "pardon &lt;address&gt;"
+        },{
+            value: "playsound",
+            syn: " /playsound &lt;sound&gt;  [x] [y] [z] [volume] [pitch] [minimumVolume] "
         },{
             value: "save-all"
         },{
@@ -69,21 +114,64 @@ $(function() {
         },{
             value: "save-on"
         },{
+            value: "say",
+            syn: "say &lt;some message&gt;"
+        },{
+            value: "scoreboard",
+            syn: "scoreboard &lt;objectives|players|teams&gt;"
+        },{
+            value: "seed"
+        },{
+            value: "setblock",
+            syn: "setblock &lt;x&gt; &lt;y&gt; &lt;z&gt; &lt;TileName&gt; [dataValue] [oldBlockHandling] [dataTag]"
+        },{
             value: "setidletimeout",
-            syn: "setidletimeout Minutes until kick&gt;"
+            syn: "setidletimeout &lt;Minutes until kick&gt;"
+        },{
+            value: "spawnpoint",
+            syn: "spawnpoint [&lt;player&gt; [x] [y] [z]]"
+        },{
+            value: "spreadplayers",
+            syn: "spreadplayers &lt;x&gt; &lt;z&gt; &lt;spreadDistance&gt; &lt;maxRange&gt; &lt;respectTeams true|false&gt; &lt;players names&gt;"
         },{
             value: "stop"
         },{
+            value: "summon",
+            syn: "summon &lt;EntityName&gt; [x] [y] [z] [DataTag]"
+        },{
+            value: "tell",
+            syn: "tell &lt;player&gt; &lt;some private message&gt;"
+        },{
+            value: "tellraw",
+            syn: "tellraw &lt;player&gt; &lt;raw json message&gt;"
+        },{
+            value: "testfor",
+            syn: "testfor &lt;player&gt;"
+        },{
+            value: "testforblock",
+            syn: "testforblock &lt;x&gt; &lt;y&gt; &lt;z&gt; &lt;TileName&gt; [dataValue] [dataTag]"
+        },{
+            value: "time",
+            syn: "time &lt;set|add&gt; &lt;number|day|night&gt;"
+        },{
+            value: "toggledownfall"
+        },{
+            value: "tp",
+            syn: "tp [target player] &lt;destination player&gt; OR /tp [target player] &lt;x&gt; &lt;y&gt; &lt;z&gt;"
+        },{
+            value: "weather",
+            syn: "weather &lt;clear|rain|thunder&gt; [duration in seconds]"
+        },{
             value: "whitelist",
             syn: "whitelist &lt;on|off|list|add|remove|reload&gt; [playername]"
-
         },{
-            value: "achievement",
-            syn: "achievement give &lt;achievementname&gt; &lt;playername&gt;"
+            value: "xp",
+            syn: "xp &lt;amount&gt;[L] [player]"
         }
     ];
     $("#frmcommandForm-command").autocomplete({
-        minLength: 0,
+        minLength: 1,
+        delay: 10,        
         source: availableTags,
         focus: function( event, ui ) {
             $( "#tags" ).val( ui.item.value );
