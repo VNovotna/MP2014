@@ -69,9 +69,19 @@ class ServerRepository extends Repository {
         }
     }
 
+    /**
+     * @param int $serverId
+     * @return string | NULL
+     * @throws PDOException
+     */
     public function getRuntimeHash($serverId) {
         try {
-            return $this->getTable()->where('id', $serverId)->fetch()->runhash;
+            $hash = $this->getTable()->where('id', $serverId)->fetch();
+            if ($hash == NULL) {
+                return NULL;
+            } else {
+                return $hash->runhash;
+            }
         } catch (PDOException $e) {
             throw new PDOException;
         }
