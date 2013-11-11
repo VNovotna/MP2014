@@ -3,7 +3,7 @@
 namespace DB;
 
 /**
- * 
+ * ServeRepository is doing everthing around server table
  * @author viky
  */
 class ServerRepository extends Repository {

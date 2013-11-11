@@ -1,7 +1,7 @@
 <?php
 
 /**
- * ServerCommander is able to start/stop server, pass commands and backup server
+ * ServerCommander is able to start/stop server and pass commands
  * 
  * @author viky
  */
