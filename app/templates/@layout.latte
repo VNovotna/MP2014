@@ -105,6 +105,7 @@
                 init: function() {},
                 before: function(settings, ui, e) {
                     $('#ajax-spinner').show();
+                    $('#ajax-spinner').css('height', $('#content').css('height') );
                 },
                 complete: function() {
                     $('#ajax-spinner').hide();
