@@ -50,6 +50,7 @@ class ServerCommander extends \Nette\Object {
      */
     public function stopServer($runtimeHash) {
         $output = $this->issueCommand('stop', $runtimeHash);
+        sleep(1);
         return $output;
     }
 
