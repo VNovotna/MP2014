@@ -31,6 +31,24 @@ class BackupPresenter extends SecuredPresenter {
         }
     }
 
+    /**
+     * @return \Nette\Application\UI\Form
+     */
+    protected function createComponentLoadBackup() {
+        $form = new \Nette\Application\UI\Form();
+        $form->addUpload('upload', 'Zip archiv se zálohou:');
+        $form->addSubmit('send', 'Obnovit');
+        $form->onSuccess[] = $this->loadBackupSubmitted;
+        return $form;
+    }
+
+    /**
+     * @param \Nette\Application\UI\Form $from
+     */
+    public function loadBackupSubmitted($from) {
+        $this->flashMessage("Not implemented yet");
+    }
+
     public function handleMakeBackup() {
         $path = $this->serverRepo->getPath($this->selectedServerId);
         if ($this->backupModel->backup($path, $this->runtimeHash)) {
@@ -46,9 +64,9 @@ class BackupPresenter extends SecuredPresenter {
     }
 
     public function handleRestoreBackup($file) {
-        if ($this->backupModel->restore($this->path, $file, $this->runtimeHash)) {
-            sleep(10);
-            $this->flashMessage('Obnova úspěšná. Nebo až se to dopíše...', 'error');
+        $executable = $this->serverRepo->getRunParams($this->selectedServerId)->executable;
+        if ($this->backupModel->restore($this->path, $file, $this->runtimeHash, $executable)) {
+            $this->flashMessage('Obnova úspěšná.', 'success');
         } else {
             $this->flashMessage('Něco se nepovedlo :/ ' . $file, 'error');
         }
@@ -73,7 +91,7 @@ class BackupPresenter extends SecuredPresenter {
     }
 
     public function handleDownload($file) {
-        $fr = new \Nette\Application\Responses\FileResponse($this->path .'backups/'. $file);
+        $fr = new \Nette\Application\Responses\FileResponse($this->path . 'backups/' . $file);
         $this->sendResponse($fr);
     }
 

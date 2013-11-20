@@ -38,12 +38,17 @@ class BackupModel extends Nette\Object {
      * @return boolean
      */
     private function backupRunning($path, $hash, $filename) {
-        $phar = new PharData($path . 'backups/' . $filename . '.zip');
-        $this->serverCmd->issueCommand('save-all', $hash);
-        $this->serverCmd->issueCommand('save-off', $hash);
-        $phar->buildFromDirectory($path . 'world/');
-        $this->serverCmd->issueCommand('save-on', $hash);
-        return TRUE;
+        try {
+            $phar = new PharData($path . 'backups/' . $filename . '.zip');
+            $this->serverCmd->issueCommand('save-all', $hash);
+            $this->serverCmd->issueCommand('save-off', $hash);
+            $phar->buildFromDirectory($path . 'world/');
+            $this->serverCmd->issueCommand('save-on', $hash);
+            return TRUE;
+        } catch (UnexpectedValueException $e) {
+            echo $e->getTraceAsString();
+            return FALSE;
+        }
     }
 
     /**
@@ -53,9 +58,14 @@ class BackupModel extends Nette\Object {
      * @return boolean
      */
     private function backupSwitchedOff($path, $filename) {
-        $phar = new PharData($path . 'backups/' . $filename . '.zip');
-        $phar->buildFromDirectory($path . 'world/');
-        return TRUE;
+        try {
+            $phar = new PharData($path . 'backups/' . $filename . '.zip');
+            $phar->buildFromDirectory($path . 'world/');
+            return TRUE;
+        } catch (UnexpectedValueException $e) {
+            echo $e->getTraceAsString();
+            return FALSE;
+        }
     }
 
     /**
@@ -76,20 +86,31 @@ class BackupModel extends Nette\Object {
      * stops server, delete world/, restore backup, and start server
      * stoping and starting server will be omitted if the server is down
      * @param string $path to minecraft folder ('backup/' will be added automaticaly)
-     * @param string $file name of the backup file
+     * @param string $filename name of the backup file
      * @param string $runtimeHash if is server running
+     * @param string $jar name of jar file to run, needed only on running server
      * @return boolean TRUE when successful
      */
-    public function restore($path, $file, $runtimeHash = NULL) {
-        if (file_exists($path . 'backups/' . $file)) {
+    public function restore($path, $filename, $runtimeHash = NULL, $jar = NULL) {
+        if (file_exists($path . 'backups/' . $filename)) {
             if ($runtimeHash !== NULL) {  //stop server
-                //$this->serverCmd->stopServer($runtimeHash);
+                $this->serverCmd->stopServer($runtimeHash);
             }
-            //smazat world/
-            //rozbalit zálohu
-            //nastartovat
-
-            return FALSE;
+            //delete world/
+            $this->removeDir($path . 'world/');
+            //extract backup archive
+            try {
+                $archive = new PharData($path . 'backups/' . $filename);
+                $archive->extractTo($path . 'world/', NULL, TRUE);
+            } catch (UnexpectedValueException $e) {
+                echo $e->getTraceAsString();
+                return FALSE;
+            }
+            if ($runtimeHash !== NULL) {  //start server again 
+                $this->serverCmd->startServer($path, $jar, $runtimeHash);
+                return TRUE;
+            }
+            return TRUE;
         } else {//no such file
             return FALSE;
         }
@@ -112,6 +133,17 @@ class BackupModel extends Nette\Object {
         } else { //no such file
             return FALSE;
         }
+    }
+
+    /**
+     * remove all files in the dir
+     * @param string $path to folder to wipe
+     */
+    public function removeDir($path) {
+        $class_func = array(__CLASS__, __FUNCTION__);
+        return is_file($path) ?
+                @unlink($path) :
+                array_map($class_func, glob($path . '/*')) == @rmdir($path);
     }
 
 }
