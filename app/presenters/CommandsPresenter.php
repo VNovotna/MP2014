@@ -45,11 +45,7 @@ class CommandsPresenter extends SecuredPresenter {
                 $this->flashMessage(implode(" \n", $out), 'error');
             }
         }
-        if ($this->isAjax()) {
-            $this->invalidateControl();
-        } else {
-            $this->redirect('this');
-        }
+        $this->redirect('this');
     }
 
     public function handleStopServer() {

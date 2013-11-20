@@ -23,7 +23,7 @@ class ServerCommander extends \Nette\Object {
      * starts screen with name $runtimeHash and server runnig inside
      * @param string $jarPath absolute path to server folder
      * @param string $jarName name of server .jar
-     * @param string $runtimeHash default 'mcs', usefull with more than one server
+     * @param string $runtimeHash hash that indentifies server
      * @return array usually empty array if command was successfull
      * @throws \Nette\InvalidStateException
      */
@@ -35,6 +35,7 @@ class ServerCommander extends \Nette\Object {
             $exec = './../libs/start.sh ' . $jarPath . ' ' . $jarName . ' ' . $runtimeHash;
             exec($exec, $output);
             if ($this->isServerRunning($runtimeHash)) {
+                sleep(4);
                 return $output;
             } else {
                 return array('something somewhere went terribly wrong');
