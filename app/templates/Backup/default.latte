@@ -11,7 +11,7 @@
         <tr n:foreach="$backups as $file">
             <td>{$file}</td>
             <td><a n:href="download! $file">stáhnout</a></td>
-            <td><a n:href='restoreBackup! $file'>obnovit</a></td>
+            <td><a n:href='restoreBackup! $file' class="ajax">obnovit</a></td>
             <td><a n:href='deleteBackup! $file' class="ajax">smazat</a></td>
         </tr>
     </tbody>
