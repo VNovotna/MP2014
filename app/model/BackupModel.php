@@ -22,7 +22,7 @@ class BackupModel extends Nette\Object {
      */
     public function backup($path, $runtimeHash = NULL) {
         $date = new Nette\DateTime();
-        $filename = $date->format('Y-m-d_H:i');
+        $filename = $date->format('Y-m-d_H-i');
         if ($this->serverCmd->isServerRunning($runtimeHash)) {
             return $this->backupRunning($path, $runtimeHash, $filename);
         } else {
