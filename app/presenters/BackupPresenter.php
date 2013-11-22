@@ -36,17 +36,34 @@ class BackupPresenter extends SecuredPresenter {
      */
     protected function createComponentLoadBackup() {
         $form = new \Nette\Application\UI\Form();
-        $form->addUpload('upload', 'Zip archiv se zálohou:');
-        $form->addSubmit('send', 'Obnovit');
+        $form->addUpload('upload', 'Zip archiv se zálohou:')
+                ->addRule(\Nette\Application\UI\Form::MIME_TYPE, "Soubor musí být zip archiv", "application/zip");
+        $form->addSubmit('send', 'Nahrát');
         $form->onSuccess[] = $this->loadBackupSubmitted;
+        $form->onError[] = function($form) {
+            foreach ($form->errors as $er) {
+                $form->getPresenter()->flashMessage($er, 'error');
+            }
+            $form->cleanErrors();
+        };
         return $form;
     }
 
     /**
-     * @param \Nette\Application\UI\Form $from
+     * @param \Nette\Application\UI\Form $form
      */
-    public function loadBackupSubmitted($from) {
-        $this->flashMessage("Not implemented yet");
+    public function loadBackupSubmitted($form) {
+        $values = $form->getValues();
+        $archive = $values->upload;
+        if ($archive->isOK()) {
+            $archive->move($this->path . 'backups/' . $archive->getName());
+            $this->flashMessage('Archiv nahrán', 'success');
+        }
+        if ($this->isAjax()) {
+            $this->invalidateControl();
+        } else {
+            $this->redirect('this');
+        }
     }
 
     public function handleMakeBackup() {

@@ -3,20 +3,23 @@
 
 <h1 n:block=title>Záloha</h1>
 {snippet backupsList}
-<table>
-    <tbody>
-        <tr>
-            <td><a n:href="makeBackup!" class="ajax">Vytvořit novou zálohu</a></td>
-        </tr>
-        <tr n:foreach="$backups as $file">
-            <td>{$file}</td>
-            <td><a n:href="download! $file">stáhnout</a></td>
-            <td><a n:href='restoreBackup! $file' class="ajax">obnovit</a></td>
-            <td><a n:href='deleteBackup! $file' class="ajax">smazat</a></td>
-        </tr>
-    </tbody>
-</table>
-<hr>            
-nebo můžete nahrát zálohu ručně:
-{control loadBackup}            
+    <table>
+        <tbody>
+            <tr>
+                <td><a n:href="makeBackup!" class="ajax">Vytvořit novou zálohu</a></td>
+            </tr>
+            <tr n:foreach="$backups as $file">
+                <td>{$file}</td>
+                <td><a n:href="download! $file">stáhnout</a></td>
+                <td><a n:href='restoreBackup! $file' class="ajax">obnovit</a></td>
+                <td><a n:href='deleteBackup! $file' class="ajax">smazat</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <hr>            
+    {form loadBackup}
+         {control $form errors}
+        nebo můžete nahrát zálohu ručně: {input upload}{input send}<br>
+        <span class="icon warning">maximální velikost je však omezena na {! ini_get("upload_max_filesize"); }B.</span>
+        {/form}
 {/snippet}
