@@ -2,7 +2,6 @@
 {block content}
 
 <h1 n:block=title>Oprávnění hráčů</h1>
-{dump}
 <table>
     <thead>
         <tr>
@@ -14,8 +13,27 @@
         <tr n:foreach="$lines as $line">
             <td>{$line->user->username}</td>
             <td>{$line->role}</td>
-            <td class="icon edit"><a n:href="edit">upravit</a></td>
-            <td class="icon delete"><a n:href="delete!">odstranit</a></td>
+            <td><a n:if="$line->role!='owner'" class="icon delete" n:href="delete!">odstranit</a></td>
         </tr>
     </tbody>
 </table>
+<table>
+    <thead>
+        <tr>
+            <th>Přidat operátora</th>
+        </tr>
+    </thead>
+    <tbody>
+        {form newPermForm}
+            <tr>
+                <td>
+                    jméno: {input newOp}
+                    {input send}
+                </td>
+            </tr>
+        {/form}
+    </tbody>
+</table>
+
+<span class="icon info">Je možné přidávat pouze operátory.</span><br>
+<span class="icon info">Změny provedené zde se automaticky projeví i ve hře.</span>

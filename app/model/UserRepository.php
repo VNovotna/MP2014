@@ -75,6 +75,7 @@ class UserRepository extends Repository {
     public function findAllInRole($role) {
         return $this->findAll()->where("role LIKE $role");
     }
+
     /**
      * return all permissions lines from selected server
      * @param int $serverId 
@@ -82,6 +83,14 @@ class UserRepository extends Repository {
      */
     public function findAllFromServer($serverId) {
         return $this->getTable('permission')->where(array('server_id' => $serverId));
+    }
+
+    public function addOpToServer($serverId, $userId) {
+        throw new \Nette\NotImplementedException;
+    }
+
+    public function removeOpFromServer($serverId, $userId) {
+        throw new \Nette\NotImplementedException;
     }
 
 }
