@@ -5,7 +5,7 @@ namespace DB;
 use Nette;
 
 /**
- * 
+ * Handles everthing around users and theirs permissions
  * @author viky
  */
 class UserRepository extends Repository {
@@ -74,6 +74,14 @@ class UserRepository extends Repository {
      */
     public function findAllInRole($role) {
         return $this->findAll()->where("role LIKE $role");
+    }
+    /**
+     * return all permissions lines from selected server
+     * @param int $serverId 
+     * @return Nette\Database\Table\Selection
+     */
+    public function findAllFromServer($serverId) {
+        return $this->getTable('permission')->where(array('server_id' => $serverId));
     }
 
 }

@@ -1,0 +1,21 @@
+
+{block content}
+
+<h1 n:block=title>Oprávnění hráčů</h1>
+{dump}
+<table>
+    <thead>
+        <tr>
+            <th>login</th>
+            <th>oprávnění</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr n:foreach="$lines as $line">
+            <td>{$line->user->username}</td>
+            <td>{$line->role}</td>
+            <td class="icon edit"><a n:href="edit">upravit</a></td>
+            <td class="icon delete"><a n:href="delete!">odstranit</a></td>
+        </tr>
+    </tbody>
+</table>
