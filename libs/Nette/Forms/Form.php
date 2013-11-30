@@ -36,7 +36,10 @@ class Form extends Container
 	/** validator */
 	const EQUAL = ':equal',
 		IS_IN = ':equal',
+		NOT_EQUAL = ':notEqual',
 		FILLED = ':filled',
+		BLANK = ':blank',
+		REQUIRED = self::FILLED,
 		VALID = ':valid';
 
 	// CSRF protection
@@ -249,7 +252,7 @@ class Form extends Container
 
 	/**
 	 * Removes fieldset group from form.
-	 * @param  string|FormGroup
+	 * @param  string|ControlGroup
 	 * @return void
 	 */
 	public function removeGroup($name)
@@ -275,7 +278,7 @@ class Form extends Container
 
 	/**
 	 * Returns all defined groups.
-	 * @return FormGroup[]
+	 * @return ControlGroup[]
 	 */
 	public function getGroups()
 	{
