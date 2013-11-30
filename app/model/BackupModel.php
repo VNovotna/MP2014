@@ -76,10 +76,14 @@ class BackupModel extends Nette\Object {
     public function getBackups($path) {
         $files = array();
         $finder = Finder::findFiles('*.zip')->in($path . 'backups/');
-        foreach ($finder->orderByName() as $file) {
-            $files[] = $file->getBasename();
+        try {
+            foreach ($finder->orderByName() as $file) {
+                $files[] = $file->getBasename();
+            }
+            return array_reverse($files);
+        } catch (UnexpectedValueException $e) {
+            return array();
         }
-        return array_reverse($files);
     }
 
     /**
