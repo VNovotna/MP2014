@@ -5,6 +5,6 @@
  *
  * @author viky
  */
-class UsersPresenter extends SecuredPresenter{
+class UserPresenter extends SecuredPresenter{
     //put your code here
 }

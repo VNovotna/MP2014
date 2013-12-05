@@ -55,7 +55,8 @@
                     {/if}
                 </div>
                 <div n:if="$user->isLoggedIn()" class="icon user">
-                    {$user->getIdentity()->username}| <a n:href="logOut!">Odhlásit</a>
+                    <a n:href="User:">{$user->getIdentity()->username}</a>
+                    | <a n:href="logOut!">Odhlásit</a>
                 </div>
             </div>
         </div>
@@ -77,7 +78,7 @@
                         <h2>Správce</h2>
                         <ul>
                             <li><a n:href="SystemSettings:">Nastavení</a></li>
-                            <li><a n:href="Users:">Uživatelé</a></li>
+                            <li><a n:href="User:admin">Uživatelé</a></li>
                         </ul>
                     {/if}
                 </div>
