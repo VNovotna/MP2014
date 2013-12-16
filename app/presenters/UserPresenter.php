@@ -27,7 +27,7 @@ class UserPresenter extends SecuredPresenter {
         $form->addText('mcname', 'Minecraft nick: ')
                 ->setDefaultValue($mcname);
         $form->addSubmit('submit', 'Odeslat');
-        $form->onSuccess[] = $this->mcNickSubmitted;        
+        $form->onSuccess[] = $this->mcNickSubmitted;
         return $form;
     }
 
@@ -35,7 +35,13 @@ class UserPresenter extends SecuredPresenter {
      * @param Form $form
      */
     public function mcNickSubmitted($form) {
-        $this->flashMessage("Not implemented");
+        $this->userRepo->setMcNick($this->user->id, $form->getValues()->mcname);
+        $this->flashMessage("Minecraft nick změněn.", "success");
+        if ($this->isAjax()) {
+            $this->invalidateControl();
+        } else {
+            $this->redirect('this');
+        }
     }
 
     /**
@@ -45,11 +51,13 @@ class UserPresenter extends SecuredPresenter {
         $form = new Form();
         $form->addGroup('Heslo');
         $form->addPassword('oldpass', 'Staré heslo:');
-        $form->addPassword('newpass', 'Nové heslo:');
-        $form->addPassword('passcheck', 'Nové heslo znovu:');
+        $form->addPassword('newpass', 'Nové heslo:')
+                ->addRule(Form::FILLED, 'Zadejte prosím heslo.')
+                ->addRule(Form::MIN_LENGTH, 'Heslo musí mít alespoň %d znaků.', 6);
+        $form->addPassword('passcheck', 'Nové heslo znovu:')
+                ->addRule(Form::EQUAL, 'Hesla se neshodují.', $form['newpass']);
         $form->addSubmit('submit', 'Odeslat');
         $form->onSuccess[] = $this->userCredentialsSubmitted;
-        //fill in the data
         return $form;
     }
 
@@ -58,6 +66,11 @@ class UserPresenter extends SecuredPresenter {
      */
     public function userCredentialsSubmitted($form) {
         $this->flashMessage("Not implemented");
+        if ($this->isAjax()) {
+            $this->invalidateControl();
+        } else {
+            $this->redirect('this');
+        }
     }
 
 }

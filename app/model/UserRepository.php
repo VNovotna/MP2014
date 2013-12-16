@@ -22,7 +22,7 @@ class UserRepository extends Repository {
      * returns id of the new user or throws PDOExeption
      * @param string $username
      * @param string $password
-     * @return int
+     * @return int user id
      * @throws PDOException
      */
     public function addUser($username, $password) {
@@ -39,7 +39,7 @@ class UserRepository extends Repository {
     }
 
     /**
-     * @param int $id
+     * @param int $id user id
      * @throws \Nette\InvalidArgumentException
      */
     public function deleteUser($id) {
@@ -51,7 +51,7 @@ class UserRepository extends Repository {
     }
 
     /**
-     * @param int $id
+     * @param int $id user id
      * @param string $role
      */
     public function setRole($id, $role) {
@@ -59,13 +59,22 @@ class UserRepository extends Repository {
     }
 
     /**
-     * @param int $id
+     * @param int $id user id
      * @param string $password
      */
     public function setPassword($id, $password) {
         $this->getTable()->where(array('id' => $id))->update(array(
             'password' => Authenticator::calculateHash($password)
         ));
+    }
+/**
+ * 
+ * @param int $id user id
+ * @param string $mcname new MC nick
+ */
+    public function setMcNick($id, $mcname) {
+        $this->getTable()->where(array('id' => $id))
+                ->update(array('mcname' => $mcname));
     }
 
     /**

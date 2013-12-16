@@ -21,8 +21,8 @@ abstract class Repository extends Nette\Object {
      * @param string $tableName
      * @return Nette\Database\Table\Selection
      */
-    protected function getTable($tableName = '') {
-        if ($tableName == '') {
+    protected function getTable($tableName = NULL) {
+        if ($tableName == NULL) {
             // table name from class name
             preg_match('#(\w+)Repository$#', get_class($this), $m);
             $tableName = lcfirst($m[1]);
