@@ -107,7 +107,7 @@ class Parameter extends \ReflectionParameter
 
 	public function __toString()
 	{
-		return 'Parameter $' . parent::getName() . ' in ' . $this->getDeclaringFunction();
+		return '$' . parent::getName() . ' in ' . $this->getDeclaringFunction();
 	}
 
 
@@ -115,10 +115,11 @@ class Parameter extends \ReflectionParameter
 
 
 	/**
-	 * @return ClassType
+	 * @deprecated
 	 */
 	public static function getReflection()
 	{
+		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		return new ClassType(get_called_class());
 	}
 
@@ -137,7 +138,7 @@ class Parameter extends \ReflectionParameter
 
 	public function __set($name, $value)
 	{
-		return ObjectMixin::set($this, $name, $value);
+		ObjectMixin::set($this, $name, $value);
 	}
 
 

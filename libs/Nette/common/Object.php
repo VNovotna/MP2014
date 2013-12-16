@@ -105,12 +105,13 @@ abstract class Object
 			$class = get_called_class();
 		} else {
 			list($class, $name) = explode('::', $name);
+			$rc = new \ReflectionClass($class);
+			$class = $rc->getName();
 		}
-		$class = new Reflection\ClassType($class);
 		if ($callback === NULL) {
-			return $class->getExtensionMethod($name);
+			return ObjectMixin::getExtensionMethod($class, $name);
 		} else {
-			$class->setExtensionMethod($name, $callback);
+			ObjectMixin::setExtensionMethod($class, $name, $callback);
 		}
 	}
 
@@ -136,7 +137,7 @@ abstract class Object
 	 */
 	public function __set($name, $value)
 	{
-		return ObjectMixin::set($this, $name, $value);
+		ObjectMixin::set($this, $name, $value);
 	}
 
 

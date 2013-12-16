@@ -19,7 +19,6 @@ use Nette;
  *
  * @author     Jakub Vrana
  * @author     Jan Skrasek
- * @property-write Nette\Database\Connection $connection
  */
 class ConventionalReflection extends Nette\Object implements Nette\Database\IReflection
 {
@@ -71,10 +70,6 @@ class ConventionalReflection extends Nette\Object implements Nette\Database\IRef
 			sprintf($this->foreign, $key, $table),
 		);
 	}
-
-
-	public function setConnection(Nette\Database\Connection $connection)
-	{}
 
 
 	protected function getColumnFromTable($name)

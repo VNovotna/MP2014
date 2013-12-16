@@ -21,6 +21,9 @@ use Nette;
  */
 class Helpers
 {
+	/** @var int maximum SQL length */
+	static public $maxLength = 100;
+
 	/** @var array */
 	public static $typePatterns = array(
 		'^_' => IReflection::FIELD_TEXT, // PostgreSQL arrays
@@ -39,15 +42,15 @@ class Helpers
 	 * Displays complete result set as HTML table for debug purposes.
 	 * @return void
 	 */
-	public static function dumpResult(Statement $statement)
+	public static function dumpResult(ResultSet $result)
 	{
-		echo "\n<table class=\"dump\">\n<caption>" . htmlSpecialChars($statement->queryString) . "</caption>\n";
-		if (!$statement->columnCount()) {
-			echo "\t<tr>\n\t\t<th>Affected rows:</th>\n\t\t<td>", $statement->rowCount(), "</td>\n\t</tr>\n</table>\n";
+		echo "\n<table class=\"dump\">\n<caption>" . htmlSpecialChars($result->getQueryString()) . "</caption>\n";
+		if (!$result->getColumnCount()) {
+			echo "\t<tr>\n\t\t<th>Affected rows:</th>\n\t\t<td>", $result->getRowCount(), "</td>\n\t</tr>\n</table>\n";
 			return;
 		}
 		$i = 0;
-		foreach ($statement as $row) {
+		foreach ($result as $row) {
 			if ($i === 0) {
 				echo "<thead>\n\t<tr>\n\t\t<th>#row</th>\n";
 				foreach ($row as $col => $foo) {
@@ -77,7 +80,7 @@ class Helpers
 	 * @param  string
 	 * @return string
 	 */
-	public static function dumpSql($sql)
+	public static function dumpSql($sql, array $params = NULL)
 	{
 		static $keywords1 = 'SELECT|(?:ON\s+DUPLICATE\s+KEY)?UPDATE|INSERT(?:\s+INTO)?|REPLACE(?:\s+INTO)?|DELETE|CALL|UNION|FROM|WHERE|HAVING|GROUP\s+BY|ORDER\s+BY|LIMIT|OFFSET|SET|VALUES|LEFT\s+JOIN|INNER\s+JOIN|TRUNCATE';
 		static $keywords2 = 'ALL|DISTINCT|DISTINCTROW|IGNORE|AS|USING|ON|AND|OR|IN|IS|NOT|NULL|[RI]?LIKE|REGEXP|TRUE|FALSE';
@@ -109,12 +112,55 @@ class Helpers
 			}
 		}, $sql);
 
+		// parameters
+		$sql = preg_replace_callback('#\?#', function() use ($params) {
+			static $i = 0;
+			if (!isset($params[$i])) {
+				return '?';
+			}
+			$param = $params[$i++];
+			if (is_string($param) && (preg_match('#[^\x09\x0A\x0D\x20-\x7E\xA0-\x{10FFFF}]#u', $param) || preg_last_error())) {
+				return '<i title="Length ' . strlen($param) . ' bytes">&lt;binary&gt;</i>';
+
+			} elseif (is_string($param)) {
+				return '<span title="Length ' . Nette\Utils\Strings::length($param) . ' characters">\'' . htmlspecialchars(Nette\Utils\Strings::truncate($param, Helpers::$maxLength)) . "'</span>";
+
+			} elseif (is_resource($param)) {
+				$type = get_resource_type($param);
+				if ($type === 'stream') {
+					$info = stream_get_meta_data($param);
+				}
+				return '<i' . (isset($info['uri']) ? ' title="' . htmlspecialchars($info['uri']) . '"' : NULL) . '>&lt;' . htmlSpecialChars($type) . " resource&gt;</i> ";
+
+			} else {
+				return htmlspecialchars($param);
+			}
+		}, $sql);
+
 		return '<pre class="dump">' . trim($sql) . "</pre>\n";
 	}
 
 
 	/**
-	 * Heuristic type detection.
+	 * Common column type detection.
+	 * @return array
+	 */
+	public static function detectTypes(\PDOStatement $statement)
+	{
+		$types = array();
+		$count = $statement->columnCount(); // driver must be meta-aware, see PHP bugs #53782, #54695
+		for ($col = 0; $col < $count; $col++) {
+			$meta = $statement->getColumnMeta($col);
+			if (isset($meta['native_type'])) {
+				$types[$meta['name']] = self::detectType($meta['native_type']);
+			}
+		}
+		return $types;
+	}
+
+
+	/**
+	 * Heuristic column type detection.
 	 * @param  string
 	 * @return string
 	 * @internal
@@ -164,6 +210,53 @@ class Helpers
 		}
 		fclose($handle);
 		return $count;
+	}
+
+
+	public static function createDebugPanel($connection, $explain = TRUE, $name = NULL)
+	{
+		$panel = new Nette\Database\Diagnostics\ConnectionPanel($connection);
+		$panel->explain = $explain;
+		$panel->name = $name;
+		Nette\Diagnostics\Debugger::getBar()->addPanel($panel);
+		return $panel;
+	}
+
+
+	/**
+	 * Reformat source to key -> value pairs.
+	 * @return array
+	 */
+	public static function toPairs(array $rows, $key = NULL, $value = NULL)
+	{
+		if (!$rows) {
+			return array();
+		}
+
+		$keys = array_keys((array) reset($rows));
+		if (!count($keys)) {
+			throw new \LogicException('Result set does not contain any column.');
+
+		} elseif ($key === NULL && $value === NULL) {
+			if (count($keys) === 1) {
+				list($value) = $keys;
+			} else {
+				list($key, $value) = $keys;
+			}
+		}
+
+		$return = array();
+		if ($key === NULL) {
+			foreach ($rows as $row) {
+				$return[] = ($value === NULL ? $row : $row[$value]);
+			}
+		} else {
+			foreach ($rows as $row) {
+				$return[is_object($row[$key]) ? (string) $row[$key] : $row[$key]] = ($value === NULL ? $row : $row[$value]);
+			}
+		}
+
+		return $return;
 	}
 
 }

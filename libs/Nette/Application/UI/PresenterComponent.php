@@ -131,7 +131,7 @@ abstract class PresenterComponent extends Nette\ComponentModel\Container impleme
 		$reflection = $this->getReflection();
 		foreach ($reflection->getPersistentParams() as $name => $meta) {
 			if (isset($params[$name])) { // NULLs are ignored
-				$type = gettype($meta['def'] === NULL ? $params[$name] : $meta['def']); // compatible with 2.0.x
+				$type = gettype($meta['def']);
 				if (!$reflection->convertType($params[$name], $type)) {
 					throw new Nette\Application\BadRequestException("Invalid value for persistent parameter '$name' in '{$this->getName()}', expected " . ($type === 'NULL' ? 'scalar' : $type) . ".");
 				}
@@ -168,7 +168,7 @@ abstract class PresenterComponent extends Nette\ComponentModel\Container impleme
 				continue; // ignored parameter
 			}
 
-			$type = gettype($meta['def'] === NULL ? $params[$name] : $meta['def']); // compatible with 2.0.x
+			$type = gettype($meta['def']);
 			if (!PresenterComponentReflection::convertType($params[$name], $type)) {
 				throw new InvalidLinkException("Invalid value for persistent parameter '$name' in '{$this->getName()}', expected " . ($type === 'NULL' ? 'scalar' : $type) . ".");
 			}
@@ -182,7 +182,6 @@ abstract class PresenterComponent extends Nette\ComponentModel\Container impleme
 
 	/**
 	 * Returns component param.
-	 * If no key is passed, returns the entire array.
 	 * @param  string key
 	 * @param  mixed  default value
 	 * @return mixed
@@ -190,6 +189,7 @@ abstract class PresenterComponent extends Nette\ComponentModel\Container impleme
 	final public function getParameter($name = NULL, $default = NULL)
 	{
 		if (func_num_args() === 0) {
+			trigger_error('Calling ' . __METHOD__ . ' with no arguments to get all parameters is deprecated, use getParameters() instead.', E_USER_DEPRECATED);
 			return $this->params;
 
 		} elseif (isset($this->params[$name])) {
@@ -198,6 +198,16 @@ abstract class PresenterComponent extends Nette\ComponentModel\Container impleme
 		} else {
 			return $default;
 		}
+	}
+
+
+	/**
+	 * Returns component parameters.
+	 * @return array
+	 */
+	final public function getParameters()
+	{
+		return $this->params;
 	}
 
 
@@ -216,16 +226,8 @@ abstract class PresenterComponent extends Nette\ComponentModel\Container impleme
 	/** @deprecated */
 	function getParam($name = NULL, $default = NULL)
 	{
-		//trigger_error(__METHOD__ . '() is deprecated; use getParameter() instead.', E_USER_WARNING);
+		//trigger_error(__METHOD__ . '() is deprecated; use getParameter() instead.', E_USER_DEPRECATED);
 		return func_num_args() ? $this->getParameter($name, $default) : $this->getParameter();
-	}
-
-
-	/** @deprecated */
-	function getParamId($name)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use getParameterId() instead.', E_USER_WARNING);
-		return $this->getParameterId($name);
 	}
 
 
@@ -270,7 +272,7 @@ abstract class PresenterComponent extends Nette\ComponentModel\Container impleme
 	 * @param  string
 	 * @return string
 	 */
-	public function formatSignalMethod($signal)
+	public static function formatSignalMethod($signal)
 	{
 		return $signal == NULL ? NULL : 'handle' . $signal; // intentionally ==
 	}

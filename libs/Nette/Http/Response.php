@@ -44,6 +44,17 @@ final class Response extends Nette\Object implements IResponse
 	private $code = self::S200_OK;
 
 
+	public function __construct()
+	{
+		if (PHP_VERSION_ID >= 50400) {
+			if (is_int(http_response_code())) {
+				$this->code = http_response_code();
+			}
+			header_register_callback($this->removeDuplicateCookies);
+		}
+	}
+
+
 	/**
 	 * Sets HTTP response code.
 	 * @param  int
@@ -145,16 +156,9 @@ final class Response extends Nette\Object implements IResponse
 	 */
 	public function redirect($url, $code = self::S302_FOUND)
 	{
-		if (isset($_SERVER['SERVER_SOFTWARE']) && preg_match('#^Microsoft-IIS/[1-5]#', $_SERVER['SERVER_SOFTWARE'])
-			&& $this->getHeader('Set-Cookie') !== NULL
-		) {
-			$this->setHeader('Refresh', "0;url=$url");
-			return;
-		}
-
 		$this->setCode($code);
 		$this->setHeader('Location', $url);
-		echo "<h1>Redirect</h1>\n\n<p><a href=\"" . htmlSpecialChars($url) . "\">Please click here to continue</a>.</p>";
+		echo "<h1>Redirect</h1>\n\n<p><a href=\"" . htmlSpecialChars($url, ENT_IGNORE | ENT_QUOTES) . "\">Please click here to continue</a>.</p>";
 	}
 
 
@@ -265,6 +269,10 @@ final class Response extends Nette\Object implements IResponse
 	 */
 	public function setCookie($name, $value, $time, $path = NULL, $domain = NULL, $secure = NULL, $httpOnly = NULL)
 	{
+		if (!headers_sent() && ob_get_level() && ob_get_length()) {
+			trigger_error("Possible problem: you are sending a cookie while already having some data in output buffer.  This may not work if the outputted data grows. Try starting the session earlier.", E_USER_NOTICE);
+		}
+
 		if (headers_sent($file, $line)) {
 			throw new Nette\InvalidStateException("Cannot set cookie after HTTP headers have been sent" . ($file ? " (output started at $file:$line)." : "."));
 		}
@@ -298,11 +306,7 @@ final class Response extends Nette\Object implements IResponse
 		foreach (headers_list() as $header) {
 			if (preg_match('#^Set-Cookie: .+?=#', $header, $m)) {
 				$flatten[$m[0]] = $header;
-				if (PHP_VERSION_ID < 50300) { // multiple deleting due PHP bug #61605
-					header('Set-Cookie:');
-				} else {
-					header_remove('Set-Cookie');
-				}
+				header_remove('Set-Cookie');
 			}
 		}
 		foreach (array_values($flatten) as $key => $header) {

@@ -21,9 +21,11 @@ use Nette;
  */
 interface ISupplementalDriver
 {
-	const SUPPORT_COLUMNS_META = 'meta',
-		SUPPORT_SEQUENCE = 'sequence',
-		SUPPORT_SELECT_UNGROUPED_COLUMNS = 'ungrouped_cols';
+	const SUPPORT_SEQUENCE = 'sequence',
+		SUPPORT_SELECT_UNGROUPED_COLUMNS = 'ungrouped_cols',
+		SUPPORT_MULTI_INSERT_AS_SELECT = 'insert_as_select',
+		SUPPORT_MULTI_COLUMN_AS_OR_COND = 'multi_column_as_or',
+		SUPPORT_SUBSELECT = 'subselect';
 
 	/**
 	 * Delimites identifier for use in a SQL statement.
@@ -33,11 +35,17 @@ interface ISupplementalDriver
 	function delimite($name);
 
 	/**
+	 * Formats boolean for use in a SQL statement.
+	 * @param  bool
+	 * @return mixed
+	 */
+	function formatBool($value);
+
+	/**
 	 * Formats date-time for use in a SQL statement.
-	 * @param  \DateTime
 	 * @return string
 	 */
-	function formatDateTime(\DateTime $value);
+	function formatDateTime(/*\DateTimeInterface*/ $value);
 
 	/**
 	 * Encodes string for use in a LIKE statement.
@@ -59,10 +67,9 @@ interface ISupplementalDriver
 	/**
 	 * Normalizes result row.
 	 * @param  array
-	 * @param  Statement
 	 * @return array
 	 */
-	function normalizeRow($row, $statement);
+	function normalizeRow($row);
 
 
 	/********************* reflection ****************d*g**/
@@ -94,6 +101,12 @@ interface ISupplementalDriver
 	 * @return array
 	 */
 	function getForeignKeys($table);
+
+	/**
+	 * Returns associative array of detected types (IReflection::FIELD_*) in result set.
+	 * @return array
+	 */
+	function getColumnTypes(\PDOStatement $statement);
 
 	/**
 	 * Cheks if driver supports specific property

@@ -13,7 +13,7 @@ namespace Nette\DI\Diagnostics;
 
 use Nette,
 	Nette\DI\Container,
-	Nette\Diagnostics\Helpers;
+	Nette\Diagnostics\Dumper; // used in templates
 
 
 /**
@@ -29,9 +29,6 @@ class ContainerPanel extends Nette\Object implements Nette\Diagnostics\IBarPanel
 
 	public function __construct(Container $container)
 	{
-		if (PHP_VERSION_ID < 50300) {
-			throw new Nette\NotSupportedException(__CLASS__ . ' requires PHP 5.3 or newer.');
-		}
 		$this->container = $container;
 	}
 
@@ -54,16 +51,13 @@ class ContainerPanel extends Nette\Object implements Nette\Diagnostics\IBarPanel
 	 */
 	public function getPanel()
 	{
-		$services = $this->getContainerProperty('factories');
-		$factories = array();
+		$services = $factories = array();
 		foreach (Nette\Reflection\ClassType::from($this->container)->getMethods() as $method) {
 			if (preg_match('#^create(Service)?_*(.+)\z#', $method->getName(), $m)) {
-				$name = str_replace('__', '.', strtolower(substr($m[2], 0, 1)) . substr($m[2], 1));
 				if ($m[1]) {
-					$services[$name] = $method->getAnnotation('return');
+					$services[str_replace('__', '.', strtolower(substr($m[2], 0, 1)) . substr($m[2], 1))] = $method->getAnnotation('return');
 				} elseif ($method->isPublic()) {
-					$a = strrpos(".$name", '.');
-					$factories[substr($name, 0, $a) . 'create' . ucfirst(substr($name, $a))] = $method->getAnnotation('return');
+					$factories['create' . $m[2]] = $method->getAnnotation('return');
 				}
 			}
 		}
@@ -71,6 +65,15 @@ class ContainerPanel extends Nette\Object implements Nette\Diagnostics\IBarPanel
 		ksort($factories);
 		$container = $this->container;
 		$registry = $this->getContainerProperty('registry');
+		$tags = array();
+		$meta = $this->getContainerProperty('meta');
+		if (isset($meta[Container::TAGS])) {
+			foreach ($meta[Container::TAGS] as $tag => $tmp) {
+				foreach ($tmp as $service => $val) {
+					$tags[$service][$tag] = $val;
+				}
+			}
+		}
 
 		ob_start();
 		require __DIR__ . '/templates/ContainerPanel.panel.phtml';

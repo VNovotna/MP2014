@@ -25,7 +25,7 @@ class Extension extends \ReflectionExtension
 
 	public function __toString()
 	{
-		return 'Extension ' . $this->getName();
+		return $this->getName();
 	}
 
 
@@ -55,10 +55,11 @@ class Extension extends \ReflectionExtension
 
 
 	/**
-	 * @return ClassType
+	 * @deprecated
 	 */
 	public static function getReflection()
 	{
+		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		return new ClassType(get_called_class());
 	}
 
@@ -77,7 +78,7 @@ class Extension extends \ReflectionExtension
 
 	public function __set($name, $value)
 	{
-		return ObjectMixin::set($this, $name, $value);
+		ObjectMixin::set($this, $name, $value);
 	}
 
 

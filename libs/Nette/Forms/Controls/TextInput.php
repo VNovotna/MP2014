@@ -25,15 +25,23 @@ class TextInput extends TextBase
 
 	/**
 	 * @param  string  label
-	 * @param  int  width of the control
 	 * @param  int  maximum number of characters the user may enter
 	 */
-	public function __construct($label = NULL, $cols = NULL, $maxLength = NULL)
+	public function __construct($label = NULL, $maxLength = NULL)
 	{
 		parent::__construct($label);
 		$this->control->type = 'text';
-		$this->control->size = $cols;
 		$this->control->maxlength = $maxLength;
+	}
+
+
+	/**
+	 * Loads HTTP data.
+	 * @return void
+	 */
+	public function loadHttpData()
+	{
+		$this->setValue($this->getHttpData(Nette\Forms\Form::DATA_LINE));
 	}
 
 
@@ -52,6 +60,7 @@ class TextInput extends TextBase
 	/** @deprecated */
 	public function setPasswordMode($mode = TRUE)
 	{
+		trigger_error(__METHOD__ . '() is deprecated; use setType("password") instead.', E_USER_DEPRECATED);
 		$this->control->type = $mode ? 'password' : 'text';
 		return $this;
 	}
@@ -63,21 +72,24 @@ class TextInput extends TextBase
 	 */
 	public function getControl()
 	{
-		$control = parent::getControl();
+		$input = parent::getControl();
+
 		foreach ($this->getRules() as $rule) {
 			if ($rule->isNegative || $rule->type !== Nette\Forms\Rule::VALIDATOR) {
 
-			} elseif ($rule->operation === Nette\Forms\Form::RANGE && $control->type !== 'text') {
-				list($control->min, $control->max) = $rule->arg;
+			} elseif ($rule->operation === Nette\Forms\Form::RANGE && $input->type !== 'text') {
+				$input->min = isset($rule->arg[0]) && is_scalar($rule->arg[0]) ? $rule->arg[0] : NULL;
+				$input->max = isset($rule->arg[1]) && is_scalar($rule->arg[1]) ? $rule->arg[1] : NULL;
 
-			} elseif ($rule->operation === Nette\Forms\Form::PATTERN) {
-				$control->pattern = $rule->arg;
+			} elseif ($rule->operation === Nette\Forms\Form::PATTERN && is_scalar($rule->arg)) {
+				$input->pattern = $rule->arg;
 			}
 		}
-		if ($control->type !== 'password') {
-			$control->value = $this->getValue() === '' ? $this->translate($this->emptyValue) : $this->value;
+
+		if ($input->type !== 'password') {
+			$input->value = $this->rawValue === '' ? $this->translate($this->emptyValue) : $this->rawValue;
 		}
-		return $control;
+		return $input;
 	}
 
 }

@@ -15,7 +15,7 @@ use Nette;
 
 
 /**
- * DateTime with serialization and timestamp support for PHP 5.2.
+ * DateTime.
  *
  * @author     David Grudl
  */
@@ -47,14 +47,15 @@ class DateTime extends \DateTime
 	 */
 	public static function from($time)
 	{
-		if ($time instanceof \DateTime) {
+		if ($time instanceof \DateTime || $time instanceof \DateTimeInterface) {
 			return new static($time->format('Y-m-d H:i:s'), $time->getTimezone());
 
 		} elseif (is_numeric($time)) {
 			if ($time <= self::YEAR) {
 				$time += time();
 			}
-			return new static(date('Y-m-d H:i:s', $time));
+			$tmp = new static('@' . $time);
+			return $tmp->setTimeZone(new \DateTimeZone(date_default_timezone_get()));
 
 		} else { // textual or NULL
 			return new static($time);
@@ -75,4 +76,18 @@ class DateTime extends \DateTime
 	}
 
 
+	public function setTimestamp($timestamp)
+	{
+		$zone = $this->getTimezone();
+		$this->__construct('@' . $timestamp);
+		return $this->setTimeZone($zone);
 	}
+
+
+	public function getTimestamp()
+	{
+		$ts = $this->format('U');
+		return is_float($tmp = $ts * 1) ? $ts : $tmp;
+	}
+
+}

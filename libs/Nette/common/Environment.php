@@ -66,7 +66,7 @@ final class Environment
 	public static function isProduction()
 	{
 		if (self::$productionMode === NULL) {
-			self::$productionMode = !Nette\Config\Configurator::detectDebugMode();
+			self::$productionMode = !Nette\Configurator::detectDebugMode();
 		}
 		return self::$productionMode;
 	}
@@ -262,7 +262,7 @@ final class Environment
 	 */
 	public static function getCache($namespace = '')
 	{
-		return new Caching\Cache(self::getService('cacheStorage'), $namespace);
+		return new Caching\Cache(self::getContext()->getByType('Nette\Caching\IStorage'), $namespace);
 	}
 
 
@@ -274,8 +274,8 @@ final class Environment
 	public static function getSession($namespace = NULL)
 	{
 		return $namespace === NULL
-			? self::getService('session')
-			: self::getService('session')->getSection($namespace);
+			? self::getContext()->getByType('Nette\Http\Session')
+			: self::getContext()->getByType('Nette\Http\Session')->getSection($namespace);
 	}
 
 
@@ -291,12 +291,14 @@ final class Environment
 	public static function loadConfig($file = NULL, $section = NULL)
 	{
 		if (self::$createdAt) {
-			throw new Nette\InvalidStateException('Nette\Config\Configurator has already been created automatically by Nette\Environment at ' . self::$createdAt);
+			throw new Nette\InvalidStateException('Nette\Configurator has already been created automatically by Nette\Environment at ' . self::$createdAt);
+		} elseif (!defined('TEMP_DIR')) {
+			throw new Nette\InvalidStateException('Nette\Environment requires constant TEMP_DIR with path to temporary directory.');
 		}
-		$configurator = new Nette\Config\Configurator;
+		$configurator = new Nette\Configurator;
 		$configurator
 			->setDebugMode(!self::isProduction())
-			->setTempDirectory(defined('TEMP_DIR') ? TEMP_DIR : '')
+			->setTempDirectory(TEMP_DIR)
 			->addParameters(array('container' => array('class' => 'EnvironmentContainer')));
 		if ($file) {
 			$configurator->addConfig($file, $section);
@@ -305,7 +307,7 @@ final class Environment
 
 		self::$createdAt = '?';
 		foreach (debug_backtrace(FALSE) as $row) {
-			if (isset($row['file']) && is_file($row['file']) && strpos($row['file'], NETTE_DIR . DIRECTORY_SEPARATOR) !== 0) {
+			if (isset($row['file']) && $row['file'] !== __FILE__ && is_file($row['file'])) {
 				self::$createdAt = "$row[file]:$row[line]";
 				break;
 			}

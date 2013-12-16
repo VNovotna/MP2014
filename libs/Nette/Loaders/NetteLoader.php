@@ -19,20 +19,29 @@ use Nette;
  *
  * @author     David Grudl
  */
-class NetteLoader extends AutoLoader
+class NetteLoader extends Nette\Object
 {
 	/** @var NetteLoader */
 	private static $instance;
 
 	/** @var array */
 	public $renamed = array(
+		'Nette\Config\Configurator' => 'Nette\Configurator',
+		'Nette\Config\CompilerExtension' => 'Nette\DI\CompilerExtension',
 		'Nette\Http\User' => 'Nette\Security\User',
 		'Nette\Templating\DefaultHelpers' => 'Nette\Templating\Helpers',
 		'Nette\Latte\ParseException' => 'Nette\Latte\CompileException',
+		'Nette\Utils\PhpGenerator\ClassType' => 'Nette\PhpGenerator\ClassType',
+		'Nette\Utils\PhpGenerator\Helpers' => 'Nette\PhpGenerator\Helpers',
+		'Nette\Utils\PhpGenerator\Method' => 'Nette\PhpGenerator\Method',
+		'Nette\Utils\PhpGenerator\Parameter' => 'Nette\PhpGenerator\Parameter',
+		'Nette\Utils\PhpGenerator\PhpLiteral' => 'Nette\PhpGenerator\PhpLiteral',
+		'Nette\Utils\PhpGenerator\Property' => 'Nette\PhpGenerator\Property',
 	);
 
 	/** @var array */
 	public $list = array(
+		'NetteModule\ErrorPresenter' => '/Application/ErrorPresenter',
 		'NetteModule\MicroPresenter' => '/Application/MicroPresenter',
 		'Nette\Application\AbortException' => '/Application/exceptions',
 		'Nette\Application\ApplicationException' => '/Application/exceptions',
@@ -43,6 +52,7 @@ class NetteLoader extends AutoLoader
 		'Nette\ArrayHash' => '/common/ArrayHash',
 		'Nette\ArrayList' => '/common/ArrayList',
 		'Nette\Callback' => '/common/Callback',
+		'Nette\Configurator' => '/common/Configurator',
 		'Nette\DI\MissingServiceException' => '/DI/exceptions',
 		'Nette\DI\ServiceCreationException' => '/DI/exceptions',
 		'Nette\Database\Reflection\AmbiguousReferenceKeyException' => '/Database/Reflection/exceptions',
@@ -94,6 +104,17 @@ class NetteLoader extends AutoLoader
 
 
 	/**
+	 * Register autoloader.
+	 * @param  bool  prepend autoloader?
+	 * @return void
+	 */
+	public function register($prepend = FALSE)
+	{
+		spl_autoload_register(array($this, 'tryLoad'), TRUE, (bool) $prepend);
+	}
+
+
+	/**
 	 * Handles autoloading of classes or interfaces.
 	 * @param  string
 	 * @return void
@@ -106,12 +127,10 @@ class NetteLoader extends AutoLoader
 			trigger_error("Class $type has been renamed to {$this->renamed[$type]}.", E_USER_WARNING);
 
 		} elseif (isset($this->list[$type])) {
-			Nette\Utils\LimitedScope::load(NETTE_DIR . $this->list[$type] . '.php', TRUE);
-			self::$count++;
+			require __DIR__ . '/../' . $this->list[$type] . '.php';
 
-		} elseif (substr($type, 0, 6) === 'Nette\\' && is_file($file = NETTE_DIR . strtr(substr($type, 5), '\\', '/') . '.php')) {
-			Nette\Utils\LimitedScope::load($file, TRUE);
-			self::$count++;
+		} elseif (substr($type, 0, 6) === 'Nette\\' && is_file($file = __DIR__ . '/../' . strtr(substr($type, 5), '\\', '/') . '.php')) {
+			require $file;
 		}
 	}
 

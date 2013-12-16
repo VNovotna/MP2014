@@ -58,7 +58,7 @@ final class Helpers
 	public static function loader($helper)
 	{
 		if (method_exists(__CLASS__, $helper)) {
-			return new Nette\Callback(__CLASS__, $helper);
+			return array(__CLASS__, $helper);
 		} elseif (isset(self::$helpers[$helper])) {
 			return self::$helpers[$helper];
 		}
@@ -144,6 +144,17 @@ final class Helpers
 
 
 	/**
+	 * Sanitizes string for use inside href attribute.
+	 * @param  string
+	 * @return string
+	 */
+	public static function safeUrl($s)
+	{
+		return preg_match('#^(https?://.+|ftp://.+|mailto:.+|[^:]+)\z#i', $s) ? $s : '';
+	}
+
+
+	/**
 	 * Replaces all repeated white spaces with a single space.
 	 * @param  string UTF-8 encoding or 8-bit
 	 * @return string
@@ -199,6 +210,21 @@ final class Helpers
 		return Strings::contains($format, '%')
 			? strftime($format, $time->format('U')) // formats according to locales
 			: $time->format($format); // formats using date()
+	}
+
+
+	/**
+	 * Date/time modification.
+	 * @param  string|int|DateTime
+	 * @param  string|int
+	 * @param  string
+	 * @return Nette\DateTime
+	 */
+	public static function modifyDate($time, $delta, $unit = NULL)
+	{
+		return $time == NULL // intentionally ==
+			? NULL
+			: Nette\DateTime::from($time)->modify($delta . $unit);
 	}
 
 
@@ -266,7 +292,7 @@ final class Helpers
 	 * @param  mixed
 	 * @return string
 	 */
-	public static function null($value)
+	public static function null()
 	{
 		return '';
 	}

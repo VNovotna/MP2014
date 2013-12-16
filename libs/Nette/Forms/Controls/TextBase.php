@@ -32,15 +32,8 @@ abstract class TextBase extends BaseControl
 	/** @var array */
 	protected $filters = array();
 
-
-	/**
-	 * @param  string  label
-	 */
-	public function __construct($label = NULL)
-	{
-		parent::__construct($label);
-		$this->addFilter($this->sanitize);
-	}
+	/** @var mixed unfiltered submitted value */
+	protected $rawValue = '';
 
 
 	/**
@@ -50,7 +43,12 @@ abstract class TextBase extends BaseControl
 	 */
 	public function setValue($value)
 	{
-		$this->value = is_array($value) ? '' : str_replace("\r\n", "\n", $value);
+		if ($value === NULL) {
+			$value = '';
+		} elseif (!is_scalar($value) && !method_exists($value, '__toString')) {
+			throw new Nette\InvalidArgumentException('Value must be scalar or NULL, ' . gettype($value) . ' given.');
+		}
+		$this->rawValue = $this->value = $value;
 		return $this;
 	}
 
@@ -62,8 +60,11 @@ abstract class TextBase extends BaseControl
 	public function getValue()
 	{
 		$value = $this->value;
+		if (!empty($this->control->maxlength)) {
+			$value = Nette\Utils\Strings::substring($value, 0, $this->control->maxlength);
+		}
 		foreach ($this->filters as $filter) {
-			$value = (string) $filter($value);
+			$value = (string) call_user_func($filter, $value);
 		}
 		return $value === $this->translate($this->emptyValue) ? '' : $value;
 	}
@@ -98,50 +99,27 @@ abstract class TextBase extends BaseControl
 	 */
 	public function addFilter($filter)
 	{
-		$this->filters[] = new Nette\Callback($filter);
+		$this->filters[] = Nette\Utils\Callback::check($filter);
 		return $this;
-	}
-
-
-	/**
-	 * Filter: removes unnecessary whitespace and shortens value to control's max length.
-	 * @return string
-	 */
-	public function sanitize($value)
-	{
-		if ($this->control->maxlength) {
-			$value = Nette\Utils\Strings::substring($value, 0, $this->control->maxlength);
-		}
-		if (strcasecmp($this->control->getName(), 'input') === 0) {
-			$value = Nette\Utils\Strings::trim(strtr($value, "\r\n", '  '));
-		}
-		return $value;
 	}
 
 
 	public function getControl()
 	{
-		$control = parent::getControl();
-		foreach ($this->getRules() as $rule) {
-			if ($rule->type === Nette\Forms\Rule::VALIDATOR && !$rule->isNegative
-				&& ($rule->operation === Form::LENGTH || $rule->operation === Form::MAX_LENGTH)
-			) {
-				$control->maxlength = is_array($rule->arg) ? $rule->arg[1] : $rule->arg;
-			}
-		}
+		$el = parent::getControl();
 		if ($this->emptyValue !== '') {
-			$control->data('nette-empty-value', $this->translate($this->emptyValue));
+			$el->attrs['data-nette-empty-value'] = $this->translate($this->emptyValue);
 		}
-		return $control;
+		if (isset($el->placeholder)) {
+			$el->placeholder = $this->translate($el->placeholder);
+		}
+		return $el;
 	}
 
 
 	public function addRule($operation, $message = NULL, $arg = NULL)
 	{
-		if ($operation === Form::FLOAT) {
-			$this->addFilter(array(__CLASS__, 'filterFloat'));
-
-		} elseif ($operation === Form::LENGTH || $operation === Form::MAX_LENGTH) {
+		if ($operation === Form::LENGTH || $operation === Form::MAX_LENGTH) {
 			$tmp = is_array($arg) ? $arg[1] : $arg;
 			$this->control->maxlength = is_scalar($tmp) ? $tmp : NULL;
 		}
@@ -149,43 +127,7 @@ abstract class TextBase extends BaseControl
 	}
 
 
-	/**
-	 * Min-length validator: has control's value minimal length?
-	 * @param  TextBase
-	 * @param  int  length
-	 * @return bool
-	 */
-	public static function validateMinLength(TextBase $control, $length)
-	{
-		return Strings::length($control->getValue()) >= $length;
-	}
-
-
-	/**
-	 * Max-length validator: is control's value length in limit?
-	 * @param  TextBase
-	 * @param  int  length
-	 * @return bool
-	 */
-	public static function validateMaxLength(TextBase $control, $length)
-	{
-		return Strings::length($control->getValue()) <= $length;
-	}
-
-
-	/**
-	 * Length validator: is control's value length in range?
-	 * @param  TextBase
-	 * @param  array  min and max length pair
-	 * @return bool
-	 */
-	public static function validateLength(TextBase $control, $range)
-	{
-		if (!is_array($range)) {
-			$range = array($range, $range);
-		}
-		return Validators::isInRange(Strings::length($control->getValue()), $range);
-	}
+	/********************* validators ****************d*g**/
 
 
 	/**
@@ -206,13 +148,32 @@ abstract class TextBase extends BaseControl
 	 */
 	public static function validateUrl(TextBase $control)
 	{
-		return Validators::isUrl($control->getValue()) || Validators::isUrl('http://' . $control->getValue());
+		if (Validators::isUrl($value = $control->getValue())) {
+			return TRUE;
+
+		} elseif (Validators::isUrl($value = "http://$value")) {
+			$control->setValue($value);
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+
+	/**
+	 * URL string cleanup.
+	 * @param  string
+	 * @return string
+	 */
+	public static function filterUrl($s)
+	{
+		return Validators::isUrl('http://' . $s) ? 'http://' . $s : $s;
 	}
 
 
 	/** @deprecated */
 	public static function validateRegexp(TextBase $control, $regexp)
 	{
+		trigger_error('Validator REGEXP is deprecated; use PATTERN instead (which is matched against the entire value and is case sensitive).', E_USER_DEPRECATED);
 		return (bool) Strings::match($control->getValue(), $regexp);
 	}
 
@@ -236,7 +197,13 @@ abstract class TextBase extends BaseControl
 	 */
 	public static function validateInteger(TextBase $control)
 	{
-		return Validators::isNumericInt($control->getValue());
+		if (Validators::isNumericInt($value = $control->getValue())) {
+			if (!is_float($tmp = $value * 1)) { // bigint leave as string
+				$control->setValue($tmp);
+			}
+			return TRUE;
+		}
+		return FALSE;
 	}
 
 
@@ -247,19 +214,12 @@ abstract class TextBase extends BaseControl
 	 */
 	public static function validateFloat(TextBase $control)
 	{
-		return Validators::isNumeric(static::filterFloat($control->getValue()));
-	}
-
-
-	/**
-	 * Rangle validator: is a control's value number in specified range?
-	 * @param  TextBase
-	 * @param  array  min and max value pair
-	 * @return bool
-	 */
-	public static function validateRange(TextBase $control, $range)
-	{
-		return Validators::isInRange($control->getValue(), $range);
+		$value = self::filterFloat($control->getValue());
+		if (Validators::isNumeric($value)) {
+			$control->setValue((float) $value);
+			return TRUE;
+		}
+		return FALSE;
 	}
 
 

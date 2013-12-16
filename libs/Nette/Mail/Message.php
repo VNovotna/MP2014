@@ -34,7 +34,7 @@ class Message extends MimePart
 		NORMAL = 3,
 		LOW = 5;
 
-	/** @var IMailer */
+	/** @deprecated */
 	public static $defaultMailer = 'Nette\Mail\SendmailMailer';
 
 	/** @var array */
@@ -54,9 +54,6 @@ class Message extends MimePart
 
 	/** @var mixed */
 	private $html;
-
-	/** @var string */
-	private $basePath;
 
 
 	public function __construct()
@@ -233,8 +230,41 @@ class Message extends MimePart
 	 */
 	public function setHtmlBody($html, $basePath = NULL)
 	{
+		if ($html instanceof Nette\Templating\ITemplate) {
+			$html->mail = $this;
+			if ($basePath === NULL && $html instanceof Nette\Templating\IFileTemplate) {
+				$basePath = dirname($html->getFile());
+			}
+			$html = $html->__toString(TRUE);
+		}
+
+		if ($basePath !== FALSE) {
+			$cids = array();
+			$matches = Strings::matchAll(
+				$html,
+				'#(src\s*=\s*|background\s*=\s*|url\()(["\'])(?![a-z]+:|[/\\#])(.+?)\\2#i',
+				PREG_OFFSET_CAPTURE
+			);
+			foreach (array_reverse($matches) as $m) {
+				$file = rtrim($basePath, '/\\') . '/' . $m[3][0];
+				if (!isset($cids[$file])) {
+					$cids[$file] = substr($this->addEmbeddedFile($file)->getHeader("Content-ID"), 1, -1);
+				}
+				$html = substr_replace($html,
+					"{$m[1][0]}{$m[2][0]}cid:{$cids[$file]}{$m[2][0]}",
+					$m[0][1], strlen($m[0][0])
+				);
+			}
+		}
 		$this->html = $html;
-		$this->basePath = $basePath;
+
+		if ($this->getSubject() == NULL && $matches = Strings::match($html, '#<title>(.+?)</title>#is')) { // intentionally ==
+			$this->setSubject(html_entity_decode($matches[1], ENT_QUOTES, 'UTF-8'));
+		}
+
+		if ($this->getBody() == NULL && $html != NULL) { // intentionally ==
+			$this->setBody($this->buildText($html));
+		}
 		return $this;
 	}
 
@@ -303,32 +333,32 @@ class Message extends MimePart
 
 
 	/**
-	 * Sends email.
-	 * @return void
+	 * @deprecated
 	 */
 	public function send()
 	{
-		$this->getMailer()->send($this->build());
+		trigger_error(__METHOD__ . '() is deprecated; use IMailer::send() instead.', E_USER_DEPRECATED);
+		$this->getMailer()->send($this);
 	}
 
 
 	/**
-	 * Sets the mailer.
-	 * @return self
+	 * @deprecated
 	 */
 	public function setMailer(IMailer $mailer)
 	{
+		//trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		$this->mailer = $mailer;
 		return $this;
 	}
 
 
 	/**
-	 * Returns mailer.
-	 * @return IMailer
+	 * @deprecated
 	 */
 	public function getMailer()
 	{
+		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		if ($this->mailer === NULL) {
 			$this->mailer = is_object(static::$defaultMailer) ? static::$defaultMailer : new static::$defaultMailer;
 		}
@@ -342,11 +372,7 @@ class Message extends MimePart
 	 */
 	public function generateMessage()
 	{
-		if ($this->getHeader('Message-ID')) {
-			return parent::generateMessage();
-		} else {
-			return $this->build()->generateMessage();
-		}
+		return $this->build()->getEncodedMessage();
 	}
 
 
@@ -358,9 +384,6 @@ class Message extends MimePart
 	{
 		$mail = clone $this;
 		$mail->setHeader('Message-ID', $this->getRandomId());
-
-		$mail->buildHtml();
-		$mail->buildText();
 
 		$cursor = $mail;
 		if ($mail->attachments) {
@@ -378,7 +401,7 @@ class Message extends MimePart
 			if ($mail->inlines) {
 				$tmp = $alt->setContentType('multipart/related');
 				$alt = $alt->addPart();
-				foreach ($mail->inlines as $name => $value) {
+				foreach ($mail->inlines as $value) {
 					$tmp->addPart($value);
 				}
 			}
@@ -402,66 +425,20 @@ class Message extends MimePart
 
 
 	/**
-	 * Builds HTML content.
-	 * @return void
-	 */
-	protected function buildHtml()
-	{
-		if ($this->html instanceof Nette\Templating\ITemplate) {
-			$this->html->mail = $this;
-			if ($this->basePath === NULL && $this->html instanceof Nette\Templating\IFileTemplate) {
-				$this->basePath = dirname($this->html->getFile());
-			}
-			$this->html = $this->html->__toString(TRUE);
-		}
-
-		if ($this->basePath !== FALSE) {
-			$cids = array();
-			$matches = Strings::matchAll(
-				$this->html,
-				'#(src\s*=\s*|background\s*=\s*|url\()(["\'])(?![a-z]+:|[/\\#])(.+?)\\2#i',
-				PREG_OFFSET_CAPTURE
-			);
-			foreach (array_reverse($matches) as $m) {
-				$file = rtrim($this->basePath, '/\\') . '/' . $m[3][0];
-				if (!isset($cids[$file])) {
-					$cids[$file] = substr($this->addEmbeddedFile($file)->getHeader("Content-ID"), 1, -1);
-				}
-				$this->html = substr_replace($this->html,
-					"{$m[1][0]}{$m[2][0]}cid:{$cids[$file]}{$m[2][0]}",
-					$m[0][1], strlen($m[0][0])
-				);
-			}
-		}
-
-		if (!$this->getSubject() && $matches = Strings::match($this->html, '#<title>(.+?)</title>#is')) {
-			$this->setSubject(html_entity_decode($matches[1], ENT_QUOTES, 'UTF-8'));
-		}
-	}
-
-
-	/**
 	 * Builds text content.
-	 * @return void
+	 * @return string
 	 */
-	protected function buildText()
+	protected function buildText($html)
 	{
-		$text = $this->getBody();
-		if ($text instanceof Nette\Templating\ITemplate) {
-			$text->mail = $this;
-			$this->setBody($text->__toString(TRUE));
-
-		} elseif ($text == NULL && $this->html != NULL) { // intentionally ==
-			$text = Strings::replace($this->html, array(
-				'#<(style|script|head).*</\\1>#Uis' => '',
-				'#<t[dh][ >]#i' => " $0",
-				'#[\r\n]+#' => ' ',
-				'#<(/?p|/?h\d|li|br|/tr)[ >/]#i' => "\n$0",
-			));
-			$text = html_entity_decode(strip_tags($text), ENT_QUOTES, 'UTF-8');
-			$text = Strings::replace($text, '#[ \t]+#', ' ');
-			$this->setBody(trim($text));
-		}
+		$text = Strings::replace($html, array(
+			'#<(style|script|head).*</\\1>#Uis' => '',
+			'#<t[dh][ >]#i' => " $0",
+			'#[\r\n]+#' => ' ',
+			'#<(/?p|/?h\d|li|br|/tr)[ >/]#i' => "\n$0",
+		));
+		$text = html_entity_decode(strip_tags($text), ENT_QUOTES, 'UTF-8');
+		$text = Strings::replace($text, '#[ \t]+#', ' ');
+		return trim($text);
 	}
 
 

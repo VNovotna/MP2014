@@ -12,7 +12,6 @@
 namespace Nette\Database;
 
 use Nette,
-	Nette\ObjectMixin,
 	PDO;
 
 
@@ -21,14 +20,23 @@ use Nette,
  *
  * @author     David Grudl
  *
- * @property       IReflection          $databaseReflection
  * @property-read  ISupplementalDriver  $supplementalDriver
  * @property-read  string               $dsn
+ * @property-read  PDO                  $pdo
  */
-class Connection extends PDO
+class Connection extends Nette\Object
 {
-	/** @var string */
-	private $dsn;
+	/** @var array of function(Connection $connection); Occurs after connection is established */
+	public $onConnect;
+
+	/** @var array of function(Connection $connection, ResultSet|Exception $result); Occurs after query is executed */
+	public $onQuery;
+
+	/** @var array */
+	private $params;
+
+	/** @var array */
+	private $options;
 
 	/** @var ISupplementalDriver */
 	private $driver;
@@ -36,86 +44,110 @@ class Connection extends PDO
 	/** @var SqlPreprocessor */
 	private $preprocessor;
 
-	/** @var IReflection */
-	private $databaseReflection;
+	/** @var Context */
+	private $context;
 
-	/** @var Nette\Caching\Cache */
-	private $cache;
-
-	/** @var array of function(Statement $result, $params); Occurs after query is executed */
-	public $onQuery;
+	/** @var PDO */
+	private $pdo;
 
 
-	public function __construct($dsn, $username = NULL, $password = NULL, array $options = NULL, $driverClass = NULL)
+	public function __construct($dsn, $user = NULL, $password = NULL, array $options = NULL)
 	{
-		parent::__construct($this->dsn = $dsn, $username, $password, $options);
-		$this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('Nette\Database\Statement', array($this)));
+		if (func_num_args() > 4) { // compatibility
+			$options['driverClass'] = func_get_arg(4);
+		}
+		$this->params = array($dsn, $user, $password);
+		$this->options = (array) $options;
 
-		$driverClass = $driverClass ?: 'Nette\Database\Drivers\\' . ucfirst(str_replace('sql', 'Sql', $this->getAttribute(PDO::ATTR_DRIVER_NAME))) . 'Driver';
-		$this->driver = new $driverClass($this, (array) $options);
-		$this->preprocessor = new SqlPreprocessor($this);
+		if (empty($options['lazy'])) {
+			$this->connect();
+		}
 	}
 
 
+	public function connect()
+	{
+		if ($this->pdo) {
+			return;
+		}
+		$this->pdo = new PDO($this->params[0], $this->params[1], $this->params[2], $this->options);
+		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+		$class = empty($this->options['driverClass'])
+			? 'Nette\Database\Drivers\\' . ucfirst(str_replace('sql', 'Sql', $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME))) . 'Driver'
+			: $this->options['driverClass'];
+		$this->driver = new $class($this, $this->options);
+		$this->preprocessor = new SqlPreprocessor($this);
+		$this->onConnect($this);
+	}
+
+
+	/** @return string */
 	public function getDsn()
 	{
-		return $this->dsn;
+		return $this->params[0];
+	}
+
+
+	/** @return PDO */
+	public function getPdo()
+	{
+		$this->connect();
+		return $this->pdo;
 	}
 
 
 	/** @return ISupplementalDriver */
 	public function getSupplementalDriver()
 	{
+		$this->connect();
 		return $this->driver;
 	}
 
 
 	/**
-	 * Sets database reflection.
-	 * @return self
+	 * @param  string  sequence object
+	 * @return string
 	 */
-	public function setDatabaseReflection(IReflection $databaseReflection)
+	public function getInsertId($name = NULL)
 	{
-		$databaseReflection->setConnection($this);
-		$this->databaseReflection = $databaseReflection;
-		return $this;
-	}
-
-
-	/** @return IReflection */
-	public function getDatabaseReflection()
-	{
-		if (!$this->databaseReflection) {
-			$this->setDatabaseReflection(new Reflection\ConventionalReflection);
-		}
-		return $this->databaseReflection;
+		return $this->getPdo()->lastInsertId($name);
 	}
 
 
 	/**
-	 * Sets cache storage engine.
-	 * @return self
+	 * @param  string  string to be quoted
+	 * @param  int     data type hint
+	 * @return string
 	 */
-	public function setCacheStorage(Nette\Caching\IStorage $storage = NULL)
+	public function quote($string, $type = PDO::PARAM_STR)
 	{
-		$this->cache = $storage ? new Nette\Caching\Cache($storage, 'Nette.Database.' . md5($this->dsn)) : NULL;
-		return $this;
+		return $this->getPdo()->quote($string, $type);
 	}
 
 
-	public function getCache()
+	/** @deprecated */
+	function beginTransaction()
 	{
-		return $this->cache;
+		$this->queryArgs('::beginTransaction', array());
 	}
 
 
-	/**
-	 * Generates and executes SQL query.
-	 * @param  string  statement
-	 * @param  mixed   [parameters, ...]
-	 * @return Statement
-	 */
+	/** @deprecated */
+	function commit()
+	{
+		$this->queryArgs('::commit', array());
+	}
+
+
+	/** @deprecated */
+	public function rollBack()
+	{
+		$this->queryArgs('::rollBack', array());
+	}
+
+
+	/** @deprecated */
 	public function query($statement)
 	{
 		$args = func_get_args();
@@ -123,160 +155,128 @@ class Connection extends PDO
 	}
 
 
-	/**
-	 * Generates and executes SQL query.
-	 * @param  string  statement
-	 * @param  mixed   [parameters, ...]
-	 * @return int     number of affected rows
-	 */
-	public function exec($statement)
+	/** @deprecated */
+	function queryArgs($statement, array $params)
 	{
-		$args = func_get_args();
-		return $this->queryArgs(array_shift($args), $args)->rowCount();
-	}
-
-
-	/**
-	 * @param  string  statement
-	 * @param  array
-	 * @return Statement
-	 */
-	public function queryArgs($statement, $params)
-	{
-		foreach ($params as $value) {
-			if (is_array($value) || is_object($value)) {
-				$need = TRUE; break;
-			}
-		}
-		if (isset($need) && $this->preprocessor !== NULL) {
-			list($statement, $params) = $this->preprocessor->process($statement, $params);
+		$this->connect();
+		if ($params) {
+			array_unshift($params, $statement);
+			list($statement, $params) = $this->preprocessor->process($params);
 		}
 
-		return $this->prepare($statement)->execute($params);
+		try {
+			$result = new ResultSet($this, $statement, $params);
+		} catch (\PDOException $e) {
+			$e->queryString = $statement;
+			$this->onQuery($this, $e);
+			throw $e;
+		}
+		$this->onQuery($this, $result);
+		return $result;
 	}
 
 
 	/********************* shortcuts ****************d*g**/
 
 
-	/**
-	 * Shortcut for query()->fetch()
-	 * @param  string  statement
-	 * @param  mixed   [parameters, ...]
-	 * @return Row
-	 */
-	public function fetch($args)
+	/** @deprecated */
+	function fetch($args)
 	{
 		$args = func_get_args();
 		return $this->queryArgs(array_shift($args), $args)->fetch();
 	}
 
 
-	/**
-	 * Shortcut for query()->fetchField()
-	 * @param  string  statement
-	 * @param  mixed   [parameters, ...]
-	 * @return mixed
-	 */
-	public function fetchField($args)
+	/** @deprecated */
+	function fetchField($args)
 	{
 		$args = func_get_args();
 		return $this->queryArgs(array_shift($args), $args)->fetchField();
 	}
 
 
-	/**
-	 * Shortcut for query()->fetchColumn()
-	 * @param  string  statement
-	 * @param  mixed   [parameters, ...]
-	 * @return mixed
-	 */
-	public function fetchColumn($args)
-	{
-		$args = func_get_args();
-		return $this->queryArgs(array_shift($args), $args)->fetchColumn();
-	}
-
-
-	/**
-	 * Shortcut for query()->fetchPairs()
-	 * @param  string  statement
-	 * @param  mixed   [parameters, ...]
-	 * @return array
-	 */
-	public function fetchPairs($args)
+	/** @deprecated */
+	function fetchPairs($args)
 	{
 		$args = func_get_args();
 		return $this->queryArgs(array_shift($args), $args)->fetchPairs();
 	}
 
 
-	/**
-	 * Shortcut for query()->fetchAll()
-	 * @param  string  statement
-	 * @param  mixed   [parameters, ...]
-	 * @return array
-	 */
-	public function fetchAll($args)
+	/** @deprecated */
+	function fetchAll($args)
 	{
 		$args = func_get_args();
 		return $this->queryArgs(array_shift($args), $args)->fetchAll();
 	}
 
 
-	/********************* selector ****************d*g**/
-
-
-	/**
-	 * Creates selector for table.
-	 * @param  string
-	 * @return Nette\Database\Table\Selection
-	 */
-	public function table($table)
+	/** @deprecated */
+	static function literal($value)
 	{
-		return new Table\Selection($table, $this);
+		$args = func_get_args();
+		return new SqlLiteral(array_shift($args), $args);
 	}
 
 
-	/********************* Nette\Object behaviour ****************d*g**/
+	/********************* Selection ****************d*g**/
 
 
-	/**
-	 * @return Nette\Reflection\ClassType
-	 */
-	public static function getReflection()
+	/** @deprecated */
+	function table($table)
 	{
-		return new Nette\Reflection\ClassType(get_called_class());
+		trigger_error(__METHOD__ . '() is deprecated; use Nette\Database\Context::table() instead.', E_USER_DEPRECATED);
+		if (!$this->context) {
+			$this->context = new Context($this);
+		}
+		return $this->context->table($table);
 	}
 
 
-	public function __call($name, $args)
+	/** @deprecated */
+	function setContext(Context $context)
 	{
-		return ObjectMixin::call($this, $name, $args);
+		$this->context = $context;
+		return $this;
 	}
 
 
-	public function &__get($name)
+	/** @deprecated */
+	function getContext()
 	{
-		return ObjectMixin::get($this, $name);
+		return $this->context;
 	}
 
 
-	public function __set($name, $value)
+	/** @deprecated */
+	function setDatabaseReflection()
 	{
-		return ObjectMixin::set($this, $name, $value);
+		trigger_error(__METHOD__ . '() is deprecated; use Nette\Database\Context instead.', E_USER_DEPRECATED);
+		return $this;
 	}
 
 
-	public function __isset($name)
+	/** @deprecated */
+	function setCacheStorage()
 	{
-		return ObjectMixin::has($this, $name);
+		trigger_error(__METHOD__ . '() is deprecated; use Nette\Database\Context instead.', E_USER_DEPRECATED);
 	}
 
 
-	public function __unset($name)
+	/** @deprecated */
+	function lastInsertId($name = NULL)
 	{
-		ObjectMixin::remove($this, $name);
+		trigger_error(__METHOD__ . '() is deprecated; use getInsertId() instead.', E_USER_DEPRECATED);
+		return $this->getInsertId($name);
+	}
+
+
+	/** @deprecated */
+	function exec($statement)
+	{
+		trigger_error(__METHOD__ . '() is deprecated; use Nette\Database\Context::query()->getRowCount() instead.', E_USER_DEPRECATED);
+		$args = func_get_args();
+		return $this->queryArgs(array_shift($args), $args)->getRowCount();
 	}
 
 }

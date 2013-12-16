@@ -22,14 +22,15 @@ use Nette;
  * @property-read bool $loggedIn
  * @property-read IIdentity $identity
  * @property-read mixed $id
- * @property   IAuthenticator $authenticator
- * @property-read int $logoutReason
  * @property-read array $roles
+ * @property-read int $logoutReason
+ * @property-read IUserStorage $storage
+ * @property   IAuthenticator $authenticator
  * @property   IAuthorizator $authorizator
  */
 class User extends Nette\Object
 {
-	 /** @deprecated */
+	/** @deprecated */
 	const MANUAL = IUserStorage::MANUAL,
 		INACTIVITY = IUserStorage::INACTIVITY,
 		BROWSER_CLOSED = IUserStorage::BROWSER_CLOSED;
@@ -55,14 +56,12 @@ class User extends Nette\Object
 	/** @var IAuthorizator */
 	private $authorizator;
 
-	/** @var Nette\DI\Container */
-	private $context;
 
-
-	public function __construct(IUserStorage $storage, Nette\DI\Container $context)
+	public function __construct(IUserStorage $storage, IAuthenticator $authenticator = NULL, IAuthorizator $authorizator = NULL)
 	{
 		$this->storage = $storage;
-		$this->context = $context; // with IAuthenticator, IAuthorizator
+		$this->authenticator = $authenticator;
+		$this->authorizator = $authorizator;
 	}
 
 
@@ -160,9 +159,12 @@ class User extends Nette\Object
 	 * Returns authentication handler.
 	 * @return IAuthenticator
 	 */
-	final public function getAuthenticator()
+	final public function getAuthenticator($need = TRUE)
 	{
-		return $this->authenticator ?: $this->context->getByType('Nette\Security\IAuthenticator');
+		if ($need && !$this->authenticator) {
+			throw new Nette\InvalidStateException('Authenticator has not been set.');
+		}
+		return $this->authenticator;
 	}
 
 
@@ -229,9 +231,8 @@ class User extends Nette\Object
 	 */
 	public function isAllowed($resource = IAuthorizator::ALL, $privilege = IAuthorizator::ALL)
 	{
-		$authorizator = $this->getAuthorizator();
 		foreach ($this->getRoles() as $role) {
-			if ($authorizator->isAllowed($role, $resource, $privilege)) {
+			if ($this->getAuthorizator()->isAllowed($role, $resource, $privilege)) {
 				return TRUE;
 			}
 		}
@@ -255,41 +256,12 @@ class User extends Nette\Object
 	 * Returns current authorization handler.
 	 * @return IAuthorizator
 	 */
-	final public function getAuthorizator()
+	final public function getAuthorizator($need = TRUE)
 	{
-		return $this->authorizator ?: $this->context->getByType('Nette\Security\IAuthorizator');
-	}
-
-
-	/********************* deprecated ****************d*g**/
-
-	/** @deprecated */
-	function setNamespace($namespace)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use getStorage()->setNamespace() instead.', E_USER_WARNING);
-		$this->storage->setNamespace($namespace);
-		return $this;
-	}
-
-	/** @deprecated */
-	function getNamespace()
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use getStorage()->getNamespace() instead.', E_USER_WARNING);
-		return $this->storage->getNamespace();
-	}
-
-	/** @deprecated */
-	function setAuthenticationHandler($v)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use setAuthenticator() instead.', E_USER_WARNING);
-		return $this->setAuthenticator($v);
-	}
-
-	/** @deprecated */
-	function setAuthorizationHandler($v)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use setAuthorizator() instead.', E_USER_WARNING);
-		return $this->setAuthorizator($v);
+		if ($need && !$this->authorizator) {
+			throw new Nette\InvalidStateException('Authorizator has not been set.');
+		}
+		return $this->authorizator;
 	}
 
 }

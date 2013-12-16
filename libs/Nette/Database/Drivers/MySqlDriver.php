@@ -44,7 +44,6 @@ class MySqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 		if (isset($options['sqlmode'])) {
 			$connection->query("SET sql_mode='$options[sqlmode]'");
 		}
-		$connection->query("SET time_zone='" . date('P') . "'");
 	}
 
 
@@ -73,7 +72,7 @@ class MySqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 	/**
 	 * Formats date-time for use in a SQL statement.
 	 */
-	public function formatDateTime(\DateTime $value)
+	public function formatDateTime(/*\DateTimeInterface*/ $value)
 	{
 		return $value->format("'Y-m-d H:i:s'");
 	}
@@ -105,7 +104,7 @@ class MySqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 	/**
 	 * Normalizes result row.
 	 */
-	public function normalizeRow($row, $statement)
+	public function normalizeRow($row)
 	{
 		return $row;
 	}
@@ -208,11 +207,35 @@ class MySqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 
 
 	/**
+	 * Returns associative array of detected types (IReflection::FIELD_*) in result set.
+	 */
+	public function getColumnTypes(\PDOStatement $statement)
+	{
+		$types = array();
+		$count = $statement->columnCount();
+		for ($col = 0; $col < $count; $col++) {
+			$meta = $statement->getColumnMeta($col);
+			if (isset($meta['native_type'])) {
+				$types[$meta['name']] = $type = Nette\Database\Helpers::detectType($meta['native_type']);
+				if ($type === Nette\Database\IReflection::FIELD_TIME) {
+					$types[$meta['name']] = Nette\Database\IReflection::FIELD_TIME_INTERVAL;
+				}
+			}
+		}
+		return $types;
+	}
+
+
+	/**
 	 * @return bool
 	 */
 	public function isSupported($item)
 	{
-		return $item === self::SUPPORT_COLUMNS_META || $item === self::SUPPORT_SELECT_UNGROUPED_COLUMNS;
+		// MULTI_COLUMN_AS_OR_COND due to mysql bugs:
+		// - http://bugs.mysql.com/bug.php?id=31188
+		// - http://bugs.mysql.com/bug.php?id=35819
+		// and more.
+		return $item === self::SUPPORT_SELECT_UNGROUPED_COLUMNS || $item === self::SUPPORT_MULTI_COLUMN_AS_OR_COND;
 	}
 
 }

@@ -134,7 +134,10 @@ class Container extends Component implements IContainer
 			}
 
 			if ($name === '') {
-				throw new Nette\InvalidArgumentException("Component or subcomponent name must not be empty string.");
+				if ($need) {
+					throw new Nette\InvalidArgumentException("Component or subcomponent name must not be empty string.");
+				}
+				return;
 			}
 		}
 
@@ -183,7 +186,7 @@ class Container extends Component implements IContainer
 
 
 	/**
-	 * Iterates over a components.
+	 * Iterates over components.
 	 * @param  bool    recursive?
 	 * @param  string  class types filter
 	 * @return \ArrayIterator
@@ -196,7 +199,9 @@ class Container extends Component implements IContainer
 			$iterator = new \RecursiveIteratorIterator($iterator, $deep);
 		}
 		if ($filterType) {
-			$iterator = new Nette\Iterators\InstanceFilter($iterator, $filterType);
+			$iterator = new Nette\Iterators\Filter($iterator, function($item) use ($filterType) {
+				return $item instanceof $filterType;
+			});
 		}
 		return $iterator;
 	}

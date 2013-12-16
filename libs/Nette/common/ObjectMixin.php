@@ -21,11 +21,14 @@ use Nette;
  */
 final class ObjectMixin
 {
-	/** @var array */
+	/** @var array (name => 0 | bool | array)  used by getMethods() */
 	private static $methods;
 
-	/** @var array */
+	/** @var array (name => 'event' | TRUE)  used by hasProperty() */
 	private static $props;
+
+	/** @var array (name => array(type => callback))  used by get|setExtensionMethod() */
+	private static $extMethods;
 
 
 	/**
@@ -49,55 +52,56 @@ final class ObjectMixin
 	{
 		$class = get_class($_this);
 		$isProp = self::hasProperty($class, $name);
+		$methods = & self::getMethods($class);
 
 		if ($name === '') {
 			throw new MemberAccessException("Call to class '$class' method without name.");
 
+		} elseif ($isProp && $_this->$name instanceof \Closure) { // closure in property
+			return call_user_func_array($_this->$name, $args);
+
 		} elseif ($isProp === 'event') { // calling event handlers
 			if (is_array($_this->$name) || $_this->$name instanceof \Traversable) {
 				foreach ($_this->$name as $handler) {
-					Nette\Callback::create($handler)->invokeArgs($args);
+					Nette\Utils\Callback::invokeArgs($handler, $args);
 				}
 			} elseif ($_this->$name !== NULL) {
 				throw new UnexpectedValueException("Property $class::$$name must be array or NULL, " . gettype($_this->$name) ." given.");
 			}
 
-		} elseif ($cb = Reflection\ClassType::from($_this)->getExtensionMethod($name)) { // extension methods
+		} elseif (isset($methods[$name]) && $methods[$name] !== 0) { // magic @methods
+			list($op, $rp, $type) = $methods[$name];
+			if (!$rp) {
+				throw new MemberAccessException("Magic method $class::$name() has not corresponding property $$op.");
+
+			} elseif (count($args) !== ($op === 'get' ? 0 : 1)) {
+				throw new InvalidArgumentException("$class::$name() expects " . ($op === 'get' ? 'no' : '1') . ' argument, ' . count($args) . ' given.');
+
+			} elseif ($type && $args && !self::checkType($args[0], $type)) {
+				throw new InvalidArgumentException("Argument passed to $class::$name() must be $type, " . gettype($args[0]) . ' given.');
+			}
+
+			if ($op === 'get') {
+				return $rp->getValue($_this);
+			} elseif ($op === 'set') {
+				$rp->setValue($_this, $args[0]);
+			} elseif ($op === 'add') {
+				$val = $rp->getValue($_this);
+				$val[] = $args[0];
+				$rp->setValue($_this, $val);
+			}
+			return $_this;
+
+		} elseif ($cb = self::getExtensionMethod($class, $name)) { // extension methods
 			array_unshift($args, $_this);
-			return $cb->invokeArgs($args);
+			return Nette\Utils\Callback::invokeArgs($cb, $args);
 
 		} else {
+			if (method_exists($class, $name)) { // called parent::$name()
+				$class = 'parent';
+			}
 			throw new MemberAccessException("Call to undefined method $class::$name().");
 		}
-	}
-
-
-	/**
-	 * __call() implementation for entities.
-	 * @param  object
-	 * @param  string
-	 * @param  array
-	 * @return mixed
-	 * @throws MemberAccessException
-	 */
-	public static function callProperty($_this, $name, $args)
-	{
-		if (strlen($name) > 3) {
-			$op = substr($name, 0, 3);
-			$prop = strtolower($name[3]) . substr($name, 4);
-			if ($op === 'add' && self::hasProperty(get_class($_this), $prop.'s')) {
-				$_this->{$prop.'s'}[] = $args[0];
-				return $_this;
-
-			} elseif ($op === 'set' && self::hasProperty(get_class($_this), $prop)) {
-				$_this->$prop = $args[0];
-				return $_this;
-
-			} elseif ($op === 'get' && self::hasProperty(get_class($_this), $prop)) {
-				return $_this->$prop;
-			}
-		}
-		return self::call($_this, $name, $args);
 	}
 
 
@@ -126,24 +130,34 @@ final class ObjectMixin
 	{
 		$class = get_class($_this);
 		$uname = ucfirst($name);
-
-		if (!isset(self::$methods[$class])) {
-			self::$methods[$class] = array_flip(get_class_methods($class)); // public (static and non-static) methods
-		}
+		$methods = & self::getMethods($class);
 
 		if ($name === '') {
 			throw new MemberAccessException("Cannot read a class '$class' property without name.");
 
-		} elseif (isset(self::$methods[$class][$m = 'get' . $uname]) || isset(self::$methods[$class][$m = 'is' . $uname])) { // property getter
-			$val = $_this->$m();
-			return $val;
+		} elseif (isset($methods[$m = 'get' . $uname]) || isset($methods[$m = 'is' . $uname])) { // property getter
+			if ($methods[$m] === 0) {
+				$rm = new \ReflectionMethod($class, $m);
+				$methods[$m] = $rm->returnsReference();
+			}
+			if ($methods[$m] === TRUE) {
+				return $_this->$m();
+			} else {
+				$val = $_this->$m();
+				return $val;
+			}
 
-		} elseif (isset(self::$methods[$class][$name])) { // public method as closure getter
-			$val = Callback::create($_this, $name);
+		} elseif (isset($methods[$name])) { // public method as closure getter
+			if (PHP_VERSION_ID >= 50400) {
+				$rm = new \ReflectionMethod($class, $name);
+				$val = $rm->getClosure($_this);
+			} else {
+				$val = Nette\Utils\Callback::closure($_this, $name);
+			}
 			return $val;
 
 		} else { // strict class
-			$type = isset(self::$methods[$class]['set' . $uname]) ? 'a write-only' : 'an undeclared';
+			$type = isset($methods['set' . $uname]) ? 'a write-only' : 'an undeclared';
 			throw new MemberAccessException("Cannot read $type property $class::\$$name.");
 		}
 	}
@@ -161,10 +175,7 @@ final class ObjectMixin
 	{
 		$class = get_class($_this);
 		$uname = ucfirst($name);
-
-		if (!isset(self::$methods[$class])) {
-			self::$methods[$class] = array_flip(get_class_methods($class));
-		}
+		$methods = & self::getMethods($class);
 
 		if ($name === '') {
 			throw new MemberAccessException("Cannot write to a class '$class' property without name.");
@@ -172,12 +183,12 @@ final class ObjectMixin
 		} elseif (self::hasProperty($class, $name)) { // unsetted property
 			$_this->$name = $value;
 
-		} elseif (isset(self::$methods[$class][$m = 'set' . $uname])) { // property setter
+		} elseif (isset($methods[$m = 'set' . $uname])) { // property setter
 			$_this->$m($value);
 
 		} else { // strict class
-			$type = isset(self::$methods[$class]['get' . $uname]) || isset(self::$methods[$class]['is' . $uname])
-			? 'a read-only' : 'an undeclared';
+			$type = isset($methods['get' . $uname]) || isset($methods['is' . $uname])
+				? 'a read-only' : 'an undeclared';
 			throw new MemberAccessException("Cannot write to $type property $class::\$$name.");
 		}
 	}
@@ -207,12 +218,9 @@ final class ObjectMixin
 	 */
 	public static function has($_this, $name)
 	{
-		$class = get_class($_this);
 		$name = ucfirst($name);
-		if (!isset(self::$methods[$class])) {
-			self::$methods[$class] = array_flip(get_class_methods($class));
-		}
-		return $name !== '' && (isset(self::$methods[$class]['get' . $name]) || isset(self::$methods[$class]['is' . $name]));
+		$methods = & self::getMethods(get_class($_this));
+		return $name !== '' && (isset($methods['get' . $name]) || isset($methods['is' . $name]));
 	}
 
 
@@ -227,12 +235,170 @@ final class ObjectMixin
 			$prop = FALSE;
 			try {
 				$rp = new \ReflectionProperty($class, $name);
-				if ($name === $rp->getName() && $rp->isPublic() && !$rp->isStatic()) {
+				if ($rp->isPublic() && !$rp->isStatic()) {
 					$prop = preg_match('#^on[A-Z]#', $name) ? 'event' : TRUE;
 				}
 			} catch (\ReflectionException $e) {}
 		}
 		return $prop;
+	}
+
+
+	/**
+	 * Returns array of public (static, non-static and magic) methods.
+	 * @return array
+	 */
+	private static function & getMethods($class)
+	{
+		if (!isset(self::$methods[$class])) {
+			self::$methods[$class] = array_fill_keys(get_class_methods($class), 0) + self::getMagicMethods($class);
+			if ($parent = get_parent_class($class)) {
+				self::$methods[$class] += self::getMethods($parent);
+			}
+		}
+		return self::$methods[$class];
+	}
+
+
+	/**
+	 * Returns array of magic methods defined by annotation @method.
+	 * @return array
+	 */
+	public static function getMagicMethods($class)
+	{
+		$rc = new \ReflectionClass($class);
+		preg_match_all('~^
+			[ \t*]*  @method  [ \t]+
+			(?: [^\s(]+  [ \t]+ )?
+			(set|get|is|add)  ([A-Z]\w*)  [ \t]*
+			(?: \(  [ \t]* ([^)$\s]+)  )?
+		()~mx', $rc->getDocComment(), $matches, PREG_SET_ORDER);
+
+		$methods = array();
+		foreach ($matches as $m) {
+			list(, $op, $prop, $type) = $m;
+			$name = $op . $prop;
+			$prop = strtolower($prop[0]) . substr($prop, 1) . ($op === 'add' ? 's' : '');
+			if ($rc->hasProperty($prop) && ($rp = $rc->getProperty($prop)) && !$rp->isStatic()) {
+				$rp->setAccessible(TRUE);
+				if ($op === 'get' || $op === 'is') {
+					$type = NULL; $op = 'get';
+				} elseif (!$type && preg_match('#@var[ \t]+(\S+)' . ($op === 'add' ? '\[\]#' : '#'), $rp->getDocComment(), $m)) {
+					$type = $m[1];
+				}
+				if ($rc->inNamespace() && preg_match('#^[A-Z]\w+(\[|\||\z)#', $type)) {
+					$type = $rc->getNamespaceName() . '\\' . $type;
+				}
+				$methods[$name] = array($op, $rp, $type);
+			} else {
+				$methods[$name] = array($prop, NULL, NULL);
+			}
+		}
+		return $methods;
+	}
+
+
+	/**
+	 * Finds whether a variable is of expected type and do non-data-loss conversion.
+	 * @return bool
+	 */
+	public static function checkType(& $val, $type)
+	{
+		if (strpos($type, '|') !== FALSE) {
+			$found = NULL;
+			foreach (explode('|', $type) as $type) {
+				$tmp = $val;
+				if (self::checkType($tmp, $type)) {
+					if ($val === $tmp) {
+						return TRUE;
+					}
+					$found[] = $tmp;
+				}
+			}
+			if ($found) {
+				$val = $found[0];
+				return TRUE;
+			}
+			return FALSE;
+
+		} elseif (substr($type, -2) === '[]') {
+			if (!is_array($val)) {
+				return FALSE;
+			}
+			$type = substr($type, 0, -2);
+			$res = array();
+			foreach ($val as $k => $v) {
+				if (!self::checkType($v, $type)) {
+					return FALSE;
+				}
+				$res[$k] = $v;
+			}
+			$val = $res;
+			return TRUE;
+		}
+
+		switch (strtolower($type)) {
+			case NULL:
+			case 'mixed':
+				return TRUE;
+			case 'bool':
+			case 'boolean':
+				return ($val === NULL || is_scalar($val)) && settype($val, 'bool');
+			case 'string':
+				return ($val === NULL || is_scalar($val) || (is_object($val) && method_exists($val, '__toString'))) && settype($val, 'string');
+			case 'int':
+			case 'integer':
+				return ($val === NULL || is_bool($val) || is_numeric($val)) && ((float) (int) $val === (float) $val) && settype($val, 'int');
+			case 'float':
+				return ($val === NULL || is_bool($val) || is_numeric($val)) && settype($val, 'float');
+			case 'scalar':
+			case 'array':
+			case 'object':
+			case 'callable':
+			case 'resource':
+			case 'null':
+				return call_user_func("is_$type", $val);
+			default:
+				return $val instanceof $type;
+		}
+	}
+
+
+	/**
+	 * Adds a method to class.
+	 * @param  string
+	 * @param  string
+	 * @param  mixed   callable
+	 * @return void
+	 */
+	public static function setExtensionMethod($class, $name, $callback)
+	{
+		$name = strtolower($name);
+		self::$extMethods[$name][$class] = Nette\Utils\Callback::closure($callback);
+		self::$extMethods[$name][''] = NULL;
+	}
+
+
+	/**
+	 * Returns extension method.
+	 * @param  string
+	 * @param  string
+	 * @return mixed
+	 */
+	public static function getExtensionMethod($class, $name)
+	{
+		$list = & self::$extMethods[strtolower($name)];
+		$cache = & $list[''][$class];
+		if (isset($cache)) {
+			return $cache;
+		}
+
+		foreach (array($class) + class_parents($class) + class_implements($class) as $cl) {
+			if (isset($list[$cl])) {
+				return $cache = $list[$cl];
+			}
+		}
+		return $cache = FALSE;
 	}
 
 }

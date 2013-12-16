@@ -35,15 +35,15 @@ class Form extends Container
 {
 	/** validator */
 	const EQUAL = ':equal',
-		IS_IN = ':equal',
+		IS_IN = self::EQUAL,
 		NOT_EQUAL = ':notEqual',
 		FILLED = ':filled',
 		BLANK = ':blank',
 		REQUIRED = self::FILLED,
 		VALID = ':valid';
 
-	// CSRF protection
-	const PROTECTION = 'Nette\Forms\Controls\HiddenField::validateEqual';
+	/** @deprecated CSRF protection */
+	const PROTECTION = Controls\CsrfProtection::PROTECTION;
 
 	// button
 	const SUBMITTED = ':submitted';
@@ -62,16 +62,22 @@ class Form extends Container
 		RANGE = ':range';
 
 	// multiselect
-	const COUNT = ':length';
+	const COUNT = self::LENGTH;
 
 	// file upload
 	const MAX_FILE_SIZE = ':fileSize',
 		MIME_TYPE = ':mimeType',
-		IMAGE = ':image';
+		IMAGE = ':image',
+		MAX_POST_SIZE = ':maxPostSize';
 
 	/** method */
 	const GET = 'get',
 		POST = 'post';
+
+	/** submitted data types */
+	const DATA_TEXT = 1;
+	const DATA_LINE = 2;
+	const DATA_FILE = 3;
 
 	/** @internal tracker ID */
 	const TRACKER_ID = '_form_';
@@ -88,16 +94,13 @@ class Form extends Container
 	/** @var array of function(Form $sender); Occurs when the form is submitted */
 	public $onSubmit;
 
-	/** @deprecated */
-	public $onInvalidSubmit;
-
 	/** @var mixed or NULL meaning: not detected yet */
 	private $submittedBy;
 
 	/** @var array */
 	private $httpData;
 
-	/** @var Html  <form> element */
+	/** @var Nette\Utils\Html  <form> element */
 	private $element;
 
 	/** @var IFormRenderer */
@@ -111,6 +114,9 @@ class Form extends Container
 
 	/** @var array */
 	private $errors = array();
+
+	/** @var Nette\Http\IRequest  used only by standalone form */
+	public $httpRequest;
 
 
 	/**
@@ -127,7 +133,7 @@ class Form extends Container
 		$this->monitor(__CLASS__);
 		if ($name !== NULL) {
 			$tracker = new Controls\HiddenField($name);
-			$tracker->unmonitor(__CLASS__);
+			$tracker->setOmitted();
 			$this[self::TRACKER_ID] = $tracker;
 		}
 		parent::__construct(NULL, $name);
@@ -208,21 +214,11 @@ class Form extends Container
 	/**
 	 * Cross-Site Request Forgery (CSRF) form protection.
 	 * @param  string
-	 * @param  int
-	 * @return void
+	 * @return Controls\CsrfProtection
 	 */
-	public function addProtection($message = NULL, $timeout = NULL)
+	public function addProtection($message = NULL)
 	{
-		$session = $this->getSession()->getSection('Nette.Forms.Form/CSRF');
-		$key = "key$timeout";
-		if (isset($session->$key)) {
-			$token = $session->$key;
-		} else {
-			$session->$key = $token = Nette\Utils\Strings::random();
-		}
-		$session->setExpiration($timeout, $key);
-		$this[self::PROTECTOR_ID] = new Controls\HiddenField($token);
-		$this[self::PROTECTOR_ID]->addRule(self::PROTECTION, $message, $token);
+		return $this[self::PROTECTOR_ID] = new Controls\CsrfProtection($message);
 	}
 
 
@@ -242,7 +238,7 @@ class Form extends Container
 			$this->setCurrentGroup($group);
 		}
 
-		if (isset($this->groups[$caption])) {
+		if (!is_scalar($caption) || isset($this->groups[$caption])) {
 			return $this->groups[] = $group;
 		} else {
 			return $this->groups[$caption] = $group;
@@ -370,9 +366,9 @@ class Form extends Container
 
 	/**
 	 * Returns submitted HTTP data.
-	 * @return array
+	 * @return mixed
 	 */
-	final public function getHttpData()
+	final public function getHttpData($type = NULL, $htmlName = NULL)
 	{
 		if ($this->httpData === NULL) {
 			if (!$this->isAnchored()) {
@@ -382,7 +378,10 @@ class Form extends Container
 			$this->httpData = (array) $data;
 			$this->submittedBy = is_array($data);
 		}
-		return $this->httpData;
+		if ($htmlName === NULL) {
+			return $this->httpData;
+		}
+		return Helpers::extractHttpData($this->httpData, $htmlName, $type);
 	}
 
 
@@ -394,34 +393,30 @@ class Form extends Container
 	{
 		if (!$this->isSubmitted()) {
 			return;
+		}
 
-		} elseif ($this->submittedBy instanceof ISubmitterControl) {
-			if (!$this->submittedBy->getValidationScope() || $this->isValid()) {
-				$this->submittedBy->click();
-				$valid = TRUE;
+		$this->validate();
+
+		if ($this->submittedBy instanceof ISubmitterControl) {
+			if ($this->isValid()) {
+				$this->submittedBy->onClick($this->submittedBy);
 			} else {
 				$this->submittedBy->onInvalidClick($this->submittedBy);
 			}
 		}
 
-		if (isset($valid) || $this->isValid()) {
-			$this->onSuccess($this);
-		} else {
+		if ($this->onSuccess) {
+			foreach ($this->onSuccess as $handler) {
+				if (!$this->isValid()) {
+					$this->onError($this);
+					break;
+				}
+				Nette\Utils\Callback::invoke($handler, $this);
+			}
+		} elseif (!$this->isValid()) {
 			$this->onError($this);
-			if ($this->onInvalidSubmit) {
-				trigger_error(__CLASS__ . '->onInvalidSubmit is deprecated; use onError instead.', E_USER_WARNING);
-				$this->onInvalidSubmit($this);
-			}
 		}
-
-		if ($this->onSuccess) { // back compatibility
-			$this->onSubmit($this);
-		} elseif ($this->onSubmit) {
-			trigger_error(__CLASS__ . '->onSubmit changed its behavior; use onSuccess instead.', E_USER_WARNING);
-			if (isset($valid) || $this->isValid()) {
-				$this->onSubmit($this);
-			}
-		}
+		$this->onSubmit($this);
 	}
 
 
@@ -455,45 +450,54 @@ class Form extends Container
 	}
 
 
-	/********************* data exchange ****************d*g**/
-
-
-	/**
-	 * Returns the values submitted by the form.
-	 * @return Nette\ArrayHash|array
-	 */
-	public function getValues($asArray = FALSE)
-	{
-		$values = parent::getValues($asArray);
-		unset($values[self::TRACKER_ID], $values[self::PROTECTOR_ID]);
-		return $values;
-	}
-
-
 	/********************* validation ****************d*g**/
 
 
-	/**
-	 * Adds error message to the list.
-	 * @param  string  error message
-	 * @return void
-	 */
-	public function addError($message)
+	public function validate(array $controls = NULL)
 	{
-		$this->valid = FALSE;
-		if ($message !== NULL && !in_array($message, $this->errors, TRUE)) {
-			$this->errors[] = $message;
+		$this->cleanErrors();
+		if ($controls === NULL && $this->submittedBy instanceof ISubmitterControl) {
+			$controls = $this->submittedBy->getValidationScope();
+		}
+		$this->validateMaxPostSize();
+		parent::validate($controls);
+	}
+
+
+	public function validateMaxPostSize()
+	{
+		if (!$this->submittedBy || strcasecmp($this->getMethod(), 'POST') || empty($_SERVER['CONTENT_LENGTH'])) {
+			return;
+		}
+		$maxSize = ini_get('post_max_size');
+		$units = array('k' => 10, 'm' => 20, 'g' => 30);
+		if (isset($units[$ch = strtolower(substr($maxSize, -1))])) {
+			$maxSize <<= $units[$ch];
+		}
+		if ($maxSize > 0 && $maxSize < $_SERVER['CONTENT_LENGTH']) {
+			$this->addError(sprintf(Rules::$defaultMessages[self::MAX_FILE_SIZE], $maxSize));
 		}
 	}
 
 
 	/**
-	 * Returns validation errors.
+	 * Adds global error message.
+	 * @param  string  error message
+	 * @return void
+	 */
+	public function addError($message)
+	{
+		$this->errors[] = $message;
+	}
+
+
+	/**
+	 * Returns global validation errors.
 	 * @return array
 	 */
 	public function getErrors()
 	{
-		return $this->errors;
+		return array_unique($this->errors);
 	}
 
 
@@ -512,7 +516,16 @@ class Form extends Container
 	public function cleanErrors()
 	{
 		$this->errors = array();
-		$this->valid = NULL;
+	}
+
+
+	/**
+	 * Returns all validation errors.
+	 * @return array
+	 */
+	public function getAllErrors()
+	{
+		return array_unique(array_merge($this->errors, parent::getAllErrors()));
 	}
 
 
@@ -533,7 +546,7 @@ class Form extends Container
 	 * Sets form renderer.
 	 * @return self
 	 */
-	public function setRenderer(IFormRenderer $renderer)
+	public function setRenderer(IFormRenderer $renderer = NULL)
 	{
 		$this->renderer = $renderer;
 		return $this;
@@ -591,18 +604,28 @@ class Form extends Container
 	/**
 	 * @return Nette\Http\IRequest
 	 */
-	protected function getHttpRequest()
+	private function getHttpRequest()
 	{
-		return Nette\Environment::getHttpRequest();
+		if (!$this->httpRequest) {
+			$factory = new Nette\Http\RequestFactory;
+			$this->httpRequest = $factory->createHttpRequest();
+		}
+		return $this->httpRequest;
 	}
 
 
 	/**
-	 * @return Nette\Http\Session
+	 * @return array
 	 */
-	protected function getSession()
+	public function getToggles()
 	{
-		return Nette\Environment::getSession();
+		$toggles = array();
+		foreach ($this->getControls() as $control) {
+			foreach ($control->getRules()->getToggles(TRUE) as $id => $hide) {
+				$toggles[$id] = empty($toggles[$id]) ? $hide : TRUE;
+			}
+		}
+		return $toggles;
 	}
 
 }

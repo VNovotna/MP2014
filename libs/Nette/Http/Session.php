@@ -93,7 +93,7 @@ class Session extends Nette\Object
 			unset($_COOKIE[session_name()]);
 		}
 
-		set_error_handler(function($severity, $message) use (& $error) { // session_start returns FALSE on failure since PHP 5.3.0.
+		set_error_handler(function($severity, $message) use (& $error) { // session_start returns FALSE on failure only sometimes
 			if (($severity & error_reporting()) === $severity) {
 				$error = $message;
 				restore_error_handler();
@@ -104,7 +104,7 @@ class Session extends Nette\Object
 			restore_error_handler();
 		}
 		$this->response->removeDuplicateCookies();
-		if ($error && !session_id()) {
+		if ($error) {
 			@session_write_close(); // this is needed
 			throw new Nette\InvalidStateException("session_start(): $error");
 		}
@@ -112,16 +112,11 @@ class Session extends Nette\Object
 		self::$started = TRUE;
 
 		/* structure:
-			__NF: Counter, BrowserKey, Data, Meta, Time
+			__NF: BrowserKey, Data, Meta, Time
 				DATA: section->variable = data
 				META: section->variable = Timestamp, Browser, Version
 		*/
-
-		unset($_SESSION['__NT'], $_SESSION['__NS'], $_SESSION['__NM']); // old unused structures
-
-		// initialize structures
 		$nf = & $_SESSION['__NF'];
-		@$nf['C']++;
 
 		// regenerate empty session
 		if (empty($nf['Time'])) {
@@ -301,14 +296,6 @@ class Session extends Nette\Object
 	}
 
 
-	/** @deprecated */
-	function getNamespace($section)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use getSection() instead.', E_USER_WARNING);
-		return $this->getSection($section);
-	}
-
-
 	/**
 	 * Checks if a session section exist and is not empty.
 	 * @param  string
@@ -344,7 +331,8 @@ class Session extends Nette\Object
 
 
 	/**
-	 * Cleans and minimizes meta structures.
+	 * Cleans and minimizes meta structures. This method is called automatically on shutdown, do not call it directly.
+	 * @internal
 	 * @return void
 	 */
 	public function clean()
@@ -440,7 +428,7 @@ class Session extends Nette\Object
 				} elseif (function_exists('ini_set')) {
 					ini_set("session.$key", $value);
 
-				} elseif (!Nette\Framework::$iAmUsingBadHost) {
+				} else {
 					throw new Nette\NotSupportedException('Required function ini_set() is disabled.');
 				}
 			}
@@ -508,14 +496,6 @@ class Session extends Nette\Object
 	}
 
 
-	/** @deprecated */
-	function setCookieParams($path, $domain = NULL, $secure = NULL)
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use setCookieParameters() instead.', E_USER_WARNING);
-		return $this->setCookieParameters($path, $domain, $secure);
-	}
-
-
 	/**
 	 * Sets path of the directory used to save session data.
 	 * @return self
@@ -529,13 +509,13 @@ class Session extends Nette\Object
 
 
 	/**
-	 * Sets user session storage.
+	 * Sets user session storage for PHP < 5.4. For PHP >= 5.4, use setHandler().
 	 * @return self
 	 */
 	public function setStorage(ISessionStorage $storage)
 	{
 		if (self::$started) {
-			throw new Nette\InvalidStateException("Unable to set storage when session has been started.");
+			throw new Nette\InvalidStateException('Unable to set storage when session has been started.');
 		}
 		session_set_save_handler(
 			array($storage, 'open'), array($storage, 'close'), array($storage, 'read'),
@@ -545,11 +525,28 @@ class Session extends Nette\Object
 
 
 	/**
+	 * Sets user session handler.
+	 * @return self
+	 */
+	public function setHandler(\SessionHandlerInterface $handler)
+	{
+		if (self::$started) {
+			throw new Nette\InvalidStateException('Unable to set handler when session has been started.');
+		}
+		session_set_save_handler($handler);
+	}
+
+
+	/**
 	 * Sends the session cookies.
 	 * @return void
 	 */
 	private function sendCookie()
 	{
+		if (!headers_sent() && ob_get_level() && ob_get_length()) {
+			trigger_error('Possible problem: you are starting session while already having some data in output buffer. This may not work if the outputted data grows. Try starting the session earlier.', E_USER_NOTICE);
+		}
+
 		$cookie = $this->getCookieParameters();
 		$this->response->setCookie(
 			session_name(), session_id(),

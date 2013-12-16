@@ -42,7 +42,7 @@ class Html extends Nette\Object implements \ArrayAccess, \Countable, \IteratorAg
 	protected $children = array();
 
 	/** @var bool  use XHTML syntax? */
-	public static $xhtml = TRUE;
+	public static $xhtml = FALSE;
 
 	/** @var array  empty (void) elements */
 	public static $emptyElements = array('img'=>1,'hr'=>1,'br'=>1,'input'=>1,'meta'=>1,'area'=>1,'embed'=>1,'keygen'=>1,
@@ -124,7 +124,7 @@ class Html extends Nette\Object implements \ArrayAccess, \Countable, \IteratorAg
 	 */
 	public function addAttributes(array $attrs)
 	{
-		$this->attrs = $attrs + $this->attrs;
+		$this->attrs = array_merge($this->attrs, $attrs);
 		return $this;
 	}
 
@@ -155,7 +155,7 @@ class Html extends Nette\Object implements \ArrayAccess, \Countable, \IteratorAg
 	/**
 	 * Overloaded tester for element's attribute.
 	 * @param  string    HTML attribute name
-	 * @return void
+	 * @return bool
 	 */
 	final public function __isset($name)
 	{
@@ -240,18 +240,11 @@ class Html extends Nette\Object implements \ArrayAccess, \Countable, \IteratorAg
 	 */
 	final public function setHtml($html)
 	{
-		if ($html === NULL) {
-			$html = '';
-
-		} elseif (is_array($html)) {
+		if (is_array($html)) {
 			throw new Nette\InvalidArgumentException("Textual content must be a scalar, " . gettype($html) ." given.");
-
-		} else {
-			$html = (string) $html;
 		}
-
 		$this->removeChildren();
-		$this->children[] = $html;
+		$this->children[] = (string) $html;
 		return $this;
 	}
 
@@ -282,7 +275,7 @@ class Html extends Nette\Object implements \ArrayAccess, \Countable, \IteratorAg
 	 */
 	final public function setText($text)
 	{
-		if (!is_array($text)) {
+		if (!is_array($text) && !$text instanceof self) {
 			$text = htmlspecialchars((string) $text, ENT_NOQUOTES);
 		}
 		return $this->setHtml($text);

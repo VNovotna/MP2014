@@ -20,8 +20,9 @@ use Nette,
  * ActiveRow is based on the great library NotORM http://www.notorm.com written by Jakub Vrana.
  *
  * @author     Jakub Vrana
+ * @author     Jan Skrasek
  */
-class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
+class ActiveRow implements \IteratorAggregate, IRow
 {
 	/** @var Selection */
 	private $table;
@@ -32,8 +33,8 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 	/** @var bool */
 	private $dataRefreshed = FALSE;
 
-	/** @var array of new values {@see ActiveRow::update()} */
-	private $modified = array();
+	/** @var bool */
+	private $isModified = FALSE;
 
 
 	public function __construct(array $data, Selection $table)
@@ -55,7 +56,6 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 
 	/**
 	 * @internal
-	 * @ignore
 	 */
 	public function getTable()
 	{
@@ -86,7 +86,7 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 	/**
 	 * Returns primary key value.
 	 * @param  bool
-	 * @return mixed
+	 * @return mixed possible int, string, array, object (Nette\DateTime)
 	 */
 	public function getPrimary($need = TRUE)
 	{
@@ -135,12 +135,12 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 	 * Returns referenced row.
 	 * @param  string
 	 * @param  string
-	 * @return ActiveRow or NULL if the row does not exist
+	 * @return IRow or NULL if the row does not exist
 	 */
 	public function ref($key, $throughColumn = NULL)
 	{
 		if (!$throughColumn) {
-			list($key, $throughColumn) = $this->table->getConnection()->getDatabaseReflection()->getBelongsToReference($this->table->getName(), $key);
+			list($key, $throughColumn) = $this->table->getDatabaseReflection()->getBelongsToReference($this->table->getName(), $key);
 		}
 
 		return $this->getReference($key, $throughColumn);
@@ -158,7 +158,7 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 		if (strpos($key, '.') !== FALSE) {
 			list($key, $throughColumn) = explode('.', $key);
 		} elseif (!$throughColumn) {
-			list($key, $throughColumn) = $this->table->getConnection()->getDatabaseReflection()->getHasManyReference($this->table->getName(), $key);
+			list($key, $throughColumn) = $this->table->getDatabaseReflection()->getHasManyReference($this->table->getName(), $key);
 		}
 
 		return $this->table->getReferencingTable($key, $throughColumn, $this[$this->table->getPrimary()]);
@@ -167,21 +167,25 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 
 	/**
 	 * Updates row.
-	 * @param  array or NULL for all modified values
-	 * @return int number of affected rows or FALSE in case of an error
+	 * @param  array|\Traversable (column => value)
+	 * @return bool
 	 */
-	public function update($data = NULL)
+	public function update($data)
 	{
-		if ($data instanceof \Traversable) {
-			$data = iterator_to_array($data);
+		$selection = $this->table->createSelectionInstance()
+			->wherePrimary($this->getPrimary());
+
+		if ($selection->update($data)) {
+			$this->isModified = TRUE;
+			$selection->select('*');
+			if (($row = $selection->fetch()) === FALSE) {
+				throw new Nette\InvalidStateException('Database refetch failed; row does not exist!');
+			}
+			$this->data = $row->data;
+			return TRUE;
+		} else {
+			return FALSE;
 		}
-		if ($data === NULL) {
-			$data = $this->modified;
-		}
-		return $this->table->getConnection()
-			->table($this->table->getName())
-			->wherePrimary($this->getPrimary())
-			->update($data);
 	}
 
 
@@ -191,8 +195,7 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 	 */
 	public function delete()
 	{
-		$res = $this->table->getConnection()
-			->table($this->table->getName())
+		$res = $this->table->createSelectionInstance()
 			->wherePrimary($this->getPrimary())
 			->delete();
 
@@ -264,8 +267,7 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 
 	public function __set($key, $value)
 	{
-		$this->data[$key] = $value;
-		$this->modified[$key] = $value;
+		throw new Nette\DeprecatedException('ActiveRow is read-only; use update() method instead.');
 	}
 
 
@@ -277,7 +279,7 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 		}
 
 		try {
-			list($table, $column) = $this->table->getConnection()->getDatabaseReflection()->getBelongsToReference($this->table->getName(), $key);
+			list($table, $column) = $this->table->getDatabaseReflection()->getBelongsToReference($this->table->getName(), $key);
 			$referenced = $this->getReference($table, $column);
 			if ($referenced !== FALSE) {
 				$this->accessColumn($key, FALSE);
@@ -303,17 +305,12 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 
 	public function __unset($key)
 	{
-		unset($this->data[$key]);
-		unset($this->modified[$key]);
+		throw new Nette\DeprecatedException('ActiveRow is read-only.');
 	}
 
 
 	protected function accessColumn($key, $selectColumn = TRUE)
 	{
-		if (isset($this->modified[$key])) {
-			return;
-		}
-
 		$this->table->accessColumn($key, $selectColumn);
 		if ($this->table->getDataRefreshed() && !$this->dataRefreshed) {
 			$this->data = $this->table[$this->getSignature()]->data;
@@ -333,16 +330,8 @@ class ActiveRow extends Nette\Object implements \IteratorAggregate, \ArrayAccess
 		$this->accessColumn($column);
 		if (array_key_exists($column, $this->data)) {
 			$value = $this->data[$column];
-			$value = $value instanceof ActiveRow ? $value->getPrimary() : $value;
-
-			$referenced = $this->table->getReferencedTable($table, $column, !empty($this->modified[$column]));
-			$referenced = isset($referenced[$value]) ? $referenced[$value] : NULL; // referenced row may not exist
-
-			if (!empty($this->modified[$column])) { // cause saving changed column and prevent regenerating referenced table for $column
-				$this->modified[$column] = 0; // 0 fails on empty, pass on isset
-			}
-
-			return $referenced;
+			$referenced = $this->table->getReferencedTable($table, $column, $value);
+			return isset($referenced[$value]) ? $referenced[$value] : NULL; // referenced row may not exist
 		}
 
 		return FALSE;

@@ -217,6 +217,10 @@ class MimePart extends Nette\Object
 	 */
 	public function setBody($body)
 	{
+		if ($body instanceof Nette\Templating\ITemplate) {
+			$body->mail = $this;
+			$body = $body->__toString(TRUE);
+		}
 		$this->body = $body;
 		return $this;
 	}
@@ -239,7 +243,7 @@ class MimePart extends Nette\Object
 	 * Returns encoded message.
 	 * @return string
 	 */
-	public function generateMessage()
+	public function getEncodedMessage()
 	{
 		$output = '';
 		$boundary = '--------' . Strings::random();
@@ -284,7 +288,7 @@ class MimePart extends Nette\Object
 				$output .= self::EOL;
 			}
 			foreach ($this->parts as $part) {
-				$output .= '--' . $boundary . self::EOL . $part->generateMessage() . self::EOL;
+				$output .= '--' . $boundary . self::EOL . $part->getEncodedMessage() . self::EOL;
 			}
 			$output .= '--' . $boundary.'--';
 		}
@@ -328,9 +332,4 @@ class MimePart extends Nette\Object
 		return $o;
 	}
 
-
-	/**
-	 * Converts a 8 bit string to a quoted-printable string.
-	 * @param  string
-	 * @return string
-	 */}
+}

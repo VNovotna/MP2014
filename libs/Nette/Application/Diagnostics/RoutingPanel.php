@@ -13,8 +13,9 @@ namespace Nette\Application\Diagnostics;
 
 use Nette,
 	Nette\Application\Routers,
-	Nette\Application\UI\Presenter, // templates
-	Nette\Diagnostics\Debugger;
+	Nette\Application\UI\Presenter,
+	Nette\Diagnostics\Helpers, // used in templates
+	Nette\Diagnostics\Dumper;
 
 
 /**
@@ -30,29 +31,36 @@ class RoutingPanel extends Nette\Object implements Nette\Diagnostics\IBarPanel
 	/** @var Nette\Http\IRequest */
 	private $httpRequest;
 
+	/** @var Nette\Application\IPresenterFactory */
+	private $presenterFactory;
+
 	/** @var array */
 	private $routers = array();
 
 	/** @var Nette\Application\Request */
 	private $request;
 
+	/** @var ReflectionClass|ReflectionMethod */
+	private $source;
+
 
 	public static function initializePanel(Nette\Application\Application $application)
 	{
-		Debugger::$blueScreen->addPanel(function($e) use ($application) {
+		Nette\Diagnostics\Debugger::getBlueScreen()->addPanel(function($e) use ($application) {
 			return $e ? NULL : array(
 				'tab' => 'Nette Application',
-				'panel' => '<h3>Requests</h3>' . Nette\Diagnostics\Helpers::clickableDump($application->getRequests())
-					. '<h3>Presenter</h3>' . Nette\Diagnostics\Helpers::clickableDump($application->getPresenter())
+				'panel' => '<h3>Requests</h3>' . Dumper::toHtml($application->getRequests())
+					. '<h3>Presenter</h3>' . Dumper::toHtml($application->getPresenter())
 			);
 		});
 	}
 
 
-	public function __construct(Nette\Application\IRouter $router, Nette\Http\IRequest $httpRequest)
+	public function __construct(Nette\Application\IRouter $router, Nette\Http\IRequest $httpRequest, Nette\Application\IPresenterFactory $presenterFactory)
 	{
 		$this->router = $router;
 		$this->httpRequest = $httpRequest;
+		$this->presenterFactory = $presenterFactory;
 	}
 
 
@@ -102,6 +110,7 @@ class RoutingPanel extends Nette\Object implements Nette\Diagnostics\IBarPanel
 			$matched = 'may';
 			if (empty($this->request)) {
 				$this->request = $request;
+				$this->findSource();
 				$matched = 'yes';
 			}
 		}
@@ -114,6 +123,34 @@ class RoutingPanel extends Nette\Object implements Nette\Diagnostics\IBarPanel
 			'request' => $request,
 			'module' => rtrim($module, ':')
 		);
+	}
+
+
+	private function findSource()
+	{
+		$request = $this->request;
+		$presenter = $request->getPresenterName();
+		try {
+			$class = $this->presenterFactory->getPresenterClass($presenter);
+		} catch (Nette\Application\InvalidPresenterException $e) {
+			return;
+		}
+		$rc = Nette\Reflection\ClassType::from($class);
+
+		if ($rc->isSubclassOf('Nette\Application\UI\Presenter')) {
+			if (isset($request->parameters[Presenter::SIGNAL_KEY])) {
+				$method = $class::formatSignalMethod($request->parameters[Presenter::SIGNAL_KEY]);
+
+			} elseif (isset($request->parameters[Presenter::ACTION_KEY])) {
+				$action = $request->parameters[Presenter::ACTION_KEY];
+				$method = $class::formatActionMethod($action);
+				if (!$rc->hasMethod($method)) {
+					$method = $class::formatRenderMethod($action);
+				}
+			}
+		}
+
+		$this->source = isset($method) && $rc->hasMethod($method) ? $rc->getMethod($method) : $rc;
 	}
 
 }

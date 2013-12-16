@@ -29,7 +29,7 @@ class ArgumentOutOfRangeException extends \InvalidArgumentException
  */
 class InvalidStateException extends \RuntimeException
 {
-	}
+}
 
 
 /**
@@ -89,7 +89,6 @@ class DirectoryNotFoundException extends IOException
 }
 
 
-
 /**
  * The exception that is thrown when an argument does not match with the expected value.
  */
@@ -114,7 +113,6 @@ class UnexpectedValueException extends \UnexpectedValueException
 }
 
 
-
 /**
  * The exception that is thrown when static class is instantiated.
  */
@@ -127,7 +125,6 @@ class StaticClassException extends \LogicException
  * The exception that indicates errors that can not be recovered from. Execution of
  * the script should be halted.
  */
-
 class FatalErrorException extends \ErrorException
 {
 
@@ -138,5 +135,3 @@ class FatalErrorException extends \ErrorException
 	}
 
 }
-
-

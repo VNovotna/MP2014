@@ -21,12 +21,13 @@ class UserPresenter extends SecuredPresenter {
      * @return \Nette\Application\UI\Form
      */
     protected function createComponentMcNick() {
+        $mcname = $this->userRepo->findById($this->user->id)->fetch()->mcname;
         $form = new Form();
         $form->addGroup('Minecraft nick');
-        $form->addText('mcname', 'Minecraft nick: ');
+        $form->addText('mcname', 'Minecraft nick: ')
+                ->setDefaultValue($mcname);
         $form->addSubmit('submit', 'Odeslat');
-        $form->onSuccess[] = $this->mcNickSubmitted;
-        //fill in the data
+        $form->onSuccess[] = $this->mcNickSubmitted;        
         return $form;
     }
 

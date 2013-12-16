@@ -38,7 +38,7 @@ class Property extends \ReflectionProperty
 
 	public function __toString()
 	{
-		return 'Property ' . parent::getDeclaringClass()->getName() . '::$' . $this->getName();
+		return parent::getDeclaringClass()->getName() . '::$' . $this->getName();
 	}
 
 
@@ -105,10 +105,11 @@ class Property extends \ReflectionProperty
 
 
 	/**
-	 * @return ClassType
+	 * @deprecated
 	 */
 	public static function getReflection()
 	{
+		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		return new ClassType(get_called_class());
 	}
 
@@ -127,7 +128,7 @@ class Property extends \ReflectionProperty
 
 	public function __set($name, $value)
 	{
-		return ObjectMixin::set($this, $name, $value);
+		ObjectMixin::set($this, $name, $value);
 	}
 
 

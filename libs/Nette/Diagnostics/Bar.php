@@ -45,6 +45,17 @@ class Bar extends Nette\Object
 
 
 	/**
+	 * Returns panel with given id
+	 * @param  string
+	 * @return IBarPanel|NULL
+	 */
+	public function getPanel($id)
+	{
+		return isset($this->panels[$id]) ? $this->panels[$id] : NULL;
+	}
+
+
+	/**
 	 * Renders debug bar.
 	 * @return void
 	 */
@@ -63,13 +74,34 @@ class Bar extends Nette\Object
 				$panels[] = array(
 					'id' => "error-" . preg_replace('#[^a-z0-9]+#i', '-', $id),
 					'tab' => "Error in $id",
-					'panel' => '<h1>Error: ' . $id . '</h1><div class="nette-inner">' . nl2br(htmlSpecialChars($e)) . '</div>',
+					'panel' => '<h1>Error: ' . $id . '</h1><div class="nette-inner">' . nl2br(htmlSpecialChars($e, ENT_IGNORE)) . '</div>',
 				);
 				while (ob_get_level() > $obLevel) { // restore ob-level if broken
 					ob_end_clean();
 				}
 			}
 		}
+
+		@session_start();
+		$session = & $_SESSION['__NF']['debuggerbar'];
+		if (preg_match('#^Location:#im', implode("\n", headers_list()))) {
+			$session[] = $panels;
+			return;
+		}
+
+		foreach (array_reverse((array) $session) as $reqId => $oldpanels) {
+			$panels[] = array(
+				'tab' => '<span title="Previous request before redirect">previous</span>',
+				'panel' => NULL,
+				'previous' => TRUE,
+			);
+			foreach ($oldpanels as $panel) {
+				$panel['id'] .= '-' . $reqId;
+				$panels[] = $panel;
+			}
+		}
+		$session = NULL;
+
 		require __DIR__ . '/templates/bar.phtml';
 	}
 

@@ -156,11 +156,24 @@ final class Arrays
 	 * Returns flattened array.
 	 * @return array
 	 */
-	public static function flatten(array $arr)
+	public static function flatten(array $arr, $preserveKeys = FALSE)
 	{
 		$res = array();
-		array_walk_recursive($arr, function($a) use (& $res) { $res[] = $a; });
+		$cb = $preserveKeys
+			? function($v, $k) use (& $res) { $res[$k] = $v; }
+			: function($v) use (& $res) { $res[] = $v; };
+		array_walk_recursive($arr, $cb);
 		return $res;
+	}
+
+
+	/**
+	 * Finds whether a variable is a zero-based integer indexed array.
+	 * @return bool
+	 */
+	public static function isList($value)
+	{
+		return is_array($value) && (!$value || array_keys($value) === range(0, count($value) - 1));
 	}
 
 }

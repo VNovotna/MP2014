@@ -74,9 +74,9 @@ class MacroSet extends Nette\Object implements Latte\IMacro
 	 */
 	public function nodeOpened(MacroNode $node)
 	{
-		if ($this->macros[$node->name][2] && $node->htmlNode) {
+		if ($this->macros[$node->name][2] && $node->prefix) {
 			$node->isEmpty = TRUE;
-			$this->compiler->setContext(Latte\Compiler::CONTEXT_DOUBLE_QUOTED);
+			$this->compiler->setContext(Latte\Compiler::CONTEXT_DOUBLE_QUOTED_ATTR);
 			$res = $this->compile($node, $this->macros[$node->name][2]);
 			$this->compiler->setContext(NULL);
 			if (!$node->attrCode) {
@@ -117,7 +117,7 @@ class MacroSet extends Nette\Object implements Latte\IMacro
 		if (is_string($def)) {
 			return $writer->write($def);
 		} else {
-			return Nette\Callback::create($def)->invoke($node, $writer);
+			return Nette\Utils\Callback::invoke($def, $node, $writer);
 		}
 	}
 

@@ -36,25 +36,25 @@ class ImageButton extends SubmitButton
 
 
 	/**
-	 * Returns HTML name of control.
-	 * @return string
-	 */
-	public function getHtmlName()
-	{
-		$name = parent::getHtmlName();
-		return strpos($name, '[') === FALSE ? $name : $name . '[]';
-	}
-
-
-	/**
 	 * Loads HTTP data.
 	 * @return void
 	 */
 	public function loadHttpData()
 	{
-		$path = $this->getHtmlName(); // img_x or img['x']
-		$path = explode('[', strtr(str_replace(']', '', strpos($path, '[') === FALSE ? $path . '.x' : substr($path, 0, -2)), '.', '_'));
-		$this->setValue(Nette\Utils\Arrays::get($this->getForm()->getHttpData(), $path, NULL));
+		parent::loadHttpData();
+		$this->value = $this->value
+			? array((int) array_shift($this->value), (int) array_shift($this->value))
+			: NULL;
+	}
+
+
+	/**
+	 * Returns HTML name of control.
+	 * @return string
+	 */
+	public function getHtmlName()
+	{
+		return parent::getHtmlName() . '[]';
 	}
 
 }

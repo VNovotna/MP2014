@@ -33,7 +33,7 @@ class Validators extends Nette\Object
 		'string' =>  'is_string',
 		'unicode' => array(__CLASS__, 'isUnicode'),
 		'array' => 'is_array',
-		'list' => array(__CLASS__, 'isList'),
+		'list' => array('Nette\Utils\Arrays', 'isList'),
 		'object' => 'is_object',
 		'resource' => 'is_resource',
 		'scalar' => 'is_scalar',
@@ -42,6 +42,8 @@ class Validators extends Nette\Object
 		'email' => array(__CLASS__, 'isEmail'),
 		'url' => array(__CLASS__, 'isUrl'),
 		'none' => array(__CLASS__, 'isNone'),
+		'type' => array(__CLASS__, 'isType'),
+		'identifier' => array('Nette\PhpGenerator\Helpers', 'isIdentifier'),
 		'pattern' => NULL,
 		'alnum' => 'ctype_alnum',
 		'alpha' => 'ctype_alpha',
@@ -214,7 +216,7 @@ class Validators extends Nette\Object
 	 */
 	public static function isList($value)
 	{
-		return is_array($value) && (!$value || array_keys($value) === range(0, count($value) - 1));
+		return Arrays::isList($value);
 	}
 
 
@@ -226,7 +228,8 @@ class Validators extends Nette\Object
 	 */
 	public static function isInRange($value, $range)
 	{
-		return (!isset($range[0]) || $value >= $range[0]) && (!isset($range[1]) || $value <= $range[1]);
+		return (!isset($range[0]) || $range[0] === '' || $value >= $range[0])
+			&& (!isset($range[1]) || $range[1] === '' || $value <= $range[1]);
 	}
 
 
@@ -241,7 +244,7 @@ class Validators extends Nette\Object
 		$localPart = "(?:\"(?:[ !\\x23-\\x5B\\x5D-\\x7E]*|\\\\[ -~])+\"|$atom+(?:\\.$atom+)*)"; // quoted or unquoted
 		$alpha = "a-z\x80-\xFF"; // superset of IDN
 		$domain = "[0-9$alpha](?:[-0-9$alpha]{0,61}[0-9$alpha])?"; // RFC 1034 one domain component
-		$topDomain = "[$alpha][-0-9$alpha]{0,17}[$alpha]";
+		$topDomain = "[$alpha](?:[-0-9$alpha]{0,17}[$alpha])?";
 		return (bool) preg_match("(^$localPart@(?:$domain\\.)+$topDomain\\z)i", $value);
 	}
 
@@ -255,8 +258,19 @@ class Validators extends Nette\Object
 	{
 		$alpha = "a-z\x80-\xFF";
 		$domain = "[0-9$alpha](?:[-0-9$alpha]{0,61}[0-9$alpha])?";
-		$topDomain = "[$alpha][-0-9$alpha]{0,17}[$alpha]";
+		$topDomain = "[$alpha](?:[-0-9$alpha]{0,17}[$alpha])?";
 		return (bool) preg_match("(^https?://(?:(?:$domain\\.)*$topDomain|\\d{1,3}\.\\d{1,3}\.\\d{1,3}\.\\d{1,3}|\[[0-9a-f:]{3,39}\])(:\\d{1,5})?(/\\S*)?\\z)i", $value);
+	}
+
+
+	/**
+	 * Checks whether the input is a class, interface or trait
+	 * @param  string
+	 * @return bool
+	 */
+	public static function isType($type)
+	{
+		return class_exists($type) || interface_exists($type) || (PHP_VERSION_ID >= 50400 && trait_exists($type));
 	}
 
 }

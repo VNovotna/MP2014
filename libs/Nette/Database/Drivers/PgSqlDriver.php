@@ -56,7 +56,7 @@ class PgSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 	/**
 	 * Formats date-time for use in a SQL statement.
 	 */
-	public function formatDateTime(\DateTime $value)
+	public function formatDateTime(/*\DateTimeInterface*/ $value)
 	{
 		return $value->format("'Y-m-d H:i:s'");
 	}
@@ -89,7 +89,7 @@ class PgSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 	/**
 	 * Normalizes result row.
 	 */
-	public function normalizeRow($row, $statement)
+	public function normalizeRow($row)
 	{
 		return $row;
 	}
@@ -113,7 +113,7 @@ class PgSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 				JOIN pg_catalog.pg_namespace AS n ON n.oid = c.relnamespace
 			WHERE
 				c.relkind IN ('r', 'v')
-				AND n.nspname = current_schema()
+				AND ARRAY[n.nspname] <@ pg_catalog.current_schemas(FALSE)
 			ORDER BY
 				c.relname
 		") as $row) {
@@ -152,7 +152,7 @@ class PgSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 			WHERE
 				c.relkind IN ('r', 'v')
 				AND c.relname::varchar = {$this->connection->quote($table)}
-				AND n.nspname = current_schema()
+				AND ARRAY[n.nspname] <@ pg_catalog.current_schemas(FALSE)
 				AND a.attnum > 0
 				AND NOT a.attisdropped
 			ORDER BY
@@ -188,7 +188,7 @@ class PgSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 				JOIN pg_catalog.pg_class AS c2 ON i.indexrelid = c2.oid
 				LEFT JOIN pg_catalog.pg_attribute AS a ON c1.oid = a.attrelid AND a.attnum = ANY(i.indkey)
 			WHERE
-				n.nspname = current_schema()
+				ARRAY[n.nspname] <@ pg_catalog.current_schemas(FALSE)
 				AND c1.relkind = 'r'
 				AND c1.relname = {$this->connection->quote($table)}
 		") as $row) {
@@ -222,10 +222,19 @@ class PgSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 				JOIN pg_catalog.pg_attribute AS al ON al.attrelid = cl.oid AND al.attnum = co.conkey[1]
 				JOIN pg_catalog.pg_attribute AS af ON af.attrelid = cf.oid AND af.attnum = co.confkey[1]
 			WHERE
-				n.nspname = current_schema()
+				ARRAY[n.nspname] <@ pg_catalog.current_schemas(FALSE)
 				AND co.contype = 'f'
 				AND cl.relname = {$this->connection->quote($table)}
 		")->fetchAll();
+	}
+
+
+	/**
+	 * Returns associative array of detected types (IReflection::FIELD_*) in result set.
+	 */
+	public function getColumnTypes(\PDOStatement $statement)
+	{
+		return Nette\Database\Helpers::detectTypes($statement);
 	}
 
 
@@ -234,7 +243,7 @@ class PgSqlDriver extends Nette\Object implements Nette\Database\ISupplementalDr
 	 */
 	public function isSupported($item)
 	{
-		return $item === self::SUPPORT_COLUMNS_META || $item === self::SUPPORT_SEQUENCE;
+		return $item === self::SUPPORT_SEQUENCE || $item === self::SUPPORT_SUBSELECT;
 	}
 
 }

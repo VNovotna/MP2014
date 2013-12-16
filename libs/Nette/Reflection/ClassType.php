@@ -51,9 +51,6 @@ use Nette,
 class ClassType extends \ReflectionClass
 {
 
-	/** @var array (method => array(type => callable)) */
-	private static $extMethods;
-
 
 	/**
 	 * @param  string|object
@@ -67,69 +64,7 @@ class ClassType extends \ReflectionClass
 
 	public function __toString()
 	{
-		return 'Class ' . $this->getName();
-	}
-
-
-	/**
-	 * @return bool
-	 */
-	public function hasEventProperty($name)
-	{
-		if (preg_match('#^on[A-Z]#', $name) && $this->hasProperty($name)) {
-			$rp = $this->getProperty($name);
-			return $rp->isPublic() && !$rp->isStatic();
-		}
-		return FALSE;
-	}
-
-
-	/**
-	 * Adds a method to class.
-	 * @param  string  method name
-	 * @param  mixed   callable
-	 * @return self
-	 */
-	public function setExtensionMethod($name, $callback)
-	{
-		$l = & self::$extMethods[strtolower($name)];
-		$l[strtolower($this->getName())] = new Nette\Callback($callback);
-		$l[''] = NULL;
-		return $this;
-	}
-
-
-	/**
-	 * Returns extension method.
-	 * @param  string  method name
-	 * @return mixed
-	 */
-	public function getExtensionMethod($name)
-	{
-		$class = strtolower($this->getName());
-		$l = & self::$extMethods[strtolower($name)];
-
-		if (empty($l)) {
-			return FALSE;
-
-		} elseif (isset($l[''][$class])) { // cached value
-			return $l[''][$class];
-		}
-
-		$cl = $class;
-		do {
-			if (isset($l[$cl])) {
-				return $l[''][$class] = $l[$cl];
-			}
-		} while (($cl = strtolower(get_parent_class($cl))) !== '');
-
-		foreach (class_implements($class) as $cl) {
-			$cl = strtolower($cl);
-			if (isset($l[$cl])) {
-				return $l[''][$class] = $l[$cl];
-			}
-		}
-		return $l[''][$class] = FALSE;
+		return $this->getName();
 	}
 
 
@@ -279,10 +214,11 @@ class ClassType extends \ReflectionClass
 
 
 	/**
-	 * @return ClassType
+	 * @deprecated
 	 */
 	public static function getReflection()
 	{
+		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		return new ClassType(get_called_class());
 	}
 
@@ -301,7 +237,7 @@ class ClassType extends \ReflectionClass
 
 	public function __set($name, $value)
 	{
-		return ObjectMixin::set($this, $name, $value);
+		ObjectMixin::set($this, $name, $value);
 	}
 
 

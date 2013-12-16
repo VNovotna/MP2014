@@ -222,15 +222,11 @@ class Finder extends Nette\Object implements \IteratorAggregate
 	 */
 	private function buildIterator($path)
 	{
-		if (PHP_VERSION_ID < 50301) {
-			$iterator = new Nette\Utils\RecursiveDirectoryIteratorFixed($path);
-		} else {
-			$iterator = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
-		}
+		$iterator = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
 
 		if ($this->exclude) {
 			$filters = $this->exclude;
-			$iterator = new Nette\Iterators\RecursiveFilter($iterator, function($file) use ($filters) {
+			$iterator = new Nette\Iterators\RecursiveFilter($iterator, function($foo, $foo, $file) use ($filters) {
 				if (!$file->isDot() && !$file->isFile()) {
 					foreach ($filters as $filter) {
 						if (!call_user_func($filter, $file)) {
@@ -249,7 +245,7 @@ class Finder extends Nette\Object implements \IteratorAggregate
 
 		if ($this->groups) {
 			$groups = $this->groups;
-			$iterator = new Nette\Iterators\Filter($iterator, function($file) use ($groups) {
+			$iterator = new Nette\Iterators\Filter($iterator, function($foo, $foo, $file) use ($groups) {
 				foreach ($groups as $filters) {
 					foreach ($filters as $filter) {
 						if (!call_user_func($filter, $file)) {
@@ -388,16 +384,4 @@ class Finder extends Nette\Object implements \IteratorAggregate
 		}
 	}
 
-}
-
-
-if (PHP_VERSION_ID < 50301) {
-	/** @internal */
-	class RecursiveDirectoryIteratorFixed extends \RecursiveDirectoryIterator
-	{
-		function hasChildren()
-		{
-			return parent::hasChildren(TRUE);
-		}
-	}
 }

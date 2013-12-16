@@ -28,7 +28,7 @@ class Logger extends Nette\Object
 		CRITICAL = 'critical';
 
 	/** @var int interval for sending email is 2 days */
-	public static $emailSnooze = 172800;
+	public $emailSnooze = 172800;
 
 	/** @var callable handler for sending emails */
 	public $mailer = array(__CLASS__, 'defaultMailer');
@@ -36,7 +36,7 @@ class Logger extends Nette\Object
 	/** @var string name of the directory where errors should be logged; FALSE means that logging is disabled */
 	public $directory;
 
-	/** @var string email to sent error notifications */
+	/** @var string|array email or emails to which send error notifications */
 	public $email;
 
 
@@ -46,7 +46,7 @@ class Logger extends Nette\Object
 	 * @param  int     one of constant INFO, WARNING, ERROR (sends email), CRITICAL (sends email)
 	 * @return bool    was successful?
 	 */
-	public function log($message, $priority = self::INFO)
+	public function log($message, $priority = NULL)
 	{
 		if (!is_dir($this->directory)) {
 			throw new Nette\DirectoryNotFoundException("Directory '$this->directory' is not found or is not directory.");
@@ -55,13 +55,14 @@ class Logger extends Nette\Object
 		if (is_array($message)) {
 			$message = implode(' ', $message);
 		}
-		$res = error_log(trim($message) . PHP_EOL, 3, $this->directory . '/' . strtolower($priority) . '.log');
+		$message = preg_replace('#\s*\r?\n\s*#', ' ', trim($message));
+		$res = error_log($message . PHP_EOL, 3, $this->directory . '/' . strtolower($priority ?: self::INFO) . '.log');
 
 		if (($priority === self::ERROR || $priority === self::CRITICAL) && $this->email && $this->mailer
-			&& @filemtime($this->directory . '/email-sent') + self::$emailSnooze < time() // @ - file may not exist
+			&& @filemtime($this->directory . '/email-sent') + $this->emailSnooze < time() // @ - file may not exist
 			&& @file_put_contents($this->directory . '/email-sent', 'sent') // @ - file may not be writable
 		) {
-			Nette\Callback::create($this->mailer)->invoke($message, $this->email);
+			call_user_func($this->mailer, $message, implode(', ', (array) $this->email));
 		}
 		return $res;
 	}
@@ -75,13 +76,7 @@ class Logger extends Nette\Object
 	 */
 	public static function defaultMailer($message, $email)
 	{
-		$host = php_uname('n');
-		foreach (array('HTTP_HOST','SERVER_NAME', 'HOSTNAME') as $item) {
-			if (isset($_SERVER[$item])) {
-				$host = $_SERVER[$item]; break;
-			}
-		}
-
+		$host = preg_replace('#[^\w.-]+#', '', isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : php_uname('n'));
 		$parts = str_replace(
 			array("\r\n", "\n"),
 			array("\n", PHP_EOL),

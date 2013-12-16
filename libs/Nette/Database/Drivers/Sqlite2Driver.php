@@ -36,7 +36,7 @@ class Sqlite2Driver extends SqliteDriver
 	 */
 	public function getForeignKeys($table)
 	{
-		throw new NotSupportedException; // @see http://www.sqlite.org/foreignkeys.html
+		throw new Nette\NotSupportedException; // @see http://www.sqlite.org/foreignkeys.html
 	}
 
 }

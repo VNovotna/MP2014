@@ -67,7 +67,7 @@ class Method extends \ReflectionMethod
 
 
 	/**
-	 * @return Nette\Callback
+	 * @deprecated
 	 */
 	public function toCallback()
 	{
@@ -77,7 +77,7 @@ class Method extends \ReflectionMethod
 
 	public function __toString()
 	{
-		return 'Method ' . parent::getDeclaringClass()->getName() . '::' . $this->getName() . '()';
+		return parent::getDeclaringClass()->getName() . '::' . $this->getName() . '()';
 	}
 
 
@@ -176,10 +176,11 @@ class Method extends \ReflectionMethod
 
 
 	/**
-	 * @return ClassType
+	 * @deprecated
 	 */
 	public static function getReflection()
 	{
+		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		return new ClassType(get_called_class());
 	}
 
@@ -198,7 +199,7 @@ class Method extends \ReflectionMethod
 
 	public function __set($name, $value)
 	{
-		return ObjectMixin::set($this, $name, $value);
+		ObjectMixin::set($this, $name, $value);
 	}
 
 

@@ -58,6 +58,7 @@ final class SafeStream
 	 */
 	public static function register()
 	{
+		@stream_wrapper_unregister(self::PROTOCOL); // intentionally @
 		return stream_wrapper_register(self::PROTOCOL, __CLASS__);
 	}
 
@@ -119,7 +120,7 @@ final class SafeStream
 		if ($mode === 'r+' || $mode[0] === 'a' || $mode[0] === 'c') {
 			$stat = fstat($this->handle);
 			fseek($this->handle, 0);
-			if ($stat['size'] !== 0 && stream_copy_to_stream($this->handle, $this->tempHandle) !== $stat['size']) {
+			if (stream_copy_to_stream($this->handle, $this->tempHandle) !== $stat['size']) {
 				$this->clean();
 				return FALSE;
 			}
@@ -184,8 +185,7 @@ final class SafeStream
 		fclose($this->handle);
 		fclose($this->tempHandle);
 
-		if ($this->writeError || !rename($this->tempFile, $this->file) // try to rename temp file
-		) {
+		if ($this->writeError || !rename($this->tempFile, $this->file)) { // try to rename temp file
 			unlink($this->tempFile); // otherwise delete temp file
 			if ($this->deleteFile) {
 				unlink($this->file);
@@ -220,6 +220,17 @@ final class SafeStream
 		}
 
 		return $res;
+	}
+
+
+	/**
+	 * Truncates a file to a given length.
+	 * @param  int    The size to truncate to.
+	 * @return bool
+	 */
+	public function stream_truncate($size)
+	{
+		return ftruncate($this->tempHandle, $size);
 	}
 
 

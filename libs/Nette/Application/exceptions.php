@@ -28,7 +28,7 @@ class AbortException extends \Exception
  */
 class ApplicationException extends \Exception
 {
-	}
+}
 
 
 /**
@@ -50,13 +50,7 @@ class BadRequestException extends \Exception
 
 	public function __construct($message = '', $code = 0, \Exception $previous = NULL)
 	{
-		if ($code < 200 || $code > 504) {
-			$code = $this->defaultCode;
-		}
-
-		{
-			parent::__construct($message, $code, $previous);
-		}
+		parent::__construct($message, $code < 200 || $code > 504 ? $this->defaultCode : $code, $previous);
 	}
 
 }

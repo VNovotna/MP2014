@@ -66,7 +66,6 @@ class Request extends Nette\Object implements IRequest
 		$headers = NULL, $method = NULL, $remoteAddress = NULL, $remoteHost = NULL)
 	{
 		$this->url = $url;
-		$this->url->freeze();
 		if ($query === NULL) {
 			parse_str($url->query, $this->query);
 		} else {
@@ -89,14 +88,6 @@ class Request extends Nette\Object implements IRequest
 	final public function getUrl()
 	{
 		return $this->url;
-	}
-
-
-	/** @deprecated */
-	function getUri()
-	{
-		trigger_error(__METHOD__ . '() is deprecated; use ' . __CLASS__ . '::getUrl() instead.', E_USER_WARNING);
-		return $this->getUrl();
 	}
 
 

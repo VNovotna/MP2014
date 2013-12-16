@@ -50,9 +50,6 @@ class Application extends Nette\Object
 	/** @var array of function(Application $sender, \Exception $e); Occurs when an unhandled exception occurs in the application */
 	public $onError;
 
-	/** @deprecated */
-	public $allowedMethods;
-
 	/** @var Request[] */
 	private $requests = array();
 
@@ -87,107 +84,99 @@ class Application extends Nette\Object
 	 */
 	public function run()
 	{
-		$request = NULL;
-		$repeatedError = FALSE;
-		do {
-			try {
-				if (count($this->requests) > self::$maxLoop) {
-					throw new ApplicationException('Too many loops detected in application life cycle.');
-				}
+		try {
+			$this->onStartup($this);
+			$this->processRequest($this->createInitialRequest());
+			$this->onShutdown($this);
 
-				if (!$request) {
-					$this->onStartup($this);
-
-					$request = $this->router->match($this->httpRequest);
-					if (!$request instanceof Request) {
-						$request = NULL;
-						throw new BadRequestException('No route for HTTP request.');
-					}
-
-					if (strcasecmp($request->getPresenterName(), $this->errorPresenter) === 0) {
-						throw new BadRequestException('Invalid request. Presenter is not achievable.');
-					}
-				}
-
-				$this->requests[] = $request;
-				$this->onRequest($this, $request);
-
-				// Instantiate presenter
-				$presenterName = $request->getPresenterName();
+		} catch (\Exception $e) {
+			$this->onError($this, $e);
+			if ($this->catchExceptions && $this->errorPresenter) {
 				try {
-					$this->presenter = $this->presenterFactory->createPresenter($presenterName);
-				} catch (InvalidPresenterException $e) {
-					throw new BadRequestException($e->getMessage(), 404, $e);
-				}
-
-				$this->presenterFactory->getPresenterClass($presenterName);
-				$request->setPresenterName($presenterName);
-				$request->freeze();
-
-				// Execute presenter
-				$response = $this->presenter->run($request);
-				if ($response) {
-					$this->onResponse($this, $response);
-				}
-
-				// Send response
-				if ($response instanceof Responses\ForwardResponse) {
-					$request = $response->getRequest();
-					continue;
-
-				} elseif ($response instanceof IResponse) {
-					$response->send($this->httpRequest, $this->httpResponse);
-				}
-				break;
-
-			} catch (\Exception $e) {
-				// fault barrier
-				$this->onError($this, $e);
-
-				if (!$this->catchExceptions) {
+					$this->processException($e);
 					$this->onShutdown($this, $e);
-					throw $e;
-				}
+					return;
 
-				if ($repeatedError) {
-					$e = new ApplicationException('An error occurred while executing error-presenter', 0, $e);
-				}
-
-				if (!$this->httpResponse->isSent()) {
-					$this->httpResponse->setCode($e instanceof BadRequestException ? $e->getCode() : 500);
-				}
-
-				if (!$repeatedError && $this->errorPresenter) {
-					$repeatedError = TRUE;
-					if ($this->presenter instanceof UI\Presenter) {
-						try {
-							$this->presenter->forward(":$this->errorPresenter:", array('exception' => $e));
-						} catch (AbortException $foo) {
-							$request = $this->presenter->getLastCreatedRequest();
-						}
-					} else {
-						$request = new Request(
-							$this->errorPresenter,
-							Request::FORWARD,
-							array('exception' => $e)
-						);
-					}
-					// continue
-
-				} else { // default error handler
-					if ($e instanceof BadRequestException) {
-						$code = $e->getCode();
-					} else {
-						$code = 500;
-						Nette\Diagnostics\Debugger::log($e, Nette\Diagnostics\Debugger::ERROR);
-					}
-					require __DIR__ . '/templates/error.phtml';
-					break;
+				} catch (\Exception $e) {
+					$this->onError($this, $e);
 				}
 			}
-		} while (1);
+			$this->onShutdown($this, $e);
+			throw $e;
+		}
+	}
 
-		$this->onShutdown($this, isset($e) ? $e : NULL);
+
+	/**
+	 * @return Request
+	 */
+	public function createInitialRequest()
+	{
+		$request = $this->router->match($this->httpRequest);
+
+		if (!$request instanceof Request) {
+			throw new BadRequestException('No route for HTTP request.');
+
+		} elseif (strcasecmp($request->getPresenterName(), $this->errorPresenter) === 0) {
+			throw new BadRequestException('Invalid request. Presenter is not achievable.');
+		}
+
+		try {
+			$name = $request->getPresenterName();
+			$this->presenterFactory->getPresenterClass($name);
+			$request->setPresenterName($name);
+		} catch (InvalidPresenterException $e) {
+			throw new BadRequestException($e->getMessage(), 0, $e);
+		}
+
+		return $request;
+	}
+
+
+	/**
+	 * @return void
+	 */
+	public function processRequest(Request $request)
+	{
+		if (count($this->requests) > self::$maxLoop) {
+			throw new ApplicationException('Too many loops detected in application life cycle.');
+		}
+
+		$this->requests[] = $request;
+		$this->onRequest($this, $request);
+
+		$this->presenter = $this->presenterFactory->createPresenter($request->getPresenterName());
+		$response = $this->presenter->run($request);
+
+		if ($response instanceof Responses\ForwardResponse) {
+			$this->processRequest($response->getRequest());
+
+		} elseif ($response) {
+			$this->onResponse($this, $response);
+			$response->send($this->httpRequest, $this->httpResponse);
+		}
+	}
+
+
+	/**
+	 * @return void
+	 */
+	public function processException(\Exception $e)
+	{
+		if (!$this->httpResponse->isSent()) {
+			$this->httpResponse->setCode($e instanceof BadRequestException ? ($e->getCode() ?: 404) : 500);
+		}
+
+		$args = array('exception' => $e, 'request' => end($this->requests) ?: NULL);
+		if ($this->presenter instanceof UI\Presenter) {
+			try {
+				$this->presenter->forward(":$this->errorPresenter:", $args);
+			} catch (AbortException $foo) {
+				$this->processRequest($this->presenter->getLastCreatedRequest());
+			}
+		} else {
+			$this->processRequest(new Request($this->errorPresenter, Request::FORWARD, $args));
+		}
 	}
 
 
@@ -240,12 +229,14 @@ class Application extends Nette\Object
 	/** @deprecated */
 	function storeRequest($expiration = '+ 10 minutes')
 	{
+		trigger_error(__METHOD__ . '() is deprecated; use $presenter->storeRequest() instead.', E_USER_DEPRECATED);
 		return $this->presenter->storeRequest($expiration);
 	}
 
 	/** @deprecated */
 	function restoreRequest($key)
 	{
+		trigger_error(__METHOD__ . '() is deprecated; use $presenter->restoreRequest() instead.', E_USER_DEPRECATED);
 		return $this->presenter->restoreRequest($key);
 	}
 

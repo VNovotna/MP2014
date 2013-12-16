@@ -47,12 +47,13 @@ class PresenterComponentReflection extends Nette\Reflection\ClassType
 		$params = array();
 		if (is_subclass_of($class, 'Nette\Application\UI\PresenterComponent')) {
 			$defaults = get_class_vars($class);
-			foreach ($class::getPersistentParams() as $name => $meta) {
-				if (is_string($meta)) {
-					$name = $meta;
+			foreach ($class::getPersistentParams() as $name => $default) {
+				if (is_int($name)) {
+					$name = $default;
+					$default = $defaults[$name];
 				}
 				$params[$name] = array(
-					'def' => $defaults[$name],
+					'def' => $default,
 					'since' => $class,
 				);
 			}

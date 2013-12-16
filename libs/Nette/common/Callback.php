@@ -15,12 +15,7 @@ use Nette;
 
 
 /**
- * PHP callback encapsulation.
- *
- * @author     David Grudl
- * @property-read bool $callable
- * @property-read string|array|\Closure $native
- * @property-read bool $static
+ * @deprecated
  */
 final class Callback extends Object
 {
@@ -145,6 +140,21 @@ final class Callback extends Object
 	public function isStatic()
 	{
 		return is_array($this->cb) ? is_string($this->cb[0]) : is_string($this->cb);
+	}
+
+
+	/**
+	 * Duplicates the callback with a new bound object.
+	 * @return Callback
+	 */
+	public function bindTo($newthis)
+	{
+		if (is_string($this->cb) && strpos($this->cb, '::')) {
+			$this->cb = explode('::', $this->cb);
+		} elseif (!is_array($this->cb)) {
+			throw new InvalidStateException("Callback '$this' have not any bound object.");
+		}
+		return new static($newthis, $this->cb[1]);
 	}
 
 
