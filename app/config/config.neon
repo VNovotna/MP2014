@@ -27,6 +27,8 @@ common:
         serverCommander: ServerCommander
         backupModel: BackupModel
         fileModel: FileModel
+        systemConfigModel: SystemConfigModel
+        gameUpdateModel: GameUpdateModel
 
     factories:
 
