@@ -71,6 +71,9 @@
                             <li><a n:href="Backup:">Záloha</a></li>
                             <li><a n:href="Permissions:">Oprávnění</a></li>
                             <li><a n:href="GameSettings:">Nastavení</a></li>
+                            {if $user->isAllowed('server-settings', 'edit')}
+                                <li><a n:href="VersionManager:">Aktualizace</a></li>
+                            {/if}
                             {/ifset}
                         <li><a n:href="Create:">Nový server</a></li>
                     </ul>
