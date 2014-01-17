@@ -6,6 +6,7 @@
  * @author viky
  */
 class GameUpdateModel {
+
     /**
      * parse whole page in url searching for links for minecraft_server
      * @param string $url
@@ -52,17 +53,17 @@ class GameUpdateModel {
     public function getSnapshotsJars() {
         return $this->parseForLinks('https://mojang.com/');
     }
-/**
- * return all filenames that are already downloaded
- * @param string $path
- * @return array version => 'filename'
- */
+    /**
+     * return all filenames that are already downloaded
+     * @param string $path
+     * @return array 'filename' => version
+     */
     public function getAvailableJars($path) {
-        foreach (Finder::findFiles('minecraft_server.[0-9a-z.]*.jar')->in($path) as $key => $file) {
-            echo $key; // $key je řetězec s názvem souboru včetně cesty
-            echo $file; // $file je objektem SplFileInfo
+        $result = array();
+        foreach (Finder::findFiles('minecraft_server.[0-9a-z.]*.jar')->in($path)->orderByCTime() as $file) {
+            $result[$file->getFilename()] = $this->getVersionFromFileName($file->getFilename());
         }
-        return array();
+        return $result;
     }
 
 }

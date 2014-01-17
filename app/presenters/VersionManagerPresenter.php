@@ -7,6 +7,9 @@
  */
 class VersionManagerPresenter extends SecuredPresenter {
 
+    /** @var \DB\ServerRepository */
+    private $serverRepo;
+
     /** @var GameUpdateModel */
     private $gameUpdater;
 
@@ -16,40 +19,14 @@ class VersionManagerPresenter extends SecuredPresenter {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }
+        $this->serverRepo = $this->context->serverRepository;
         $this->gameUpdater = $this->context->gameUpdateModel;
     }
 
-    /**
-     * @return \Nette\Application\UI\Form
-     */
-    protected function createComponentUpdateForm() {
-        $form = new Form();
-        if ($this->user->isAllowed('server-settings', 'edit')) {
-            $form->addGroup('aktualizace');
-            $items = array_merge($this->gameUpdater->getSnapshotsJars(), $this->gameUpdater->getStableJars());
-            dump($this->gameUpdater->getAvailableJars($this->serverRepo->getPath($this->selectedServerId)));
-            $form->addSelect('version', 'Dostupné verze:', $items);
-            $form->addSubmit('update', 'Aktualizovat');
-            $form->onSuccess[] = $this->updateFormSubmitted;
-        }
-        return $form;
-    }
-
-    /**
-     * @param \Nette\Application\UI\Form $form
-     */
-    public function updateFormSubmitted(Form $form) {
-        $values = $form->getValues();
-
-        $this->flashMessage('Server byl aktualizován. Změny se projeví při přístím startu hry.', 'success');
-        if ($this->isAjax()) {
-            $this->invalidateControl();
-        } else {
-            $this->redirect('this');
-        }
-    }
-        public function renderDefault() {
-        $this->template->versions = array_merge($this->gameUpdater->getSnapshotsJars(), $this->gameUpdater->getStableJars());
+    public function renderDefault() {
+        $path = $this->serverRepo->getPath($this->selectedServerId);
+        $this->template->dowJars = array_merge($this->gameUpdater->getSnapshotsJars(), $this->gameUpdater->getStableJars());
+        $this->template->avJars = $this->gameUpdater->getAvailableJars($path);
     }
 
 }

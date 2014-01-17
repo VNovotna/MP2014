@@ -21,15 +21,22 @@ class Finder extends \Nette\Utils\Finder {
 
     public function orderByName() {
         $this->order = function($f1, $f2) {
-                    return \strcasecmp($f1->getFilename(), $f2->getFilename());
-                };
+            return \strcasecmp($f1->getFilename(), $f2->getFilename());
+        };
         return $this;
     }
 
     public function orderByMTime() {
         $this->order = function($f1, $f2) {
-                    return $f2->getMTime() - $f2->getMTime();
-                };
+            return $f2->getMTime() - $f2->getMTime();
+        };
+        return $this;
+    }
+
+    public function orderByCTime() {
+        $this->order = function($f1, $f2) {
+            return $f2->getCTime() - $f2->getCTime();
+        };
         return $this;
     }
 
