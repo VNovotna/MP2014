@@ -5,10 +5,14 @@
 {snippet backupsList}
     <table>
         <tbody>
+            <tr>
+                <td><a n:href="makeBackup!" class="ajax">Vytvořit novou zálohu</a></td>
+            </tr>
             <tr n:foreach="$backups as $file">
                 <td>{$file}</td>
-                <td><a n:href='useFile! $file' class="ajax">použít</a></td>
-                <td><a n:href='deleteFile! $file' class="ajax icon delete">smazat</a></td>
+                <td><a n:href="download! $file">stáhnout</a></td>
+                <td><a n:href='restoreBackup! $file' class="ajax">obnovit</a></td>
+                <td><a n:href='deleteBackup! $file' class="ajax icon delete">smazat</a></td>
             </tr>
         </tbody>
     </table>
