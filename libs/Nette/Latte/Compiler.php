@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Latte;
@@ -123,8 +119,7 @@ class Compiler extends Nette\Object
 
 		while ($this->htmlNode) {
 			if (!empty($this->htmlNode->macroAttrs)) {
-				throw new CompileException("Missing end tag </{$this->htmlNode->name}> for macro-attribute " . Parser::N_PREFIX
-					. implode(' and ' . Parser::N_PREFIX, array_keys($this->htmlNode->macroAttrs)) . ".", 0, $token->line);
+				throw new CompileException('Missing ' . self::printEndTag($this->macroNode), 0, $token->line);
 			}
 			$this->htmlNode = $this->htmlNode->parentNode;
 		}
@@ -139,7 +134,7 @@ class Compiler extends Nette\Object
 		$output = ($prologs ? $prologs . "<?php\n//\n// main template\n//\n?>\n" : '') . $output . $epilogs;
 
 		if ($this->macroNode) {
-			throw new CompileException("There are unclosed macros.", 0, $token->line);
+			throw new CompileException('Missing ' . self::printEndTag($this->macroNode), 0, $token->line);
 		}
 
 		$output = $this->expandTokens($output);
@@ -255,7 +250,7 @@ class Compiler extends Nette\Object
 					break;
 				}
 				if ($this->htmlNode->macroAttrs) {
-					throw new CompileException("Unexpected </$token->name>.", 0, $token->line);
+					throw new CompileException("Unexpected </$token->name>, expecting " . self::printEndTag($this->macroNode));
 				}
 				$this->htmlNode = $this->htmlNode->parentNode;
 			}
@@ -314,8 +309,9 @@ class Compiler extends Nette\Object
 			$htmlNode->closing = TRUE;
 		}
 
-		if (!$htmlNode->closing && (strcasecmp($htmlNode->name, 'script') === 0 || strcasecmp($htmlNode->name, 'style') === 0)) {
-			$this->setContext(strcasecmp($htmlNode->name, 'style') ? self::CONTENT_JS : self::CONTENT_CSS);
+		$lower = strtolower($htmlNode->name);
+		if (!$htmlNode->closing && ($lower === 'script' || $lower === 'style')) {
+			$this->setContext($lower === 'script' ? self::CONTENT_JS : self::CONTENT_CSS);
 		} else {
 			$this->setContext(NULL);
 			if ($htmlNode->closing) {
@@ -330,27 +326,32 @@ class Compiler extends Nette\Object
 		if (Strings::startsWith($token->name, Parser::N_PREFIX)) {
 			$name = substr($token->name, strlen(Parser::N_PREFIX));
 			if (isset($this->htmlNode->macroAttrs[$name])) {
-				throw new CompileException("Found multiple macro-attributes $token->name.", 0, $token->line);
+				throw new CompileException("Found multiple macro-attributes $token->name.");
 
 			} elseif ($this->macroNode && $this->macroNode->htmlNode === $this->htmlNode) {
-				throw new CompileException("Macro-attributes must not appear inside macro; found $token->name inside {{$this->macroNode->name}}.", 0, $token->line);
+				throw new CompileException("Macro-attributes must not appear inside macro; found $token->name inside {{$this->macroNode->name}}.");
 			}
 			$this->htmlNode->macroAttrs[$name] = $token->value;
-
-		} else {
-			$this->htmlNode->attrs[$token->name] = TRUE;
-			$this->output .= $token->text;
-			if (strncasecmp($token->name, 'on', 2) === 0) {
-				$context = self::CONTENT_JS;
-			} elseif ($token->name === 'style') {
-				$context = self::CONTENT_CSS;
-			} elseif (in_array($token->name, array('href', 'src', 'action', 'formaction'))) {
-				$context = self::CONTENT_URL;
-			} else {
-				$context = NULL;
-			}
-			$this->setContext($token->value ?: self::CONTEXT_UNQUOTED_ATTR , $context);
+			return;
 		}
+
+		$this->htmlNode->attrs[$token->name] = TRUE;
+		$this->output .= $token->text;
+
+		$context = NULL;
+		if (in_array($this->contentType, array(self::CONTENT_HTML, self::CONTENT_XHTML))) {
+			$lower = strtolower($token->name);
+			if (substr($lower, 0, 2) === 'on') {
+				$context = self::CONTENT_JS;
+			} elseif ($lower === 'style') {
+				$context = self::CONTENT_CSS;
+			} elseif (in_array($lower, array('href', 'src', 'action', 'formaction'))
+				|| ($lower === 'data' && strtolower($this->htmlNode->name) === 'object')
+			) {
+				$context = self::CONTENT_URL;
+			}
+		}
+		$this->setContext($token->value ?: self::CONTEXT_UNQUOTED_ATTR, $context);
 	}
 
 
@@ -404,8 +405,8 @@ class Compiler extends Nette\Object
 			|| ($args && $node->args && !Strings::startsWith("$node->args ", "$args "))
 		) {
 			$name .= $args ? ' ' : '';
-			throw new CompileException("Unexpected macro {/{$name}{$args}{$modifiers}}"
-				. ($node ? ", expecting {/$node->name}" . ($args && $node->args ? " or eventually {/$node->name $node->args}" : '') : ''));
+			throw new CompileException("Unexpected {/{$name}{$args}{$modifiers}}"
+				. ($node ? ', expecting ' . self::printEndTag($node) : ''));
 		}
 
 		$this->macroNode = $node->parentNode;
@@ -484,7 +485,7 @@ class Compiler extends Nette\Object
 		}
 
 		if ($attrs) {
-			throw new CompileException("Unknown macro-attribute " . Parser::N_PREFIX
+			throw new CompileException('Unknown macro-attribute ' . Parser::N_PREFIX
 				. implode(' and ' . Parser::N_PREFIX, array_keys($attrs)));
 		}
 
@@ -527,9 +528,10 @@ class Compiler extends Nette\Object
 	 */
 	public function expandMacro($name, $args, $modifiers = NULL, $nPrefix = NULL)
 	{
+		$inScript = in_array($this->context[0], array(self::CONTENT_JS, self::CONTENT_CSS));
+
 		if (empty($this->macros[$name])) {
-			$cdata = $this->htmlNode && in_array(strtolower($this->htmlNode->name), array('script', 'style'));
-			throw new CompileException("Unknown macro {{$name}}" . ($cdata ? " (in JavaScript or CSS, try to put a space after bracket.)" : ''));
+			throw new CompileException("Unknown macro {{$name}}" . ($inScript ? ' (in JavaScript or CSS, try to put a space after bracket.)' : ''));
 		}
 
 		if ($this->context[1] === self::CONTENT_URL) {
@@ -544,6 +546,10 @@ class Compiler extends Nette\Object
 			$modifiers .= '|escape';
 		}
 
+		if (!$found && $inScript && $name === '=' && preg_match('#["\'] *\z#', $this->tokens[$this->position - 1]->text)) {
+			throw new CompileException("Do not place {$this->tokens[$this->position]->text} inside quotes.");
+		}
+
 		foreach (array_reverse($this->macros[$name]) as $macro) {
 			$node = new MacroNode($macro, $name, $args, $modifiers, $this->macroNode, $this->htmlNode, $nPrefix);
 			if ($macro->nodeOpened($node) !== FALSE) {
@@ -551,6 +557,17 @@ class Compiler extends Nette\Object
 			}
 		}
 		throw new CompileException("Unhandled macro {{$name}}");
+	}
+
+
+	private static function printEndTag(MacroNode $node)
+	{
+		if ($node->htmlNode) {
+			return  "</{$node->htmlNode->name}> for macro-attribute " . Parser::N_PREFIX
+				. implode(' and ' . Parser::N_PREFIX, array_keys($node->htmlNode->macroAttrs));
+		} else {
+			return "{/$node->name}";
+		}
 	}
 
 }

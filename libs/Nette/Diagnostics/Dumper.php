@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Diagnostics;
@@ -42,7 +38,11 @@ class Dumper
 	);
 
 	/** @var array */
-	public static $resources = array('stream' => 'stream_get_meta_data', 'stream-context' => 'stream_context_get_options', 'curl' => 'curl_getinfo');
+	public static $resources = array(
+		'stream' => 'stream_get_meta_data',
+		'stream-context' => 'stream_context_get_options',
+		'curl' => 'curl_getinfo',
+	);
 
 
 	/**

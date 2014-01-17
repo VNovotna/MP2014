@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Loaders;
@@ -31,7 +27,7 @@ abstract class AutoLoader extends Nette\Object
 	 * @param  string  class/interface name
 	 * @return void
 	 */
-	final public static function load($type)
+	public static function load($type)
 	{
 		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		foreach (func_get_args() as $type) {
@@ -46,7 +42,7 @@ abstract class AutoLoader extends Nette\Object
 	 * Return all registered autoloaders.
 	 * @return AutoLoader[]
 	 */
-	final public static function getLoaders()
+	public static function getLoaders()
 	{
 		trigger_error(__METHOD__ . '() is deprecated.', E_USER_DEPRECATED);
 		return array_values(self::$loaders);

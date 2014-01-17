@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Forms\Rendering;
@@ -126,7 +122,7 @@ class DefaultFormRenderer extends Nette\Object implements Nette\Forms\IFormRende
 	/**
 	 * Provides complete form rendering.
 	 * @param  Nette\Forms\Form
-	 * @param  string 'begin', 'errors', 'body', 'end' or empty to render all
+	 * @param  string 'begin', 'errors', 'ownerrors', 'body', 'end' or empty to render all
 	 * @return string
 	 */
 	public function render(Nette\Forms\Form $form, $mode = NULL)
@@ -140,8 +136,11 @@ class DefaultFormRenderer extends Nette\Object implements Nette\Forms\IFormRende
 		if (!$mode || $mode === 'begin') {
 			$s .= $this->renderBegin();
 		}
-		if (!$mode || $mode === 'errors') {
+		if (!$mode || strtolower($mode) === 'ownerrors') {
 			$s .= $this->renderErrors();
+
+		} elseif ($mode === 'errors') {
+			$s .= $this->renderErrors(NULL, FALSE);
 		}
 		if (!$mode || $mode === 'body') {
 			$s .= $this->renderBody();
@@ -233,9 +232,11 @@ class DefaultFormRenderer extends Nette\Object implements Nette\Forms\IFormRende
 	 * Renders validation errors (per form or per control).
 	 * @return string
 	 */
-	public function renderErrors(Nette\Forms\IControl $control = NULL)
+	public function renderErrors(Nette\Forms\IControl $control = NULL, $own = TRUE)
 	{
-		$errors = $control ? $control->getErrors() : $this->form->getErrors();
+		$errors = $control
+			? $control->getErrors()
+			: ($own ? $this->form->getOwnErrors() : $this->form->getErrors());
 		if (!$errors) {
 			return;
 		}

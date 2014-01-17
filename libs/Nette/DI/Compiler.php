@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\DI;
@@ -56,9 +52,11 @@ class Compiler extends Nette\Object
 	/**
 	 * @return array
 	 */
-	public function getExtensions()
+	public function getExtensions($type = NULL)
 	{
-		return $this->extensions;
+		return $type
+			? array_filter($this->extensions, function($item) use ($type) { return $item instanceof $type; })
+			: $this->extensions;
 	}
 
 
@@ -166,6 +164,10 @@ class Compiler extends Nette\Object
 			return strcmp(Config\Helpers::isInheriting($a), Config\Helpers::isInheriting($b));
 		});
 
+		if (!empty($config['factories'])) {
+			trigger_error("Section 'factories' is deprecated, move definitions to section 'services' and append key 'autowired: no'.", E_USER_DEPRECATED);
+		}
+
 		foreach ($all as $origName => $def) {
 			if ((string) (int) $origName === (string) $origName) {
 				$name = count($builder->getDefinitions())
@@ -201,6 +203,10 @@ class Compiler extends Nette\Object
 				static::parseService($definition, $def);
 			} catch (\Exception $e) {
 				throw new ServiceCreationException("Service '$name': " . $e->getMessage(), NULL, $e);
+			}
+
+			if (array_key_exists($origName, $factories)) {
+				$definition->setAutowired(FALSE);
 			}
 
 			if ($definition->class === 'self') {

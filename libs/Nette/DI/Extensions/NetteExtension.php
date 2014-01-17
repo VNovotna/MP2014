@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\DI\Extensions;
@@ -51,6 +47,12 @@ class NetteExtension extends Nette\DI\CompilerExtension
 		),
 		'mailer' => array(
 			'smtp' => FALSE,
+			'host' => NULL,
+			'port' => NULL,
+			'username' => NULL,
+			'password' => NULL,
+			'secure' => NULL,
+			'timeout' => NULL,
 		),
 		'database' => array(), // of [name => dsn, user, password, debugger, explain, autowired, reflection]
 		'forms' => array(
@@ -404,13 +406,13 @@ class NetteExtension extends Nette\DI\CompilerExtension
 					Nette\DI\Compiler::filterArguments(array(is_string($item) ? new Nette\DI\Statement($item) : $item))
 				));
 			}
+		}
 
-			foreach ((array) $config['debugger']['blueScreen'] as $item) {
-				$initialize->addBody($container->formatPhp(
-					'Nette\Diagnostics\Debugger::getBlueScreen()->addPanel(?);',
-					Nette\DI\Compiler::filterArguments(array($item))
-				));
-			}
+		foreach ((array) $config['debugger']['blueScreen'] as $item) {
+			$initialize->addBody($container->formatPhp(
+				'Nette\Diagnostics\Debugger::getBlueScreen()->addPanel(?);',
+				Nette\DI\Compiler::filterArguments(array($item))
+			));
 		}
 
 		if (!empty($container->parameters['tempDir'])) {
@@ -487,7 +489,7 @@ class NetteExtension extends Nette\DI\CompilerExtension
 		if ($extra = array_diff_key($config, $expected)) {
 			$extra = implode(", $name.", array_keys($extra));
 			throw new Nette\InvalidStateException("Unknown option $name.$extra.");
-}
+		}
 	}
 
 }

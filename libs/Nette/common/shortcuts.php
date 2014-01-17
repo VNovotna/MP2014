@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 use Nette\Diagnostics\Debugger;
@@ -38,3 +34,7 @@ if (!function_exists('callback')) {
 		return new Nette\Callback($callback, $m);
 	}
 }
+
+class_alias('Nette\Configurator', 'Nette\Config\Configurator');
+class_alias('Nette\DI\CompilerExtension', 'Nette\Config\CompilerExtension');
+class_alias('Nette\DI\Compiler', 'Nette\Config\Compiler');

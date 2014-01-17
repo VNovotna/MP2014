@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Forms\Controls;
@@ -63,7 +59,7 @@ class RadioList extends ChoiceControl
 	 * Returns separator HTML element template.
 	 * @return Nette\Utils\Html
 	 */
-	final public function getSeparatorPrototype()
+	public function getSeparatorPrototype()
 	{
 		return $this->separator;
 	}
@@ -73,7 +69,7 @@ class RadioList extends ChoiceControl
 	 * Returns container HTML element template.
 	 * @return Nette\Utils\Html
 	 */
-	final public function getContainerPrototype()
+	public function getContainerPrototype()
 	{
 		return $this->container;
 	}

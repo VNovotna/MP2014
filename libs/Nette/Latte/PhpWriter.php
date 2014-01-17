@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Latte;
@@ -202,7 +198,7 @@ class PhpWriter extends Nette\Object
 			} elseif ($tokens->isCurrent(':')) {
 				array_pop($inTernary);
 
-			} elseif (end($inTernary) === $tokens->depth && $tokens->isCurrent(',', ')', ']')) {
+			} elseif ($tokens->isCurrent(',', ')', ']') && end($inTernary) === $tokens->depth + !$tokens->isCurrent(',')) {
 				$res->append(' : NULL');
 				array_pop($inTernary);
 			}
@@ -370,7 +366,20 @@ class PhpWriter extends Nette\Object
 					default:
 						return $tokens->prepend('Nette\Templating\Helpers::escapeHtml(')->append(', ENT_NOQUOTES)');
 				}
+
 			case Compiler::CONTENT_XML:
+				$context = $this->compiler->getContext();
+				switch ($context[0]) {
+					case Compiler::CONTEXT_COMMENT:
+						return $tokens->prepend('Nette\Templating\Helpers::escapeHtmlComment(')->append(')');
+					default:
+						$tokens->prepend('Nette\Templating\Helpers::escapeXml(')->append(')');
+						if ($context[0] === Compiler::CONTEXT_UNQUOTED_ATTR) {
+							$tokens->prepend("'\"' . ")->append(" . '\"'");
+						}
+						return $tokens;
+				}
+
 			case Compiler::CONTENT_JS:
 			case Compiler::CONTENT_CSS:
 			case Compiler::CONTENT_ICAL:

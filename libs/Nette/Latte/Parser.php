@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Latte;
@@ -345,7 +341,7 @@ class Parser extends Nette\Object
 			$match['name'] = $match['shortname'] ?: '=';
 			if ($match['noescape']) {
 				if (!$this->shortNoEscape) {
-					throw new CompileException("The noescape shortcut (exclamation mark) is not enabled, use the noescape modifier on line {$this->getLine()}.");
+					trigger_error("The noescape shortcut {!...} is deprecated, use {...|noescape} modifier on line {$this->getLine()}.", E_USER_DEPRECATED);
 				}
 				$match['modifiers'] .= '|noescape';
 			}

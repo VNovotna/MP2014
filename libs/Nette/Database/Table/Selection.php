@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Database\Table;
@@ -572,8 +568,13 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 	protected function saveCacheState()
 	{
 		if ($this->observeCache === $this && $this->cache && !$this->sqlBuilder->getSelect() && $this->accessedColumns !== $this->previousAccessedColumns) {
-			$this->cache->save($this->getGeneralCacheKey(), $this->accessedColumns);
-			$this->previousAccessedColumns = NULL;
+			$previousAccessed = (array) $this->cache->load($this->getGeneralCacheKey());
+			$accessed = (array) $this->accessedColumns;
+			$needSave = array_intersect_key($accessed, $previousAccessed) !== $accessed;
+			if ($needSave) {
+				$this->cache->save($this->getGeneralCacheKey(), $previousAccessed + $accessed);
+				$this->previousAccessedColumns = NULL;
+			}
 		}
 	}
 
@@ -758,7 +759,7 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 	 * Updates all rows in result set.
 	 * Joins in UPDATE are supported only in MySQL
 	 * @param  array|\Traversable ($column => $value)
-	 * @return int number of affected rows or FALSE in case of an error
+	 * @return int number of affected rows
 	 */
 	public function update($data)
 	{
@@ -782,7 +783,7 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 
 	/**
 	 * Deletes all rows in result set.
-	 * @return int number of affected rows or FALSE in case of an error
+	 * @return int number of affected rows
 	 */
 	public function delete()
 	{

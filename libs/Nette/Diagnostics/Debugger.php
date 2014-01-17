@@ -2,16 +2,13 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Diagnostics;
 
-use Nette;
+use Nette,
+	ErrorException;
 
 
 /**
@@ -23,7 +20,7 @@ use Nette;
  *
  * @author     David Grudl
  */
-final class Debugger
+class Debugger
 {
 	/** @var bool in production mode is suppressed any debugging output */
 	public static $productionMode = self::DETECT;
@@ -215,7 +212,7 @@ final class Debugger
 			set_error_handler(array(__CLASS__, '_errorHandler'));
 
 			foreach (array('Nette\Diagnostics\Bar', 'Nette\Diagnostics\BlueScreen', 'Nette\Diagnostics\DefaultBarPanel', 'Nette\Diagnostics\Dumper', 'Nette\Diagnostics\FireLogger',
-				'Nette\Diagnostics\Helpers', 'Nette\Diagnostics\Logger', 'Nette\FatalErrorException', 'Nette\Utils\Html', 'Nette\Utils\Strings') as $class) {
+				'Nette\Diagnostics\Helpers', 'Nette\Diagnostics\Logger', 'Nette\Utils\Html', 'Nette\Utils\Strings') as $class) {
 				class_exists($class);
 			}
 			self::$enabled = TRUE;
@@ -340,7 +337,7 @@ final class Debugger
 		if ($message instanceof \Exception) {
 			$exception = $message;
 			while ($exception) {
-				$tmp[] = ($exception instanceof Nette\FatalErrorException
+				$tmp[] = ($exception instanceof ErrorException
 					? 'Fatal error: ' . $exception->getMessage()
 					: get_class($exception) . ": " . $exception->getMessage())
 					. " in " . $exception->getFile() . ":" . $exception->getLine();
@@ -398,7 +395,7 @@ final class Debugger
 
 		$error = error_get_last();
 		if (in_array($error['type'], array(E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE))) {
-			self::_exceptionHandler(Helpers::fixStack(new Nette\FatalErrorException($error['message'], 0, $error['type'], $error['file'], $error['line'], NULL)), TRUE);
+			self::_exceptionHandler(Helpers::fixStack(new ErrorException($error['message'], 0, $error['type'], $error['file'], $error['line'])), TRUE);
 
 		} elseif (!connection_aborted() && !self::$productionMode && self::isHtmlMode()) {
 			self::getBar()->render();
@@ -484,7 +481,7 @@ final class Debugger
 	 * @param  int    line number the error was raised at
 	 * @param  array  an array of variables that existed in the scope the error was triggered in
 	 * @return bool   FALSE to call normal error handler, NULL otherwise
-	 * @throws Nette\FatalErrorException
+	 * @throws ErrorException
 	 * @internal
 	 */
 	public static function _errorHandler($severity, $message, $file, $line, $context)
@@ -501,15 +498,22 @@ final class Debugger
 		if ($severity === E_RECOVERABLE_ERROR || $severity === E_USER_ERROR) {
 			if (Helpers::findTrace(debug_backtrace(PHP_VERSION_ID >= 50306 ? DEBUG_BACKTRACE_IGNORE_ARGS : FALSE), '*::__toString')) {
 				$previous = isset($context['e']) && $context['e'] instanceof \Exception ? $context['e'] : NULL;
-				self::_exceptionHandler(new Nette\FatalErrorException($message, 0, $severity, $file, $line, $context, $previous));
+				$e = new ErrorException($message, 0, $severity, $file, $line, $previous);
+				$e->context = $context;
+				self::_exceptionHandler($e);
 			}
-			throw new Nette\FatalErrorException($message, 0, $severity, $file, $line, $context);
+
+			$e = new ErrorException($message, 0, $severity, $file, $line);
+			$e->context = $context;
+			throw $e;
 
 		} elseif (($severity & error_reporting()) !== $severity) {
 			return FALSE; // calls normal error handler to fill-in error_get_last()
 
 		} elseif (!self::$productionMode && (is_bool(self::$strictMode) ? self::$strictMode : ((self::$strictMode & $severity) === $severity))) {
-			self::_exceptionHandler(new Nette\FatalErrorException($message, 0, $severity, $file, $line, $context));
+			$e = new ErrorException($message, 0, $severity, $file, $line);
+			$e->context = $context;
+			self::_exceptionHandler($e);
 		}
 
 		$message = 'PHP ' . (isset(self::$errorTypes[$severity]) ? self::$errorTypes[$severity] : 'Unknown error') . ": $message";
@@ -523,7 +527,7 @@ final class Debugger
 			return NULL;
 
 		} else {
-			self::fireLog(new \ErrorException($message, 0, $severity, $file, $line));
+			self::fireLog(new ErrorException($message, 0, $severity, $file, $line));
 			return self::isHtmlMode() ? NULL : FALSE; // FALSE calls normal error handler
 		}
 	}
@@ -532,6 +536,7 @@ final class Debugger
 	/** @deprecated */
 	public static function toStringException(\Exception $exception)
 	{
+		trigger_error(__METHOD__ . '() is deprecated; use trigger_error(..., E_USER_ERROR) instead.', E_USER_DEPRECATED);
 		if (self::$enabled) {
 			self::_exceptionHandler($exception);
 		} else {

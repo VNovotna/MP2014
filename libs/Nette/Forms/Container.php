@@ -2,11 +2,7 @@
 
 /**
  * This file is part of the Nette Framework (http://nette.org)
- *
  * Copyright (c) 2004 David Grudl (http://davidgrudl.com)
- *
- * For the full copyright and license information, please view
- * the file license.txt that was distributed with this source code.
  */
 
 namespace Nette\Forms;
@@ -126,7 +122,7 @@ class Container extends Nette\ComponentModel\Container implements \ArrayAccess
 		if (!$this->validated) {
 			$this->validate();
 		}
-		return !$this->getAllErrors();
+		return !$this->getErrors();
 	}
 
 
@@ -149,7 +145,7 @@ class Container extends Nette\ComponentModel\Container implements \ArrayAccess
 	 * Returns all validation errors.
 	 * @return array
 	 */
-	public function getAllErrors()
+	public function getErrors()
 	{
 		$errors = array();
 		foreach ($this->getControls() as $control) {
@@ -429,7 +425,7 @@ class Container extends Nette\ComponentModel\Container implements \ArrayAccess
 	 * @param  Nette\ComponentModel\IComponent
 	 * @return void
 	 */
-	final public function offsetSet($name, $component)
+	public function offsetSet($name, $component)
 	{
 		$this->addComponent($component, $name);
 	}
@@ -441,7 +437,7 @@ class Container extends Nette\ComponentModel\Container implements \ArrayAccess
 	 * @return Nette\ComponentModel\IComponent
 	 * @throws Nette\InvalidArgumentException
 	 */
-	final public function offsetGet($name)
+	public function offsetGet($name)
 	{
 		return $this->getComponent($name, TRUE);
 	}
@@ -452,7 +448,7 @@ class Container extends Nette\ComponentModel\Container implements \ArrayAccess
 	 * @param  string  component name
 	 * @return bool
 	 */
-	final public function offsetExists($name)
+	public function offsetExists($name)
 	{
 		return $this->getComponent($name, FALSE) !== NULL;
 	}
@@ -463,7 +459,7 @@ class Container extends Nette\ComponentModel\Container implements \ArrayAccess
 	 * @param  string  component name
 	 * @return void
 	 */
-	final public function offsetUnset($name)
+	public function offsetUnset($name)
 	{
 		$component = $this->getComponent($name, FALSE);
 		if ($component !== NULL) {
@@ -475,7 +471,7 @@ class Container extends Nette\ComponentModel\Container implements \ArrayAccess
 	/**
 	 * Prevents cloning.
 	 */
-	final public function __clone()
+	public function __clone()
 	{
 		throw new Nette\NotImplementedException('Form cloning is not supported yet.');
 	}
