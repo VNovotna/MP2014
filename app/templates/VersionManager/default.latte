@@ -1,3 +1,18 @@
 
 {block content}
 <h1 n:block=title>Manažer verzí</h1>
+{snippet backupsList}
+    <table>
+        <tbody>
+            <tr>
+                <td><a n:href="makeBackup!" class="ajax">Vytvořit novou zálohu</a></td>
+            </tr>
+            <tr n:foreach="$versions as $line">
+                <td>{$line}</td>
+                <td><a n:href="download! $line">stáhnout</a></td>
+                <td><a n:href='restoreBackup! $line' class="ajax">obnovit</a></td>
+                <td><a n:href='deleteBackup! $line' class="ajax icon delete">smazat</a></td>
+            </tr>
+        </tbody>
+    </table>
+{/snippet}                

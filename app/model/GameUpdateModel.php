@@ -9,7 +9,7 @@ class GameUpdateModel {
     /**
      * parse whole page in url searching for links for minecraft_server
      * @param string $url
-     * @return array version => link
+     * @return array link => version
      */
     private function parseForLinks($url) {
         $html = implode('', file($url));
@@ -22,7 +22,7 @@ class GameUpdateModel {
         foreach ($links as $key => $link) {
             if (preg_match('#minecraft_server.[0-9a-z.]*.jar#', $link->getAttribute('href'), $matches)) {
                 $key = $this->getVersionFromFileName($matches[0]);
-                $result[$key] = $link->getAttribute('href');
+                $result[$link->getAttribute('href')] = $key;
             }
         }
         return $result;
@@ -39,9 +39,9 @@ class GameUpdateModel {
 
     /**
      * return stable versions of servers 
-     * @return array version => link
+     * @return array link => version
      */
-    public function getListOfStableJars() {
+    public function getStableJars() {
         return $this->parseForLinks('https://minecraft.net/download');
     }
 
@@ -49,7 +49,7 @@ class GameUpdateModel {
      * return snapshot versions of servers
      * @return array version => link
      */
-    public function getListOfSnapshotsJars() {
+    public function getSnapshotsJars() {
         return $this->parseForLinks('https://mojang.com/');
     }
 /**
@@ -57,7 +57,7 @@ class GameUpdateModel {
  * @param string $path
  * @return array version => 'filename'
  */
-    public function getListOfAvailableJars($path) {
+    public function getAvailableJars($path) {
         foreach (Finder::findFiles('minecraft_server.[0-9a-z.]*.jar')->in($path) as $key => $file) {
             echo $key; // $key je řetězec s názvem souboru včetně cesty
             echo $file; // $file je objektem SplFileInfo

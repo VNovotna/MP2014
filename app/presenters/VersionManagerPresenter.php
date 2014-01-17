@@ -26,9 +26,8 @@ class VersionManagerPresenter extends SecuredPresenter {
         $form = new Form();
         if ($this->user->isAllowed('server-settings', 'edit')) {
             $form->addGroup('aktualizace');
-            $items = array_merge($this->gameUpdater->getListOfSnapshotsJars(), $this->gameUpdater->getListOfStableJars());
-            $items = array_flip($items);
-            dump($this->gameUpdater->getListOfAvailableJars($this->serverRepo->getPath($this->selectedServerId)));
+            $items = array_merge($this->gameUpdater->getSnapshotsJars(), $this->gameUpdater->getStableJars());
+            dump($this->gameUpdater->getAvailableJars($this->serverRepo->getPath($this->selectedServerId)));
             $form->addSelect('version', 'Dostupné verze:', $items);
             $form->addSubmit('update', 'Aktualizovat');
             $form->onSuccess[] = $this->updateFormSubmitted;
@@ -48,6 +47,9 @@ class VersionManagerPresenter extends SecuredPresenter {
         } else {
             $this->redirect('this');
         }
+    }
+        public function renderDefault() {
+        $this->template->versions = array_merge($this->gameUpdater->getSnapshotsJars(), $this->gameUpdater->getStableJars());
     }
 
 }
