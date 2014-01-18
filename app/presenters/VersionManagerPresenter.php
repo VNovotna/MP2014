@@ -33,10 +33,10 @@ class VersionManagerPresenter extends SecuredPresenter {
     public function handleUseFile($filename) {
         if($this->serverCmd->isServerRunning($this->runtimeHash)){
             $this->serverCmd->stopServer($this->runtimeHash);
-            $this->serverRepo->setRuntimeHash($this->selectedServerId, NULL);
             $this->flashMessage('Server byl vypnut.','info');    
         }
-        $this->flashMessage('je3t2 n0','success');
+        $this->serverRepo->setExecutable($this->selectedServerId, $filename);
+        $this->flashMessage($filename,'success');
         if ($this->isAjax()) {
             $this->invalidateControl();
         } else {

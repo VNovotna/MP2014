@@ -51,7 +51,7 @@ class GameUpdateModel {
      * @param string $path
      */
     public function download($url, $path) {
-        
+        throw new \Nette\NotImplementedException;
     }
 
     /**

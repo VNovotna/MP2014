@@ -29,6 +29,17 @@ class ServerRepository extends Repository {
         }
     }
 
+    public function setExecutable($serverId, $executable) {
+        try {
+            $this->getTable()->where('id', $serverId)->update(array(
+                'executable' => $executable
+            ));
+            return TRUE;
+        } catch (PDOException $e) {
+            throw new PDOException;
+        }
+    }
+
     /**
      * @param int $serverId
      * @return \Nette\Database\Table\Selection
