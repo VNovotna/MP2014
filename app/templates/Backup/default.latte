@@ -8,7 +8,7 @@
             <tr>
                 <td><a n:href="makeBackup!" class="ajax">Vytvořit novou zálohu</a></td>
             </tr>
-            <tr n:foreach="$backups as $file">
+            <tr n:foreach="$backups as $file" n:class="$iterator->odd ? odd : even">
                 <td>{$file}</td>
                 <td><a n:href="download! $file">stáhnout</a></td>
                 <td><a n:href='restoreBackup! $file' class="ajax">obnovit</a></td>

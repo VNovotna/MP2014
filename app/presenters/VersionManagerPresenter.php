@@ -12,6 +12,9 @@ class VersionManagerPresenter extends SecuredPresenter {
 
     /** @var GameUpdateModel */
     private $gameUpdater;
+    
+    /** @var ServerCommander */
+    private $serverCmd;
 
     protected function startup() {
         parent::startup();
@@ -21,12 +24,32 @@ class VersionManagerPresenter extends SecuredPresenter {
         }
         $this->serverRepo = $this->context->serverRepository;
         $this->gameUpdater = $this->context->gameUpdateModel;
+        $this->serverCmd = $this->context->serverCommander;
+    }
+
+    /**
+     * @param string $filename
+     */
+    public function handleUseFile($filename) {
+        if($this->serverCmd->isServerRunning($this->runtimeHash)){
+            $this->serverCmd->stopServer($this->runtimeHash);
+            $this->serverRepo->setRuntimeHash($this->selectedServerId, NULL);
+            $this->flashMessage('Server byl vypnut.','info');    
+        }
+        $this->flashMessage('je3t2 n0','success');
+        if ($this->isAjax()) {
+            $this->invalidateControl();
+        } else {
+            $this->redirect('this');
+        }
     }
 
     public function renderDefault() {
         $path = $this->serverRepo->getPath($this->selectedServerId);
         $this->template->dowJars = array_merge($this->gameUpdater->getSnapshotsJars(), $this->gameUpdater->getStableJars());
         $this->template->avJars = $this->gameUpdater->getAvailableJars($path);
+        $exec = $this->serverRepo->getRunParams($this->selectedServerId)->executable;
+        $this->template->active = $this->gameUpdater->getVersionFromFileName($exec);
     }
 
 }

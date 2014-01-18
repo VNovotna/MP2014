@@ -7,18 +7,24 @@
             <tr>
                 <th>Verze dostupné ke stažení</th>
             </tr>
-            <tr n:foreach="$dowJars as $line">
+            <tr n:foreach="$dowJars as $line" n:class="$iterator->odd ? odd : even">
                 <td>{$line}</td>
-                <td><a n:href='downloadFile! $line' class="icon tick ajax">stáhnout</a></td>
+                <td><a n:href='downloadFile! $line' class="icon download ajax">stáhnout</a></td>
             </tr>
             <tr>
                 <th>Již stažené verze</th>
             </tr>
-            <tr n:foreach="$avJars as $line">
-                <td>{$line}</td>
-                <td><a n:href='useFile! $line' class="icon tick ajax">použít</a></td>
-                <td><a n:href='deleteFile! $line' class="ajax icon delete">smazat</a></td>
+            <tr n:foreach="$avJars as $file => $version" n:class="$iterator->odd ? odd : even">
+                <td>{$version}</td>
+                {if $active == $version}
+                    <td><span class='icon info'>aktivní</span></td>
+                    <td></td>
+                {else}
+                    <td><a n:href='useFile! $avJars[$file]' class='ajax'>použít</a></td>
+                    <td><a n:href='deleteFile! $line' class="ajax icon delete">smazat</a></td>
+                {/if}
             </tr>
         </tbody>
     </table>
-{/snippet}                
+{/snippet}
+{dump}

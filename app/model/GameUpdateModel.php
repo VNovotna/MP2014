@@ -30,15 +30,6 @@ class GameUpdateModel {
     }
 
     /**
-     * get version from minecraft server filename
-     * @param string $filename
-     * @return string
-     */
-    private function getVersionFromFileName($filename) {
-        return substr($filename, 17, -4);
-    }
-
-    /**
      * return stable versions of servers 
      * @return array link => version
      */
@@ -53,6 +44,16 @@ class GameUpdateModel {
     public function getSnapshotsJars() {
         return $this->parseForLinks('https://mojang.com/');
     }
+
+    /**
+     * Download file from $url to directory in $path
+     * @param string $url
+     * @param string $path
+     */
+    public function download($url, $path) {
+        
+    }
+
     /**
      * return all filenames that are already downloaded
      * @param string $path
@@ -60,10 +61,19 @@ class GameUpdateModel {
      */
     public function getAvailableJars($path) {
         $result = array();
-        foreach (Finder::findFiles('minecraft_server.[0-9a-z.]*.jar')->in($path)->orderByCTime() as $file) {
+        foreach (Finder::findFiles('minecraft_server.[0-9a-z.]*.jar')->in($path)->orderByName() as $file) {
             $result[$file->getFilename()] = $this->getVersionFromFileName($file->getFilename());
         }
-        return $result;
+        return array_reverse($result);
+    }
+
+    /**
+     * get version from minecraft server filename
+     * @param string $filename
+     * @return string
+     */
+    public static function getVersionFromFileName($filename) {
+        return substr($filename, 17, -4);
     }
 
 }
