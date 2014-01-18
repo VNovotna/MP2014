@@ -7,6 +7,13 @@
  */
 class ServerCommander extends \Nette\Object {
 
+    /** @var \DB\ServerRepository */
+    private $serverRepo;
+
+    public function __construct(\DB\ServerRepository $serverRepo) {
+        $this->serverRepo = $serverRepo;
+    }
+
     /**
      * forward any command on server
      * @param string $command
@@ -44,12 +51,13 @@ class ServerCommander extends \Nette\Object {
     }
 
     /**
-     * stops server
+     * stops server and delete runtime hash 
      * @param string $runtimeHash
      * @return array usually empty if command was successfull
      */
     public function stopServer($runtimeHash) {
         $output = $this->issueCommand('stop', $runtimeHash);
+        $this->serverRepo->removeRuntimeHash($runtimeHash);
         sleep(1);
         return $output;
     }
@@ -62,9 +70,10 @@ class ServerCommander extends \Nette\Object {
     public function isServerRunning($runtimeHash) {
         exec("ps ax | grep 'SCREEN -dmS $runtimeHash'", $output);
         $outString = implode(" ", $output);
-        if(preg_match("#SCREEN -dmS ".$runtimeHash." java #", $outString)){
+        if (preg_match("#SCREEN -dmS " . $runtimeHash . " java #", $outString)) {
             return TRUE;
         }
         return FALSE;
     }
+
 }

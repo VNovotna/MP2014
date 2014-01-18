@@ -70,6 +70,23 @@ class ServerRepository extends Repository {
     }
 
     /**
+     * sets given runtime hash to NULL, use only when stoping server
+     * @param type $hash
+     * @return boolean TRUE on success
+     * @throws PDOException
+     */
+    public function removeRuntimeHash($hash) {
+        try {
+            $this->getTable()->where('runhash', $hash)->update(array(
+                'runhash' => NULL
+            ));
+            return TRUE;
+        } catch (PDOException $e) {
+            throw new PDOException;
+        }
+    }
+
+    /**
      * @param int $serverId
      * @return string | NULL
      * @throws PDOException

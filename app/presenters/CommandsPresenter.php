@@ -51,7 +51,6 @@ class CommandsPresenter extends SecuredPresenter {
     public function handleStopServer() {
         $out = $this->serverCmd->stopServer($this->runtimeHash);
         $this->runtimeHash = NULL;
-        $this->serverRepo->setRuntimeHash($this->selectedServerId, $this->runtimeHash);
         if ($out == NULL) {
             $this->flashMessage('Server stoped', 'success');
         } else {
