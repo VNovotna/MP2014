@@ -38,7 +38,8 @@ class VersionManagerPresenter extends SecuredPresenter {
         $this->serverRepo->setExecutable($this->selectedServerId, $filename);
         $this->flashMessage($filename,'success');
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
+            $this->redrawControl('runIcon');
         } else {
             $this->redirect('this');
         }

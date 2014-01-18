@@ -38,7 +38,7 @@ class UserPresenter extends SecuredPresenter {
         $this->userRepo->setMcNick($this->user->id, $form->getValues()->mcname);
         $this->flashMessage("Minecraft nick změněn.", "success");
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }
@@ -67,7 +67,7 @@ class UserPresenter extends SecuredPresenter {
     public function userCredentialsSubmitted($form) {
         $this->flashMessage("Not implemented");
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }

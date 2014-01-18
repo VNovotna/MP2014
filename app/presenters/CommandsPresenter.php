@@ -57,7 +57,7 @@ class CommandsPresenter extends SecuredPresenter {
             $this->flashMessage(implode(" \n", $out), 'error');
         }
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }
@@ -80,7 +80,7 @@ class CommandsPresenter extends SecuredPresenter {
         //TODO make it less ugly and more reliable
         usleep(500000);
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }

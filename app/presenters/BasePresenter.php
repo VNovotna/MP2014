@@ -7,7 +7,7 @@ abstract class BasePresenter extends \Nette\Application\UI\Presenter {
 
     public function beforeRender() {
         if ($this->isAjax()) {
-            $this->invalidateControl('flashMessages');
+            $this->redrawControl('flashMessages');
         }
     }
 

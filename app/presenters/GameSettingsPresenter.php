@@ -65,7 +65,7 @@ class GameSettingsPresenter extends SecuredPresenter {
             $this->flashMessage('Jako operátor nemáte právo editovat nastavení.', 'error');
         }
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }

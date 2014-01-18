@@ -60,7 +60,7 @@ class BackupPresenter extends SecuredPresenter {
             $this->flashMessage('Archiv nahrán', 'success');
         }
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }
@@ -74,7 +74,7 @@ class BackupPresenter extends SecuredPresenter {
             $this->flashMessage('Něco se nepovedlo :/', 'error');
         }
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }
@@ -88,7 +88,7 @@ class BackupPresenter extends SecuredPresenter {
             $this->flashMessage('Něco se nepovedlo :/ ' . $file, 'error');
         }
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }
@@ -101,7 +101,7 @@ class BackupPresenter extends SecuredPresenter {
             $this->flashMessage('Něco se nepovedlo :/ ', 'error');
         }
         if ($this->isAjax()) {
-            $this->invalidateControl();
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }
