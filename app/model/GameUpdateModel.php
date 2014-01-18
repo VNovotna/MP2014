@@ -49,9 +49,15 @@ class GameUpdateModel {
      * Download file from $url to directory in $path
      * @param string $url
      * @param string $path
+     * @param string $version
      */
-    public function download($url, $path) {
-        throw new \Nette\NotImplementedException;
+    public function download($url, $path, $version) {
+        set_time_limit(0);
+        //$fp = fopen($path . 'minecraft_server.' . $version . '.jar', 'w+');
+        $raw = file_get_contents($url);
+//        ... check if $raw has anything useful in it
+        file_put_contents($path.'minecraft_server.'.$version.'.jar', $raw);
+//        ... check if the file showed up
     }
 
     /**

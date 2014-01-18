@@ -59,7 +59,7 @@ class FileEditor extends Nette\Application\UI\Control {
             $this->flashMessage('Nemáte právo editovat nastavení.', 'error');
         }
         if ($this->getPresenter()->isAjax()) {
-            $this->getPresenter()->invalidateControl();
+            $this->getPresenter()->redrawControl();
         } else {
             $this->getPresenter()->redirect('this');
         }

@@ -36,10 +36,20 @@ class VersionManagerPresenter extends SecuredPresenter {
             $this->flashMessage('Server byl vypnut.','info');    
         }
         $this->serverRepo->setExecutable($this->selectedServerId, $filename);
-        $this->flashMessage($filename,'success');
+        $this->flashMessage('Verze nastavena úspěšně.','success');
         if ($this->isAjax()) {
             $this->redrawControl();
             $this->redrawControl('runIcon');
+        } else {
+            $this->redirect('this');
+        }
+    }
+    public function handleDownload($url, $version){
+        $path = $this->serverRepo->getPath($this->selectedServerId);
+        $this->gameUpdater->download($url, $path, $version);
+        $this->flashMessage('Staženo','success');
+        if ($this->isAjax()) {
+            $this->redrawControl();
         } else {
             $this->redirect('this');
         }

@@ -66,7 +66,9 @@
                     <h2>Server</h2>
                     <ul>
                         {ifset $activeServer}
+                            {snippet runIcon}
                             <li><a n:href="Status:">Stav <span n:class="$running ? 'icon tick' : 'icon delete'"></span></a></li>
+                            {/snippet}
                             <li><a n:href="Commands:">Příkazy</a></li>
                             <li><a n:href="Backup:">Záloha</a></li>
                             <li><a n:href="Permissions:">Oprávnění</a></li>
