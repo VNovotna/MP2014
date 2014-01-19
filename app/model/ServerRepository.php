@@ -14,7 +14,7 @@ class ServerRepository extends Repository {
      * @param string $path
      * @param string $executable
      * @return boolean
-     * @throws PDOException
+     * @throws \RuntimeException
      */
     public function updateServerParams($serverId, $name, $path, $executable) {
         try {
@@ -24,32 +24,38 @@ class ServerRepository extends Repository {
                 'executable' => $executable
             ));
             return TRUE;
-        } catch (PDOException $e) {
-            throw new PDOException;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
     }
 
+    /**
+     * @param int $serverId
+     * @param string $executable
+     * @return boolean
+     * @throws \RuntimeException
+     */
     public function setExecutable($serverId, $executable) {
         try {
             $this->getTable()->where('id', $serverId)->update(array(
                 'executable' => $executable
             ));
             return TRUE;
-        } catch (PDOException $e) {
-            throw new PDOException;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
     }
 
     /**
      * @param int $serverId
      * @return \Nette\Database\Table\Selection
-     * @throws PDOException
+     * @throws \RuntimeException
      */
     public function getRunParams($serverId) {
         try {
             return $this->getTable()->where('id', $serverId)->fetch();
-        } catch (PDOException $e) {
-            throw new PDOException;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
     }
 
@@ -67,7 +73,7 @@ class ServerRepository extends Repository {
      * @param int $serverId
      * @param string $hash
      * @return boolean
-     * @throws PDOException
+     * @throws \RuntimeException
      */
     public function setRuntimeHash($serverId, $hash) {
         try {
@@ -75,8 +81,8 @@ class ServerRepository extends Repository {
                 'runhash' => $hash
             ));
             return TRUE;
-        } catch (PDOException $e) {
-            throw new PDOException;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
     }
 
@@ -84,7 +90,7 @@ class ServerRepository extends Repository {
      * sets given runtime hash to NULL, use only when stoping server
      * @param type $hash
      * @return boolean TRUE on success
-     * @throws PDOException
+     * @throws \RuntimeException
      */
     public function removeRuntimeHash($hash) {
         try {
@@ -92,15 +98,15 @@ class ServerRepository extends Repository {
                 'runhash' => NULL
             ));
             return TRUE;
-        } catch (PDOException $e) {
-            throw new PDOException;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
     }
 
     /**
      * @param int $serverId
      * @return string | NULL
-     * @throws PDOException
+     * @throws \RuntimeException
      */
     public function getRuntimeHash($serverId) {
         try {
@@ -110,8 +116,8 @@ class ServerRepository extends Repository {
             } else {
                 return $hash->runhash;
             }
-        } catch (PDOException $e) {
-            throw new PDOException;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
     }
 

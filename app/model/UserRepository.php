@@ -5,14 +5,14 @@ namespace DB;
 use Nette;
 
 /**
- * Handles everthing around users and theirs permissions
+ * Handles everthing around users
  * @author viky
  */
 class UserRepository extends Repository {
 
     /**
      * @param string $username
-     * @return Nette\Database\Table\Selection or FALSE if nothing found
+     * @return Nette\Database\Table\ActiveRow or FALSE if nothing found
      */
     public function findByName($username) {
         return $this->findAll()->where('username', $username)->fetch();
@@ -22,19 +22,21 @@ class UserRepository extends Repository {
      * returns id of the new user or throws PDOExeption
      * @param string $username
      * @param string $password
+     * @param string $mcnick minecraft login name
      * @return int user id
-     * @throws PDOException
+     * @throws \RuntimeException
      */
-    public function addUser($username, $password) {
+    public function addUser($username, $password, $mcnick = NULL) {
         $password = \Authenticator::calculateHash($password);
         try {
             $this->getTable()->insert(array(
                 'username' => $username,
-                'password' => $password
+                'password' => $password,
+                'mcname' => $mcnick
             ));
             return $this->getTable()->where(array('username' => $username))->fetch()->id;
-        } catch (PDOException $e) {
-            throw new PDOException;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
     }
 
@@ -84,22 +86,4 @@ class UserRepository extends Repository {
     public function findAllInRole($role) {
         return $this->findAll()->where("role LIKE $role");
     }
-
-    /**
-     * return all permissions lines from selected server
-     * @param int $serverId 
-     * @return Nette\Database\Table\Selection
-     */
-    public function findAllFromServer($serverId) {
-        return $this->getTable('permission')->where(array('server_id' => $serverId));
-    }
-
-    public function addOpToServer($serverId, $userId) {
-        throw new \Nette\NotImplementedException;
-    }
-
-    public function removeOpFromServer($serverId, $userId) {
-        throw new \Nette\NotImplementedException;
-    }
-
 }
