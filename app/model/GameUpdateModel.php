@@ -9,6 +9,7 @@ class GameUpdateModel {
 
     /**
      * parse whole page in url searching for links for minecraft_server
+     * (could take a long time btw)
      * @param string $url
      * @return array link => version
      */
