@@ -139,6 +139,12 @@ tr.odd {
 tr:hover{
     background-color: #F4F2F0;
 }
+tr > th{
+     background-color: white;
+}
+form td{
+    background-color: white;
+}
 
 table.tasks tr.done {
     color: #888;
