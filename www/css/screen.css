@@ -136,6 +136,10 @@ tr.odd {
     background-color: #FCFAF5;
 }
 
+tr:hover{
+    background-color: #F4F2F0;
+}
+
 table.tasks tr.done {
     color: #888;
     text-decoration: line-through;
