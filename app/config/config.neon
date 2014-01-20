@@ -29,6 +29,7 @@ common:
         fileModel: FileModel
         systemConfigModel: SystemConfigModel
         gameUpdateModel: GameUpdateModel
+        permissionRepository: DB\PermissionRepository
 
     factories:
 

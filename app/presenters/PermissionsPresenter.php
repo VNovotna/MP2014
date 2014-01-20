@@ -1,7 +1,7 @@
 <?php
 
 /**
- * 
+ * Ops handler
  * @author viky
  */
 class PermissionsPresenter extends SecuredPresenter {
@@ -9,13 +9,17 @@ class PermissionsPresenter extends SecuredPresenter {
     /** @var DB\UserRepository */
     private $userRepo;
 
+    /** @var DB\PermissionRepository */
+    private $permissionRepo;
+
     protected function startup() {
         parent::startup();
         $this->userRepo = $this->context->userRepository;
+        $this->permissionRepo = $this->context->permissionRepository;
     }
 
     public function actionDefault() {
-        $lines = $this->userRepo->findAllFromServer($this->selectedServerId);
+        $lines = $this->permissionRepo->findAllOps($this->selectedServerId);
         $this->template->lines = $lines;
     }
 
@@ -24,11 +28,19 @@ class PermissionsPresenter extends SecuredPresenter {
      */
     protected function createComponentNewPermForm() {
         $form = new Nette\Application\UI\Form();
-        $users = $this->userRepo->findAll()->fetchPairs('id', 'username');
+        $users = $this->userRepo->findAll()->where('user.mcname NOT NULL')->fetchPairs('username', 'username');
         $form->addSelect('newOp', 'uživatel: ', $users);
         $form->addSubmit('send', 'Přidat');
         $form->onSuccess[] = $this->newPermFormSubmitted;
         return $form;
+    }
+
+    public function handleDeop($userId) {
+        if ($this->permissionRepo->removeOpFromServer($this->selectedServerId, $userId, $this->runtimeHash)) {
+            $this->flashMessage('Uživatel už není operátorem', 'success');
+        }else{
+            $this->flashMessage('Něco se pokazilo', 'error');
+        }
     }
 
     /**
@@ -36,7 +48,21 @@ class PermissionsPresenter extends SecuredPresenter {
      */
     public function newPermFormSubmitted($form) {
         $values = $form->getValues();
-        $this->flashMessage('Not implemented yet.');
+        $usId = $this->userRepo->findByName($values->newOp)->getPrimary();
+        if ($usId != FALSE) {
+            if ($this->permissionRepo->addOpToServer($this->selectedServerId, $usId,  $this->runtimeHash)) {
+                $this->flashMessage('Operátor přidán', 'success');
+            } else {
+                $this->flashMessage('Uživatel už je operátorem!', 'error');
+            }
+        } else {
+            $this->flashMessage('Uživatel neexistuje.', 'error');
+        }
+        if ($this->isAjax()) {
+            $this->redrawControl();
+        } else {
+            $this->redirect('this');
+        }
     }
 
 }

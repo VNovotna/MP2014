@@ -10,10 +10,10 @@
         </tr>
     </thead>
     <tbody>
-        <tr n:foreach="$lines as $line">
+        <tr n:foreach="$lines as $line" n:class="$iterator->odd ? odd : even">
             <td>{$line->user->username}</td>
             <td>{$line->role}</td>
-            <td><a n:if="$line->role!='owner'" class="icon delete" n:href="delete!">odstranit</a></td>
+            <td><a n:if="$line->role!='owner'" class="icon delete" n:href="deop! $line->user_id">odstranit</a></td>
         </tr>
     </tbody>
 </table>
