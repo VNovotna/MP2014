@@ -14,9 +14,9 @@ class FileModel {
      * @throws Nette\FileNotFoundException
      */
     public function open($file, $ignoreNonExistent = FALSE) {
-        try {
+        if (file_exists($file)) {
             return file($file);
-        } catch (Nette\FileNotFoundException $e) {
+        } else {
             if ($ignoreNonExistent) {
                 fopen($file, 'c');
                 return array();
@@ -34,10 +34,10 @@ class FileModel {
      * @return boolean
      */
     public function write($content, $file, $ignoreNonExistent = FALSE) {
-        try {
+        if (file_exists($file)) {
             $handler = fopen($file, 'w');
             fwrite($handler, $content);
-        } catch (Exception $ex) {
+        } else {
             if ($ignoreNonExistent) {
                 $handler = fopen($file, 'c+');
                 fwrite($handler, $content);
