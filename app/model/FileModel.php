@@ -9,7 +9,7 @@ class FileModel {
     /**
      * open and return whole file content
      * @param string $file enter absolute path
-     * @param bool $ignoreNonExistent TRUE if want to create non existent files
+     * @param bool $ignoreNonExistent TRUE if you want to create non existent file
      * @return array each line of file on one line
      * @throws Nette\FileNotFoundException
      */
@@ -18,7 +18,8 @@ class FileModel {
             return file($file);
         } else {
             if ($ignoreNonExistent) {
-                fopen($file, 'c');
+                $handler = fopen($file, 'c');
+                fclose($handler);
                 return array();
             } else {
                 throw Nette\FileNotFoundException;
@@ -37,10 +38,12 @@ class FileModel {
         if (file_exists($file)) {
             $handler = fopen($file, 'w');
             fwrite($handler, $content);
+            fclose($handler);
         } else {
             if ($ignoreNonExistent) {
                 $handler = fopen($file, 'c+');
                 fwrite($handler, $content);
+                fclose($handler);
             } else {
                 throw Nette\FileNotFoundException;
             }
@@ -58,7 +61,7 @@ class FileModel {
      */
     public function add($content, $file, $ignoreNonExistent = FALSE) {
         throw Nette\NotImplementedException;
-        return TRUE;
+        return FALSE;
     }
 
 }

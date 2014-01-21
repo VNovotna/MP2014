@@ -18,11 +18,15 @@ class PermissionRepository extends Repository {
     /** @var UserRepository */
     private $userRepo;
 
-    public function __construct(\Nette\Database\Context $database, ServerRepository $serverRepo, \ServerCommander $serverComm, UserRepository $userRepo) {
+    /** @var \FileModel */
+    private $fileModel;
+
+    public function __construct(\Nette\Database\Context $database, ServerRepository $serverRepo, \ServerCommander $serverComm, UserRepository $userRepo, FileModel $fileModel) {
         parent::__construct($database);
         $this->serverRepo = $serverRepo;
         $this->serverComm = $serverComm;
         $this->userRepo = $userRepo;
+        $this->fileModel = $fileModel;
     }
 
     /**
@@ -130,9 +134,7 @@ class PermissionRepository extends Repository {
         foreach ($ops as $op) {
             $write .= $op->user->mcname . "\n";
         }
-        $handle = fopen($path . 'ops.txt', 'w+');
-        fwrite($handle, $write);
-        fclose($handle);
+        $this->fileModel->write($write, $path . 'ops.txt', TRUE);
     }
 
 }
