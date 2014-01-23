@@ -13,14 +13,10 @@ class CommandsPresenter extends SecuredPresenter {
     /** @var DB\ServerRepository */
     private $serverRepo;
 
-    /** @var string */
-    protected $runtimeHash;
-
     protected function startup() {
         parent::startup();
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
-        $this->runtimeHash = $this->serverRepo->getRuntimeHash($this->selectedServerId);
     }
 
     public function beforeRender() {

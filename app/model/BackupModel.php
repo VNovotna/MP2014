@@ -140,14 +140,39 @@ class BackupModel extends Nette\Object {
     }
 
     /**
+     * @deprecated well i found longer but more reliable solution
      * remove all files in the dir
      * @param string $path to folder to wipe
      */
-    public function removeDir($path) {
+    public function removeDirr($path) {
         $class_func = array(__CLASS__, __FUNCTION__);
         return is_file($path) ?
                 @unlink($path) :
                 array_map($class_func, glob($path . '/*')) == @rmdir($path);
+    }
+
+    /**
+     * remove all files in the dir
+     * @param string $path to folder to wipe
+     */
+    public static function removeDir($dirPath) {
+        if (!is_dir($dirPath)) {
+            throw new InvalidArgumentException("$dirPath must be a directory");
+        }
+        if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
+            $dirPath .= '/';
+        }
+        $files = glob($dirPath . '*', GLOB_MARK);
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                if (is_dir($file)) {
+                    self::removeDir($file);
+                } else {
+                    unlink($file);
+                }
+            }
+        }
+        rmdir($dirPath);
     }
 
 }

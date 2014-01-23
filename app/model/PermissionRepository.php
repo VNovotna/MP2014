@@ -21,7 +21,7 @@ class PermissionRepository extends Repository {
     /** @var \FileModel */
     private $fileModel;
 
-    public function __construct(\Nette\Database\Context $database, ServerRepository $serverRepo, \ServerCommander $serverComm, UserRepository $userRepo, FileModel $fileModel) {
+    public function __construct(\Nette\Database\Context $database, ServerRepository $serverRepo, \ServerCommander $serverComm, UserRepository $userRepo, \FileModel $fileModel) {
         parent::__construct($database);
         $this->serverRepo = $serverRepo;
         $this->serverComm = $serverComm;
