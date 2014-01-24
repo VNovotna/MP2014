@@ -21,3 +21,5 @@ Options -Indexes
 <IfModule mod_deflate.c>
 	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/x-javascript text/javascript application/javascript application/json
 </IfModule>
+php_value upload_max_filesize 512M
+php_value post_max_size 514M
