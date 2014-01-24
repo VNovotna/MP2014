@@ -107,9 +107,16 @@ class BackupPresenter extends SecuredPresenter {
         }
     }
 
+    /**
+     * @param string $file filename
+     */
     public function handleDownload($file) {
-        $fr = new \Nette\Application\Responses\FileResponse($this->path . 'backups/' . $file, $file, "application/zip");
-        $this->sendResponse($fr);
+        $fd = new FileDownload();
+        $fd->sourceFile = $this->path . 'backups/' . $file;
+        $fd->onBeforeDownloaderStarts[] = function($fd) {
+             header('Content-Length: '.$fd->sourceFileSize);
+        };
+        $fd->download();
     }
 
     public function renderDefault() {
