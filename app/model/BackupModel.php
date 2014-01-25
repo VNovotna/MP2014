@@ -140,18 +140,6 @@ class BackupModel extends Nette\Object {
     }
 
     /**
-     * @deprecated well i found longer but more reliable solution
-     * remove all files in the dir
-     * @param string $path to folder to wipe
-     */
-    public function removeDirr($path) {
-        $class_func = array(__CLASS__, __FUNCTION__);
-        return is_file($path) ?
-                @unlink($path) :
-                array_map($class_func, glob($path . '/*')) == @rmdir($path);
-    }
-
-    /**
      * remove all files in the dir
      * @param string $path to folder to wipe
      */
@@ -174,5 +162,4 @@ class BackupModel extends Nette\Object {
         }
         rmdir($dirPath);
     }
-
 }

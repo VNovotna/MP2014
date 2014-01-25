@@ -14,17 +14,19 @@ class GameUpdateModel {
      * @return array link => version
      */
     private function parseForLinks($url) {
-        $html = implode('', file($url));
-        $dom = new DOMDocument;
-        libxml_use_internal_errors(true);
-        $dom->loadHTML($html);
-        $links = $dom->getElementsByTagName('a');
-        $matches = array();
         $result = array();
-        foreach ($links as $key => $link) {
-            if (preg_match('#minecraft_server.[0-9a-z.]*.jar#', $link->getAttribute('href'), $matches)) {
-                $key = $this->getVersionFromFileName($matches[0]);
-                $result[$link->getAttribute('href')] = $key;
+        $html = @implode('', file($url));
+        if ($html != NULL) {
+            $dom = new DOMDocument;
+            libxml_use_internal_errors(true);
+            $dom->loadHTML($html);
+            $links = $dom->getElementsByTagName('a');
+            $matches = array();
+            foreach ($links as $key => $link) {
+                if (preg_match('#minecraft_server.[0-9a-z.]*.jar#', $link->getAttribute('href'), $matches)) {
+                    $key = $this->getVersionFromFileName($matches[0]);
+                    $result[$link->getAttribute('href')] = $key;
+                }
             }
         }
         return $result;
@@ -57,7 +59,7 @@ class GameUpdateModel {
         //$fp = fopen($path . 'minecraft_server.' . $version . '.jar', 'w+');
         $raw = file_get_contents($url);
 //        ... check if $raw has anything useful in it
-        file_put_contents($path.'minecraft_server.'.$version.'.jar', $raw);
+        file_put_contents($path . 'minecraft_server.' . $version . '.jar', $raw);
 //        ... check if the file showed up
     }
 
