@@ -1,0 +1,9 @@
+<table>
+<tr>
+    <th>Verze dostupné ke stažení</th>
+</tr>
+<tr n:foreach="$dowJars as $url => $version" n:class="$iterator->odd ? odd : even">
+    <td>{$version}</td>
+    <td><a n:href='download! $url, $version' class="icon download ajax">stáhnout</a></td>
+</tr>
+</table>

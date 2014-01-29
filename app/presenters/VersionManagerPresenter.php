@@ -50,20 +50,6 @@ class VersionManagerPresenter extends SecuredPresenter {
     }
 
     /**
-     * @param string $url
-     * @param string $version
-     */
-    public function handleDownload($url, $version) {
-        $this->gameUpdater->download($url, $this->path, $version);
-        $this->flashMessage('Staženo', 'success');
-        if ($this->isAjax()) {
-            $this->redrawControl();
-        } else {
-            $this->redirect('this');
-        }
-    }
-
-    /**
      * @param string $file
      */
     public function handleDeleteFile($file) {
@@ -79,8 +65,16 @@ class VersionManagerPresenter extends SecuredPresenter {
         }
     }
 
+    public function handleShowUpdates() {
+        $this->template->showUpdates = TRUE;
+        $this->redrawControl('UpdateList');
+    }
+
+    protected function createComponentUpdates() {
+        return new Updates($this->gameUpdater, $this->path);
+    }
+
     public function renderDefault() {
-        $this->template->dowJars = array_merge($this->gameUpdater->getSnapshotsJars(), $this->gameUpdater->getStableJars());
         $this->template->avJars = $this->gameUpdater->getAvailableJars($this->path);
         $exec = $this->serverRepo->getRunParams($this->selectedServerId)->executable;
         $this->template->active = $this->gameUpdater->getVersionFromFileName($exec);
