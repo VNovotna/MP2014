@@ -9,14 +9,17 @@
 {/if}
 <fieldset>
     <legend>log:</legend>
-    <div style="width: 698px; max-height: 400px; overflow-y: scroll; overflow-x: hidden; position: relative; top:-10px;">
-        {foreach $logs as $line}
-            <span n:class='$iterator->odd ? "odd log" : "even log"'>
-                {!$line}<br>
-            </span>
-        {/foreach}
-    </div>
+    {snippet log}
+        <div style="width: 698px; max-height: 400px; overflow-y: scroll; overflow-x: hidden; position: relative; top:-10px;">
+            {foreach $logs as $line}
+                <span n:class='$iterator->odd ? "odd log" : "even log"'>
+                    {!$line}<br>
+                </span>
+            {/foreach}
+        </div>
+    {/snippet}
 </fieldset>
+<!--<a n:href="reload!" class="ajax">aktualizovat</a>-->
 {/block}
 {block head}
 <style>
@@ -28,4 +31,36 @@
         background-color: #f4f4f4;
     }
 </style>
+{/block}
+{block scripts}
+<script>
+jQuery.extend({
+    nette: {
+        updateSnippet: function(id, html) {
+            $("#" + id).fadeTo("fast", 0.5, function() {
+                $(this).html(html).fadeTo("fast", 1);
+            });
+         },
+         success: function(payload) {
+            if (payload.snippets) {
+                for (var i in payload.snippets) {
+                    jQuery.nette.updateSnippet(i, payload.snippets[i]);
+                }
+            }
+        }
+    }
+});
+jQuery.ajaxSetup({
+    success: jQuery.nette.success
+});
+function reload() {
+    $.ajax({ url: "?selectedServerId=1&do=reload"});
+    t = setTimeout(function() {
+        reload();
+    }, 10000);
+}
+t = setTimeout(function() {
+    reload();
+}, 10000);
+</script>
 {/block}

@@ -18,9 +18,8 @@ class StatusPresenter extends SecuredPresenter {
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
     }
-
-    public function actionDefault() {
-        
+    public function handleReload(){
+        $this->redrawControl('log');
     }
 
     public function renderDefault() {
