@@ -1,4 +1,15 @@
+backup:
+    number: 0
+    foreign: TRUE
+update:
+    number: 0 
+    foreign: FALSE
+    urls:
+        - 'https://minecraft.net/download'
+        - 'https://mojang.com/'
+    regex:
+        - '#minecraft_server.[0-9a-z.]*.jar#'
+storage: 
+    common: 0
 server:
-    num-per-user: 0
-    foreign-source: TRUE
-    num-of-versions: 0
+    number: 0

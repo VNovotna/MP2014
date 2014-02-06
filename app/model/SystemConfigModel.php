@@ -13,12 +13,19 @@ class SystemConfigModel extends Nette\Object {
     private $neon = array();
 
     public function __construct() {
-        $file = implode('',file('../app/config/app.neon'));
+        $file = implode('', file('../app/config/app.neon'));
         $this->neon = Utils\Neon::decode($file);
     }
-
-    public function getConfig() {
-        return $this->neon;
+    /**
+     * @param string $section
+     * @return array
+     */
+    public function getConfig($section = NULL) {
+        if ($section == NULL)
+            return $this->neon;
+        else {
+            return $this->neon[$section];
+        }
     }
 
 }
