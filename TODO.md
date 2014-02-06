@@ -7,6 +7,7 @@ TODO
 * Administration: There should be some interface for editing configuration file [todo, usability]
 * Backup: Get rid of phar dependency [low priority]
 * Authentification: check new trends in Nette 2.1 [low priority]
+
 DONE
 
 * VesionManager: check updates only on user request [speedup]
