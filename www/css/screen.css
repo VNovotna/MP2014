@@ -140,12 +140,14 @@ tr:hover{
     background-color: #F4F2F0;
 }
 tr > th{
-     background-color: white;
+    background-color: white;
 }
 form td{
     background-color: white;
 }
-
+form th{
+    text-align: right;
+}
 table.tasks tr.done {
     color: #888;
     text-decoration: line-through;
