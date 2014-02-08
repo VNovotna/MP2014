@@ -21,13 +21,13 @@ common:
     services:
         routerFactory: RouterFactory
         router: @routerFactory::createRouter
+        systemConfigModel: SystemConfigModel
         userRepository: DB\UserRepository
         serverRepository: DB\ServerRepository
         authenticator: Authenticator
         serverCommander: ServerCommander
         backupModel: BackupModel
         fileModel: FileModel
-        systemConfigModel: SystemConfigModel
         gameUpdateModel: GameUpdateModel
         permissionRepository: DB\PermissionRepository
 
