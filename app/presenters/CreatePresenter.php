@@ -15,6 +15,9 @@ class CreatePresenter extends SecuredPresenter {
     /** @var DB\ServerRepository */
     private $serverRepo;
 
+    /** @var string path of the new server */
+    private $path;
+
     protected function startup() {
         parent::startup();
         $this->config = $this->context->systemConfigModel->getConfig();
@@ -48,7 +51,8 @@ class CreatePresenter extends SecuredPresenter {
         if (count($servers) < $this->config['server']['number']) {
             if (!in_array($values->name, $servers)) {
                 $port = $this->serverRepo->findFreePort();
-                $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port);
+                $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port);
+                $this->redirect('phase2', array('newServerId' => $id));
             } else {
                 $this->flashMessage("Server s tímto jménem už jste vytvořili", "error");
                 $this->redirect('this');
@@ -73,12 +77,16 @@ class CreatePresenter extends SecuredPresenter {
         $this->redirect('phase3', array('name' => NULL, 'path' => NULL));
     }
 
-    public function renderPhase2($name) {
-        $this->template->name = $name;
+    protected function createComponentDownload() {
+        return new Updates($this->context->gameUpdateModel, $this->path);
     }
 
-    public function renderPhase3($name, $path) {
-        $this->template->name = $name;
+    public function actionPhase2($newServerId) {
+        $this->path = $this->serverRepo->getPath($newServerId);
+    }
+
+    public function renderPhase2($newServerId) {
+        $this->template->$newServerId = $newServerId;
     }
 
 }
