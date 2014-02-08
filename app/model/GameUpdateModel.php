@@ -7,26 +7,37 @@
  */
 class GameUpdateModel {
 
+    private $config;
+
+    public function __construct(SystemConfigModel $configModel) {
+        $this->config = $configModel->getConfig('update');
+    }
+
     /**
-     * parse whole page in url searching for links for minecraft_server
+     * parse whole page in url searching for links for minecraft server
      * (could take a long time btw)
      * @param string $url
      * @return array link => version
      */
     private function parseForLinks($url) {
-        $result = array();
         $html = @implode('', file($url));
         if ($html != NULL) {
             $dom = new DOMDocument;
             libxml_use_internal_errors(true);
             $dom->loadHTML($html);
             $links = $dom->getElementsByTagName('a');
-            $matches = array();
-            foreach ($links as $key => $link) {
-                if (preg_match('#minecraft_server.[0-9a-z.]*.jar#', $link->getAttribute('href'), $matches)) {
-                    $key = $this->getVersionFromFileName($matches[0]);
-                    $result[$link->getAttribute('href')] = $key;
-                }
+            return $this->findMinecraftLinks($links);
+        }
+        return array();
+    }
+
+    private function findMinecraftLinks($links) {
+        $result = array();
+        $matches = array();
+        foreach ($links as $key => $link) {
+            if (preg_match($this->config['regex'], $link->getAttribute('href'), $matches)) {
+                $key = $this->getVersionFromFileName($matches[0]);
+                $result[$link->getAttribute('href')] = $key;
             }
         }
         return $result;
@@ -37,7 +48,12 @@ class GameUpdateModel {
      * @return array link => version
      */
     public function getStableJars() {
-        return $this->parseForLinks('https://minecraft.net/download');
+        $urls = preg_split("#\ #", $this->config['stable']);
+        $result = array();
+        foreach ($urls as $url) {
+            array_merge($result, $this->parseForLinks($url));
+        }
+        return $result;
     }
 
     /**
@@ -45,7 +61,12 @@ class GameUpdateModel {
      * @return array version => link
      */
     public function getSnapshotsJars() {
-        return $this->parseForLinks('https://mojang.com/');
+        $urls = preg_split("#\ #", $this->config['unstable']);
+        $result = array();
+        foreach ($urls as $url) {
+            array_merge($result, $this->parseForLinks($url));
+        }
+        return $result;
     }
 
     /**
@@ -70,7 +91,8 @@ class GameUpdateModel {
      */
     public function getAvailableJars($path) {
         $result = array();
-        foreach (Finder::findFiles('minecraft_server.[0-9a-z.]*.jar')->in($path)->orderByName() as $file) {
+        $regex = substr_compare($this->config['regex'], 1, -1);
+        foreach (Finder::findFiles($regex)->in($path)->orderByName() as $file) {
             $result[$file->getFilename()] = $this->getVersionFromFileName($file->getFilename());
         }
         return array_reverse($result);
@@ -78,6 +100,7 @@ class GameUpdateModel {
 
     /**
      * get version from minecraft server filename
+     * programes quote: it's not very universal method
      * @param string $filename
      * @return string
      */

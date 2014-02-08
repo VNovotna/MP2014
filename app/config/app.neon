@@ -4,7 +4,8 @@ backup:
 update:
     number: 10
     foreign: FALSE
-    url: 'https://minecraft.net/download https://mojang.com/'
+    stable: 'https://minecraft.net/download'
+    unstable: 'https://mojang.com/'
     regex: '#minecraft_server.[0-9a-z.]*.jar#'
 storage: 
     common: 0
