@@ -1,12 +1,12 @@
 backup:
-    number: 0
+    number: 10
     foreign: TRUE
 update:
-    number: 0 
+    number: 10
     foreign: FALSE
     url: 'https://minecraft.net/download https://mojang.com/'
     regex: '#minecraft_server.[0-9a-z.]*.jar#'
 storage: 
     common: 0
 server:
-    number: 0
+    number: 5
