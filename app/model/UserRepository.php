@@ -29,12 +29,11 @@ class UserRepository extends Repository {
     public function addUser($username, $password, $mcnick = NULL) {
         $password = \Authenticator::calculateHash($password);
         try {
-            $this->getTable()->insert(array(
+            return $this->getTable()->insert(array(
                 'username' => $username,
                 'password' => $password,
                 'mcname' => $mcnick
-            ));
-            return $this->getTable()->where(array('username' => $username))->fetch()->id;
+            ))->getPrimary();
         } catch (\PDOException $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode());
         }

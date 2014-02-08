@@ -138,7 +138,7 @@ class ServerRepository extends Repository {
                         'executable' => $executable,
                         'name' => $name,
                         'port' => $port
-            ));
+            ))->getPrimary();
         } catch (\PDOException $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
