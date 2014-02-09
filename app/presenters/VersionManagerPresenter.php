@@ -75,7 +75,12 @@ class VersionManagerPresenter extends SecuredPresenter {
     }
 
     public function renderDefault() {
+        try{
         $this->template->avJars = $this->gameUpdater->getAvailableJars($this->path);
+        }  catch (UnexpectedValueException $e){
+            $this->flashMessage('Máte špatně nastavenou cestu!', 'error');
+            $this->template->avJars = array();
+        }
         $exec = $this->serverRepo->getRunParams($this->selectedServerId)->executable;
         $this->template->active = $this->gameUpdater->getVersionFromFileName($exec);
     }

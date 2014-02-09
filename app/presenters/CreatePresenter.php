@@ -48,6 +48,7 @@ class CreatePresenter extends SecuredPresenter {
     public function newServerFormSubmitted($form) {
         $values = $form->getValues();
         $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id))->fetchPairs('id', 'name');
+        //TODO check if path is useable
         if (count($servers) < $this->config['server']['number']) {
             if (!in_array($values->name, $servers)) {
                 $port = $this->serverRepo->findFreePort();

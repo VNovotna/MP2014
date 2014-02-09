@@ -22,7 +22,7 @@ class FileModel {
                 fclose($handler);
                 return array();
             } else {
-                throw Nette\FileNotFoundException;
+                throw new \Nette\FileNotFoundException;
             }
         }
     }
@@ -45,7 +45,7 @@ class FileModel {
                 fwrite($handler, $content);
                 fclose($handler);
             } else {
-                throw Nette\FileNotFoundException;
+                throw new \Nette\FileNotFoundException;
             }
         }
         return TRUE;

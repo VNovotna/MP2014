@@ -14,7 +14,7 @@ class FileEditor extends Nette\Application\UI\Control {
 
     /** @var FileModel */
     private $fileModel;
-    
+
     /** @var bool */
     private $allowedToEdit;
 
@@ -37,8 +37,13 @@ class FileEditor extends Nette\Application\UI\Control {
         $form = new Form();
         $form->addTextArea('props', '', 70, 36);
         $form->addSubmit('submit', 'Nastavit')->setAttribute('class', 'ajax');
-        $value = $this->fileModel->open($this->filePath, TRUE);
-        $form->setValues(array('props' => implode('', $value)));
+        try {
+            $value = $this->fileModel->open($this->filePath, FALSE);
+            $form->setValues(array('props' => implode('', $value)));
+        } catch (\Nette\FileNotFoundException $e) {
+            $form->setValues(array('props' => 'Soubor ještě nebyl vytvořen!'));
+            $form['submit']->setDisabled();
+        }
         if (!$this->allowedToEdit) {
             $form['submit']->setDisabled();
         }
