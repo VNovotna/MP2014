@@ -1,5 +1,6 @@
 TODO
 
+* freePort.sh: in unused 
 * None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * Permissions: problem with ops without application account (they are deleted) [bug, confusing]
