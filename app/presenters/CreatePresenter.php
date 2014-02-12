@@ -32,8 +32,7 @@ class CreatePresenter extends SecuredPresenter {
         if ($this->config['storage']['common'] == 0) {
             $form->addText('path', 'Cesta v systému souborů:', 36)
                     ->addRule(Form::FILLED, " ")
-                    //TODO
-                    ->addRule(Form::PATTERN, "Toto není platná cesta ke složce, ty začínají a končí lomítkem.", "\/[a-z]+\/");
+                    ->addRule(Form::PATTERN, "Toto není platná cesta ke složce, ty začínají a končí lomítkem.", "^/[a-z/]+[/]$");
         } else {
             $form->addHidden('path', $this->config['storage']['common']);
         }

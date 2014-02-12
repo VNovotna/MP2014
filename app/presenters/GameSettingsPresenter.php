@@ -34,8 +34,8 @@ class GameSettingsPresenter extends SecuredPresenter {
         $form->addText('name', 'Jméno: ', 30, 20)
                 ->addRule(Form::FILLED, 'server musí mít jméno');
         $form->addText('path', 'Cesta: ', 30)
-                ->addRule(Form::FILLED, 'je nutné specifikovat cestu');
-        //TODO regex na cestu
+                ->addRule(Form::FILLED, 'je nutné specifikovat cestu')
+                ->addRule(Form::PATTERN, "Toto není platná cesta ke složce, ty začínají a končí lomítkem.", "^/[^/].*/$");
         $form->addText('executable', 'jméno .jar: ', 30)
                 ->addRule(Form::FILLED, 'je nutno specifikovat jméno .jar souboru');
         $form->addSubmit('update', 'Upravit')->setAttribute('class', 'ajax');
