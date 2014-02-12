@@ -28,14 +28,16 @@ class CreatePresenter extends SecuredPresenter {
         $form = new Form();
         $form->addGroup();
         $form->addText('name', "Jméno serveru:")
-                ->addRule(Form::FILLED, "Server musíte nějak pojmenovat.");
-        if ($this->config['storage']['common'] == 0) {
+                ->addRule(Form::FILLED, "Server musíte nějak pojmenovat.")
+                ->addRule(Form::PATTERN, 'Jméno serveru musí obsahovat pouze písmena bez diakritiky a čísla.', '[a-zA-Z_0-9]+');
+        if ($this->config['storage']['common'] === 0) {
             $form->addText('path', 'Cesta v systému souborů:', 36)
                     ->addRule(Form::FILLED, " ")
                     ->addRule(Form::PATTERN, "Toto není platná cesta ke složce, ty začínají a končí lomítkem.", "^/[a-z/]+[/]$");
         } else {
             $form->addHidden('path', $this->config['storage']['common']);
         }
+        $form->addHidden('storage', $this->config['storage']['common']);
         $form->addSubmit('send', 'Pokračovat');
         $form->onSuccess[] = $this->newServerFormSubmitted;
         return $form;
@@ -47,11 +49,19 @@ class CreatePresenter extends SecuredPresenter {
     public function newServerFormSubmitted($form) {
         $values = $form->getValues();
         $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id))->fetchPairs('id', 'name');
-        //TODO check if path is useable
         if (count($servers) < $this->config['server']['number']) {
             if (!in_array($values->name, $servers)) {
                 $port = $this->serverRepo->findFreePort();
-                $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port);
+                try {
+                    if ($values->storage === 0) {
+                        $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port);
+                    } else {
+                        $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port, $values->name);
+                    }
+                } catch (Nette\InvalidArgumentException $e) {
+                    $this->flashMessage($e->getMessage(), "error");
+                    $this->redirect('this');
+                }
                 $this->redirect('phase2', array('newServerId' => $id));
             } else {
                 $this->flashMessage("Server s tímto jménem už jste vytvořili", "error");

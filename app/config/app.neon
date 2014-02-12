@@ -8,6 +8,6 @@ update:
     unstable: 'https://mojang.com/'
     regex: '#minecraft_server.[0-9a-z.]*.jar#'
 storage: 
-    common: 0
+    common: '/home/viky/mcsw/'
 server:
     number: 5

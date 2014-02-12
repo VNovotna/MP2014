@@ -14,9 +14,10 @@ class ServerRepository extends Repository {
      * @param string $path
      * @param string $executable
      * @return boolean
-     * @throws \RuntimeException
+     * @throws \RuntimeException|\Nette\InvalidArgumentException
      */
     public function updateServerParams($serverId, $name, $path, $executable) {
+        $this->checkPathValidity($path);
         try {
             $this->getTable()->where('id', $serverId)->update(array(
                 'name' => $name,
@@ -124,13 +125,18 @@ class ServerRepository extends Repository {
     /**
      * @param int $user_id
      * @param string $name
-     * @param string $path
+     * @param string $path must end on / 
      * @param string $executable
      * @param int $port port has to be free, use finFreePort method
+     * @param string $mkdir put name of the server folder here 
      * @return int id of new server
-     * @throws \RuntimeException
+     * @throws \RuntimeException|\Nette\InvalidArgumentException
      */
-    public function addServer($user_id, $name, $path, $executable, $port) {
+    public function addServer($user_id, $name, $path, $executable, $port, $mkdir = NULL) {
+        $this->checkPathValidity($path);
+        if ($mkdir != NULL) {
+            $path = $this->createFolder($path, $mkdir);
+        }
         try {
             return $this->getTable()->insert(array(
                         'user_id' => $user_id,
@@ -138,10 +144,28 @@ class ServerRepository extends Repository {
                         'executable' => $executable,
                         'name' => $name,
                         'port' => $port
-            ))->getPrimary();
+                    ))->getPrimary();
         } catch (\PDOException $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
+    }
+
+    /**
+     * @param string $path
+     * @param string $mkdir
+     * @return string with new path
+     * @throws \Nette\InvalidArgumentException
+     */
+    private function createFolder($path, $mkdir) {
+        chdir($path);
+        if (!file_exists($mkdir) and !mkdir($mkdir, 0771)) {
+            throw new \Nette\InvalidArgumentException('Path is invalid or it is unacessible');
+        }
+        $path = $path . $mkdir;
+        if (substr($path, -1) !== '/') {
+            $path .= '/';
+        }
+        return $path;
     }
 
     /**
@@ -156,6 +180,7 @@ class ServerRepository extends Repository {
             }
             $i++;
         }
+        return $i;
     }
 
     /**
@@ -170,6 +195,15 @@ class ServerRepository extends Repository {
             return TRUE;
         }
         return FALSE;
+    }
+/**
+ * @param string $path
+ * @throws \Nette\InvalidArgumentException
+ */
+    private function checkPathValidity($path) {
+        if (!is_writable($path)) {
+            throw new \Nette\InvalidArgumentException('Path is invalid or it is unacessible');
+        }
     }
 
     public function generateRuntimeHash() {

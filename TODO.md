@@ -1,7 +1,6 @@
 TODO
 
 * None: There is no way how to delete server [todo]
-* ServerRepository: path in db have to be allways valid [bug]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * Permissions: problem with ops without application account (they are deleted) [bug, confusing]
 * Create: There are no way how to create new server [todo]
@@ -13,6 +12,7 @@ TODO
 
 DONE
 
+* ServerRepository: path in db have to be allways valid [bug]
 * GameSettings and Create: regex for valid path [todo] (not great but working)
 * GameSetting: crash when server config files do not exists [bug]
 * VersionManager: crash when server path is invalid [not a bug, path should be valid]
