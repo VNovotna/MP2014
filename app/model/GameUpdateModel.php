@@ -51,7 +51,7 @@ class GameUpdateModel {
         $urls = preg_split("#\ #", $this->config['stable']);
         $result = array();
         foreach ($urls as $url) {
-            array_merge($result, $this->parseForLinks($url));
+            $result = array_merge($result, $this->parseForLinks($url));
         }
         return $result;
     }
@@ -64,7 +64,7 @@ class GameUpdateModel {
         $urls = preg_split("#\ #", $this->config['unstable']);
         $result = array();
         foreach ($urls as $url) {
-            array_merge($result, $this->parseForLinks($url));
+            $result = array_merge($result, $this->parseForLinks($url));
         }
         return $result;
     }
