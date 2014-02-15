@@ -91,7 +91,7 @@ class GameUpdateModel {
      */
     public function getAvailableJars($path) {
         $result = array();
-        $regex = substr_compare($this->config['regex'], 1, -1);
+        $regex = substr($this->config['regex'], 1, -1);
         foreach (Finder::findFiles($regex)->in($path)->orderByName() as $file) {
             $result[$file->getFilename()] = $this->getVersionFromFileName($file->getFilename());
         }
