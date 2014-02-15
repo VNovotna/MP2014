@@ -1,6 +1,8 @@
 TODO
 
-* GameSettings: disable path and executable setting when common storga is in use
+* Backups: cannot be created in new server, probably permission error
+* Status: autorefresh of logs is loading logs of diferent server
+* GameSettings: disable path and executable setting when common storage is in use
 * freePort.sh: in unused 
 * None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
