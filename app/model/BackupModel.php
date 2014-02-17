@@ -23,6 +23,7 @@ class BackupModel extends Nette\Object {
     public function backup($path, $runtimeHash = NULL) {
         $date = new Nette\DateTime();
         $filename = $date->format('Y-m-d_H-i');
+        mkdir($path.'backups/', 0771);
         if ($this->serverCmd->isServerRunning($runtimeHash)) {
             return $this->backupRunning($path, $runtimeHash, $filename);
         } else {
@@ -46,7 +47,7 @@ class BackupModel extends Nette\Object {
             $this->serverCmd->issueCommand('save-on', $hash);
             return TRUE;
         } catch (UnexpectedValueException $e) {
-            echo $e->getTraceAsString();
+            echo $e->getMessage();
             return FALSE;
         }
     }
@@ -63,7 +64,7 @@ class BackupModel extends Nette\Object {
             $phar->buildFromDirectory($path . 'world/');
             return TRUE;
         } catch (UnexpectedValueException $e) {
-            echo $e->getTraceAsString();
+            echo $e->getMessage();
             return FALSE;
         }
     }
