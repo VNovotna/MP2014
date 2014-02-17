@@ -1,6 +1,5 @@
 TODO
 
-* Status: autorefresh of logs is loading logs of diferent server
 * GameSettings: disable path and executable setting when common storage is in use
 * freePort.sh: in unused 
 * None: There is no way how to delete server [todo]
@@ -14,6 +13,7 @@ TODO
 
 DONE
 
+* Status: autorefresh of logs is loading logs of diferent server
 * Backups: cannot be created in new server, probably permission error (not a permission error, backups folder was missing)
 * Configuration: Edit all other classes to use config files [todo] (rewriten into more parts)
 * ServerRepository: path in db have to be allways valid [bug]
