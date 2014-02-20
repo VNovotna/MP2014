@@ -18,7 +18,13 @@
         </div>
     {/snippet}
 </fieldset>
-<!--<a n:href="reload!" class="ajax">aktualizovat</a>-->
+<span class="icon info" id="refresh-on">
+    Logy se automaticky obnovují. Kliknutím <a onclick="clearTimeout(t); $('#refresh-on').hide(); $('#refresh-off').show();">sem</a> to zakážete.
+</span>
+<span class="icon download" id="refresh-off" style="display:none">
+    <a n:href="reload!" class="ajax">Načíst znovu</a>
+</span>
+
 {/block}
 {block head}
 <style>
