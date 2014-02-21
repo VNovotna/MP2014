@@ -1,11 +1,13 @@
 <?php
 
+use Nette\Utils\Html;
+
 /**
  * It's for adding info spans to forms.
- * NOT WORKING
+ * 
  * @author viky
  */
-class InfoSpan extends \Nette\Application\UI\Control {
+class InfoSpan extends Nette\Forms\Controls\BaseControl {
 
     /** @var string */
     private $text;
@@ -13,21 +15,23 @@ class InfoSpan extends \Nette\Application\UI\Control {
     /** @var string */
     private $iconClass;
 
-    /**
-     * @param string $text
-     * @param string $iconClass
-     */
-    public function __construct($text, $iconClass) {
-        parent::__construct();
+    public function __construct($label = NULL, $text = NULL, $iconClass = NULL) {
+        parent::__construct($label);
         $this->text = $text;
         $this->iconClass = $iconClass;
     }
 
-    public function render() {
-        $this->template->setFile(__DIR__ . '/InfoSpan.latte');
-        $this->template->text = $this->text;
-        $this->template->iconClass = $this->iconClass;
-        $this->template->render();
+    public function setValue($value) {
+        $this->text = $value;
+    }
+
+    public function getValue() {
+        return $this->text;
+    }
+
+    public function getControl() {
+        $this->setOption('rendered', TRUE);
+        return Nette\Utils\Html::el()->add("<span class='$this->iconClass'>$this->text</span>");
     }
 
 }
