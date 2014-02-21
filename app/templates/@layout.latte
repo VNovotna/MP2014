@@ -110,8 +110,8 @@
             $.nette.ext('spinner', {
                 init: function() {},
                 before: function(settings, ui, e) {
+                    $('#ajax-spinner').css('height', $('#content').css('height'));
                     $('#ajax-spinner').show();
-                    $('#ajax-spinner').css('height', $('#content').css('height') );
                 },
                 complete: function() {
                     $('#ajax-spinner').hide();
