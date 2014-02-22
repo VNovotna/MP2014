@@ -41,7 +41,7 @@
                         <nav>
                             <ul>
                                 <li>
-                                    <a n:href="Status:">{$activeServer} ⇩</a>
+                                    <a href="#">{$activeServer} ⇩</a>
                                     <ul>
                                         {foreach $userServers as $server}
                                             <li><a n:href="switchServer! $server->id">{$server->name}</a></li>

@@ -12,9 +12,11 @@ TODO
 * Backup: Get rid of phar dependency [low priority]
 * Backup: upload progress bar [usability, eye candy, low priority]
 * Backup: automatic backups [low priority]
+* @layout: server switcher doesn't work on (my) mobile browser - check if my phone is really that stupid [low priority] 
 
 DONE
 
+* @layout: server switcher doesn't work on (my) mobile browser [todo] (I think my phone is just stupid)
 * Authentification: check new trends in Nette 2.1 [low priority] (they aren't)
 * Status: autorefresh of logs is loading logs of diferent server
 * Backups: cannot be created in new server, probably permission error (not a permission error, backups folder was missing)
