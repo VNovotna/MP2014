@@ -1,9 +1,9 @@
 TODO
 
+* Commands: check if port is free on startup [todo]
 * All resources: check if everybody have access to the right places [todo]
 * GameSettings: check if user not changed the port number in server.properties [todo]
 * GameSettings: disable path and executable setting when common storage is in use
-* freePort.sh: in unused 
 * None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * Permissions: problem with ops without application account (they are deleted) [bug, confusing]
@@ -17,6 +17,7 @@ TODO
 
 DONE
 
+* freePort.sh: in unused (used in ServerCommander in little degrading way... )
 * @layout: server switcher doesn't work on (my) mobile browser [todo] (I think my phone is just stupid)
 * Authentification: check new trends in Nette 2.1 [low priority] (they aren't)
 * Status: autorefresh of logs is loading logs of diferent server

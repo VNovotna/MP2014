@@ -15,9 +15,9 @@ class ServerCommander extends \Nette\Object {
     }
 
     /**
-     * forward any command on server
+     * forward any command on server (return without delay)
      * @param string $command
-     * @param string $runtimeHash default 'mcs', usefull with more than one server
+     * @param string $runtimeHash
      * @return array usually empty if command was successfull
      */
     public function issueCommand($command, $runtimeHash) {
@@ -74,6 +74,19 @@ class ServerCommander extends \Nette\Object {
             return TRUE;
         }
         return FALSE;
+    }
+
+    /**
+     * check if given port is free (black magic)
+     * @param int $port
+     * @return boolean
+     */
+    public static function isPortFree($port) {
+        exec('./../libs/freePort.sh ' . $port, $output);
+        if ($output[0] != $port) {
+            return FALSE;
+        }
+        return TRUE;
     }
 
 }

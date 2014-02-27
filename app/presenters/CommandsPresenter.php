@@ -27,7 +27,7 @@ class CommandsPresenter extends SecuredPresenter {
     public function handleStartServer() {
         //check if running
         if ($this->runtimeHash != NULL) {
-            $this->flashMessage('Server is already running! Or it looks to be like that. Try restart.', 'error');
+            $this->flashMessage('Server is already running! Or it looks to be like that. :/', 'error');
         } else {
             //generte runtime hash
             $this->runtimeHash = $this->serverRepo->generateRuntimeHash();
@@ -36,7 +36,7 @@ class CommandsPresenter extends SecuredPresenter {
             $params = $this->serverRepo->getRunParams($this->selectedServerId);
             $out = $this->serverCmd->startServer($params->path, $params->executable, $this->runtimeHash);
             if ($out === array()) {
-                $this->flashMessage('Server started', 'success');
+                $this->flashMessage('Server naběhl. Adresa pro připojení:'. $_SERVER['REMOTE_ADDR'].':'.$params->port, 'success');
             } else {
                 $this->flashMessage(implode(" \n", $out), 'error');
             }
