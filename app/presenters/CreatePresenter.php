@@ -24,6 +24,9 @@ class CreatePresenter extends SecuredPresenter {
         $this->serverRepo = $this->context->serverRepository;
     }
 
+    /**
+     * @return \Nette\Application\UI\Form
+     */
     protected function createComponentNewServerForm() {
         $form = new Form();
         $form->addGroup();
@@ -40,6 +43,12 @@ class CreatePresenter extends SecuredPresenter {
         $form->addHidden('storage', $this->config['storage']['common']);
         $form->addSubmit('send', 'Pokračovat');
         $form->onSuccess[] = $this->newServerFormSubmitted;
+        $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id))->fetchPairs('id', 'name');
+        if (count($servers) >= $this->config['server']['number']) {
+            $form['send']->setDisabled();
+            $form['name']->setDisabled();
+            $form['span'] = new InfoSpan(NULL, "Máte maximální počet(" . $this->config['server']['number'] . ") serverů na hráče!", "icon warning");
+        }
         return $form;
     }
 
@@ -49,53 +58,34 @@ class CreatePresenter extends SecuredPresenter {
     public function newServerFormSubmitted($form) {
         $values = $form->getValues();
         $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id))->fetchPairs('id', 'name');
-        if (count($servers) < $this->config['server']['number']) {
-            if (!in_array($values->name, $servers)) {
-                $port = $this->serverRepo->findFreePort();
-                try {
-                    if ($values->storage === 0) {
-                        $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port);
-                    } else {
-                        $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port, $values->name);
-                    }
-                } catch (Nette\InvalidArgumentException $e) {
-                    $this->flashMessage($e->getMessage(), "error");
-                    $this->redirect('this');
+        if (!in_array($values->name, $servers)) {
+            $port = $this->serverRepo->findFreePort();
+            try {
+                if ($values->storage === 0) {
+                    $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port);
+                } else {
+                    $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port, $values->name);
                 }
-                $this->redirect('phase2', array('newServerId' => $id));
-            } else {
-                $this->flashMessage("Server s tímto jménem už jste vytvořili", "error");
+                $this->redirect('download', array('newServerId' => $id));
+            } catch (Nette\InvalidArgumentException $e) {
+                $this->flashMessage($e->getMessage(), "error");
                 $this->redirect('this');
             }
         } else {
-            $this->flashMessage("Máte maximální počet (" . $this->config['server']['number'] . ") serverů na hráče.", "error");
+            $this->flashMessage("Server s tímto jménem už jste vytvořili", "error");
             $this->redirect('this');
         }
-    }
-
-    protected function createComponentPhase2Form() {
-        $form = new Form();
-        $form->addGroup('--');
-        $form->addText('path', ":")
-                ->addRule(Form::FILLED, " ");
-        $form->addSubmit('send', 'V');
-        $form->onSuccess[] = $this->newServerFormSubmitted;
-        return $form;
-    }
-
-    public function phase2FormSubmitted($form) {
-        $this->redirect('phase3', array('name' => NULL, 'path' => NULL));
     }
 
     protected function createComponentDownload() {
         return new Updates($this->context->gameUpdateModel, $this->path);
     }
 
-    public function actionPhase2($newServerId) {
+    public function actionDownload($newServerId) {
         $this->path = $this->serverRepo->getPath($newServerId);
     }
 
-    public function renderPhase2($newServerId) {
+    public function renderDownload($newServerId) {
         $this->template->$newServerId = $newServerId;
     }
 
