@@ -1,0 +1,15 @@
+{block content}
+<h1 n:block=title>Stažení serveru</h1>
+{control download}
+{/block}
+{block scripts}
+<script>
+    $.nette.ext('dow', {
+        complete: function() {
+            alert('dow complete');
+            window.location.href = "http://stackoverflow.com";
+            //redirect
+        }
+    });
+</script>
+{/block}

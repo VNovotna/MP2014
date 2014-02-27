@@ -31,7 +31,6 @@
         </style>
         {block head}{/block}
     </head>
-
     <body>
         <script> document.documentElement.className += ' js'</script>
         <div id="header">
@@ -45,7 +44,7 @@
                                     <ul>
                                         {foreach $userServers as $server}
                                             <li><a n:href="switchServer! $server->id">{$server->name}</a></li>
-                                            {/foreach}
+                                        {/foreach}
                                     </ul>
                                 </li>
                             </ul>

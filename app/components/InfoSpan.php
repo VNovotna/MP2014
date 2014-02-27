@@ -1,7 +1,5 @@
 <?php
 
-use Nette\Utils\Html;
-
 /**
  * It's for adding info spans to forms.
  * 

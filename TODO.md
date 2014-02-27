@@ -1,5 +1,6 @@
 TODO
 
+* All resources: check if everybody have access to the right places [todo]
 * GameSettings: check if user not changed the port number in server.properties [todo]
 * GameSettings: disable path and executable setting when common storage is in use
 * freePort.sh: in unused 
