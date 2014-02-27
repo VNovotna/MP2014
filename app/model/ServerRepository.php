@@ -128,14 +128,14 @@ class ServerRepository extends Repository {
      * @param string $path must end on / 
      * @param string $executable
      * @param int $port port has to be free, use finFreePort method
-     * @param string $mkdir put name of the server folder here 
+     * @param string $serverFolder put name of the server folder here
      * @return int id of new server
      * @throws \RuntimeException|\Nette\InvalidArgumentException
      */
-    public function addServer($user_id, $name, $path, $executable, $port, $mkdir = NULL) {
+    public function addServer($user_id, $name, $path, $executable, $port, $serverFolder = NULL) {
         $this->checkPathValidity($path);
-        if ($mkdir != NULL) {
-            $path = $this->createFolder($path, $mkdir);
+        if ($serverFolder != NULL) {
+            $path = $this->createFolder($path, $serverFolder);
         }
         try {
             return $this->getTable()->insert(array(
@@ -152,16 +152,16 @@ class ServerRepository extends Repository {
 
     /**
      * @param string $path
-     * @param string $mkdir
+     * @param string $folderName 
      * @return string with new path
      * @throws \Nette\InvalidArgumentException
      */
-    private function createFolder($path, $mkdir) {
+    private function createFolder($path, $folderName) {
         chdir($path);
-        if (!file_exists($mkdir) and !mkdir($mkdir, 0771)) {
+        if (!file_exists($folderName) and !mkdir($folderName, 0771)) {
             throw new \Nette\InvalidArgumentException('Path is invalid or it is unacessible');
         }
-        $path = $path . $mkdir;
+        $path = $path . $folderName;
         if (substr($path, -1) !== '/') {
             $path .= '/';
         }
@@ -196,16 +196,20 @@ class ServerRepository extends Repository {
         }
         return FALSE;
     }
-/**
- * @param string $path
- * @throws \Nette\InvalidArgumentException
- */
+
+    /**
+     * @param string $path
+     * @throws \Nette\InvalidArgumentException
+     */
     private function checkPathValidity($path) {
         if (!is_writable($path)) {
-            throw new \Nette\InvalidArgumentException('Path is invalid or it is unacessible');
+            throw new \Nette\InvalidArgumentException('Path is invalid or it is unaccessible');
         }
     }
 
+    /**
+     * @return string
+     */
     public function generateRuntimeHash() {
         return \Nette\Utils\Strings::random(10, 'A-Za-z');
     }
