@@ -135,7 +135,7 @@ class ServerRepository extends Repository {
     public function addServer($user_id, $name, $path, $executable, $port, $serverFolder = NULL) {
         $this->checkPathValidity($path);
         if ($serverFolder != NULL) {
-            $path = $this->createFolder($path, $serverFolder);
+            $path = $this->createFolder($path, $serverFolder, $port);
         }
         try {
             return $this->getTable()->insert(array(
@@ -153,10 +153,11 @@ class ServerRepository extends Repository {
     /**
      * @param string $path
      * @param string $folderName 
+     * @param int $port
      * @return string with new path
      * @throws \Nette\InvalidArgumentException
      */
-    private function createFolder($path, $folderName) {
+    private function createFolder($path, $folderName, $port) {
         chdir($path);
         if (!file_exists($folderName) and !mkdir($folderName, 0771)) {
             throw new \Nette\InvalidArgumentException('Path is invalid or it is unacessible');
@@ -165,7 +166,14 @@ class ServerRepository extends Repository {
         if (substr($path, -1) !== '/') {
             $path .= '/';
         }
+        $this->createServerProps($path, $port);
         return $path;
+    }
+
+    private function createServerProps($path, $port) {
+        $str = file_get_contents(__DIR__ . '/../config/server.properties.default');
+        $str = str_replace('server-port=25565', "server-port=$port", $str);
+        file_put_contents($path . 'server.properties', $str);
     }
 
     /**
