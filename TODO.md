@@ -9,7 +9,6 @@ TODO
 * None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * Permissions: problem with ops without application account (they are deleted) [bug, confusing]
-* Create: There are no way how to create new server [todo]
 * Administration: There should be some interface for editing configuration file [todo, usability]
 * Udates: use already downloaded files, from some safe storage - probably add option to disable online updates [todo, low priority]
 * Backup: Get rid of phar dependency [low priority]
@@ -19,6 +18,7 @@ TODO
 
 DONE
 
+* Create: There are no way how to create new server [todo]
 * freePort.sh: in unused (used in ServerCommander in little degrading way... )
 * @layout: server switcher doesn't work on (my) mobile browser [todo] (I think my phone is just stupid)
 * Authentification: check new trends in Nette 2.1 [low priority] (they aren't)

@@ -49,7 +49,7 @@ class ServerRepository extends Repository {
 
     /**
      * @param int $serverId
-     * @return \Nette\Database\Table\Selection
+     * @return Nette\Database\Table\ActiveRow
      * @throws \RuntimeException
      */
     public function getRunParams($serverId) {

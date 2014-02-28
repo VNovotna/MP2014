@@ -1,4 +1,11 @@
 {block content}
-
-<h1 n:block=title>Shrnutí</h1>
 {dump}
+<h1 n:block=title>Shrnutí</h1>
+<table>
+    <tbody>
+        <tr><td>Jméno serveru:</td><td>{$params->name}</td></tr>
+        <tr><td>Adresa pro připojení:</td><td>{$_SERVER['REMOTE_ADDR']}:{$params->port}</td></tr>
+        <tr><td>Verze:</td><td>{$version}</td></tr>
+        <tr><td>Umístění:</td><td>{$params->path}</td></tr>
+    </tbody>
+</table>
