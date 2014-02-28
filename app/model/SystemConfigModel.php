@@ -34,11 +34,6 @@ class SystemConfigModel extends Nette\Object {
      */
     public function setConfig($section = NULL) {
         throw new Nette\NotImplementedException;
-        if ($section == NULL) {
-            return $this->neon;
-        } else {
-            return $this->neon[$section];
-        }
     }
 
 }

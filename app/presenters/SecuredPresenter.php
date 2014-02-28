@@ -94,12 +94,15 @@ abstract class SecuredPresenter extends BasePresenter {
     /**
      * switch selected server and user roles
      * @param int $id
+     * @param boolean $redirect on FALSE you have to redirect manualy 
      */
-    public function handleSwitchServer($id) {
+    public function handleSwitchServer($id, $redirect = TRUE) {
         $this->selectedServerId = $id;
         //switch roles
         $this->switchRoles($id);
-        $this->redirect('this');
+        if ($redirect) {
+            $this->redirect('this');
+        }
     }
 
     private function switchRoles($id) {

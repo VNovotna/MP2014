@@ -18,6 +18,9 @@ class CreatePresenter extends SecuredPresenter {
     /** @var string path of the new server */
     private $path;
 
+    /** @var int id of new server */
+    private $newServerId;
+
     protected function startup() {
         parent::startup();
         $this->config = $this->context->systemConfigModel->getConfig();
@@ -78,15 +81,22 @@ class CreatePresenter extends SecuredPresenter {
     }
 
     protected function createComponentDownload() {
-        return new Updates($this->context->gameUpdateModel, $this->path);
+        $updates = new Updates($this->context->gameUpdateModel, $this->path);
+        $updates->setForImmediateUse($this->serverRepo, $this->newServerId, "Create:summary");
+        return $updates;
+    }
+    public function handleDowComplete($newServerId){
+        $this->handleSwitchServer($newServerId, FALSE);
+        $this->redirect('summary');
     }
 
     public function actionDownload($newServerId) {
+        $this->newServerId = $newServerId;
         $this->path = $this->serverRepo->getPath($newServerId);
     }
 
     public function renderDownload($newServerId) {
-        $this->template->$newServerId = $newServerId;
+        $this->template->newServerId = $newServerId;
     }
 
 }

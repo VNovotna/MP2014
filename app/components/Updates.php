@@ -13,6 +13,15 @@ class Updates extends Nette\Application\UI\Control {
     /** @var string */
     private $path;
 
+    /** @var boolean */
+    private $immediateUse = FALSE;
+
+    /** @var \DB\ServerRepository */
+    private $serverRepo;
+
+    /** @var int */
+    private $serverId;
+
     /**
      * @param GameUpdateModel $gameUpdater
      * @param string $path
@@ -24,12 +33,26 @@ class Updates extends Nette\Application\UI\Control {
     }
 
     /**
+     * call whether the downloaded file should be set as default jar
+     * @param \DB\ServerRepository $serverRepo
+     * @param int $serverId
+     */
+    public function setForImmediateUse($serverRepo, $serverId) {
+        $this->immediateUse = TRUE;
+        $this->serverRepo = $serverRepo;
+        $this->serverId = $serverId;
+    }
+
+    /**
      * @param string $url
      * @param string $version
      */
     public function handleDownload($url, $version) {
-        $this->gameUpdater->download($url, $this->path, $version);
-            $this->getPresenter()->flashMessage('Staženo.', 'success');
+        $filename = $this->gameUpdater->download($url, $this->path, $version);
+        if ($this->immediateUse) {
+            $this->serverRepo->setExecutable($this->serverId, $filename);
+        }
+        $this->getPresenter()->flashMessage('Staženo.', 'success');
         if ($this->getPresenter()->isAjax()) {
             $this->getPresenter()->redrawControl();
         } else {

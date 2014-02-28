@@ -1,5 +1,7 @@
 TODO
 
+* VersionManager: make download() more secure [todo]
+* SystemConfig: create some more better(shorter) way how to access config [todo, top priority]
 * Commands: check if port is free on startup [todo]
 * All resources: check if everybody have access to the right places [todo]
 * GameSettings: check if user not changed the port number in server.properties [todo]

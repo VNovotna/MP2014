@@ -15,12 +15,16 @@ class GameSettingsPresenter extends SecuredPresenter {
     /** @var FileModel */
     private $fileModel;
 
+  //  /** @var boolean */
+   // private $commonStorage;
+//
     protected function startup() {
         parent::startup();
         if (!$this->user->isAllowed('server-settings', 'view') and !$this->user->isAllowed('server-settings', 'edit')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }
+        //$this->context->systemConfigModel->getConfig('storage')['common'] === 0 ? $this->commonStorage = FALSE : $this->commonStorage = TRUE;
         $this->serverRepo = $this->context->serverRepository;
         $this->fileModel = $this->context->fileModel;
     }
