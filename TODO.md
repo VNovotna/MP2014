@@ -1,7 +1,6 @@
 TODO
 
 * VersionManager: make download() more secure [todo]
-* SystemConfig: create some more better(shorter) way how to access config [todo, top priority]
 * Commands: check if port is free on startup [todo]
 * All resources: check if everybody have access to the right places [todo]
 * GameSettings: check if user not changed the port number in server.properties [todo]
@@ -18,6 +17,7 @@ TODO
 
 DONE
 
+* SystemConfig: create some more better(shorter) way how to access config [todo, top priority] (as array)
 * Create: There are no way how to create new server [todo]
 * freePort.sh: in unused (used in ServerCommander in little degrading way... )
 * @layout: server switcher doesn't work on (my) mobile browser [todo] (I think my phone is just stupid)

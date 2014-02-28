@@ -1,13 +1,17 @@
 backup:
-    number: 10
-    foreign: TRUE
+	number: 9
+	foreign: true
+	
 update:
-    number: 10
-    foreign: FALSE
-    stable: 'https://minecraft.net/download'
-    unstable: 'https://mojang.com/'
-    regex: '#minecraft_server.[0-9a-z.]*.jar#'
-storage: 
-    common: '/home/viky/mcsw/' # 0 or path (int or string)
+	number: 10
+	foreign: false
+	stable: https://minecraft.net/download
+	unstable: https://mojang.com/
+	regex: "#minecraft_server.[0-9a-z.]*.jar#"
+	
+storage:
+	common: /home/viky/mcsw/
+	
 server:
-    number: 5
+	number: 5
+	
