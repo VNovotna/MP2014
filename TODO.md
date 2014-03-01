@@ -1,5 +1,6 @@
 TODO
 
+* Commands: make start/stop button bigger and more colorful [eye candy, usability]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup [todo]
 * All resources: check if everybody have access to the right places [todo]

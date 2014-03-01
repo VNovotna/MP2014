@@ -17,9 +17,13 @@
             <td>{$server->name}</td>
             <td>{$server->executable|getVersion}</td>
             <td>{$server->port}</td>
-            <td>{if $server->runhash}<span class='icon tick'>on</span>{else}<span class='icon cross'>off</span>{/if}</td>
+            <td>
+                {if $server->runhash}<span class='icon tick'>{$userId ? 'on' : $server->runhash}</span>
+                {else}<span class='icon cross'>off</span>{/if}
+            </td>
             <td n:if="!$userId">{$server->user->username}</td>
-            <td><a n:href="delete! $server->id" class="ajax icon delete" onclick="return confirm('Vážně?')">smazat</a></td>
+            <td><a n:href="delete! $server->id" class="ajax icon cross" onclick="return confirm('Vážně?')">smazat</a></td>
+            <td><a n:if="$server->runhash" n:href="stop! $server->id" class="ajax icon delete">vypnout</a></td>
         </tr>
     </tbody>
     {/snippet}

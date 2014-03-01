@@ -1,0 +1,22 @@
+{block content}
+<h1 n:block="title">Uživatelé</h1>
+<table>
+    <thead>
+        <tr>
+            <th>id</th>
+            <th>username</th>
+            <th>mc name</th>
+            <th>role</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr n:foreach="$users as $user" n:class="$iterator->odd ? odd : even">
+            <td>{$user->id}</td>
+            <td>{$user->username}</td>
+            <td>{$user->mcname}</td>
+            <td>{$user->role}</td>
+            <td><a n:href="#" class="icon edit">upravit</a></td>
+            <td><a n:href="#" class="icon cross">smazat</a></td>
+        </tr>
+    </tbody>
+</table>

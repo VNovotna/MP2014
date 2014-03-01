@@ -76,13 +76,18 @@
                                 <li><a n:href="VersionManager:">Aktualizace</a></li>
                             {/if}
                             {/ifset}
-                        <li><a n:href="Create:">Nový server</a></li>
+                            {if isset($userServers)}
+                            <li><a n:href="Create:">Přehled</a></li>
+                            {else}
+                            <li><a n:href="Create:">Nový server</a></li>
+                            {/if}
                     </ul>
                     {if $user->isInRole('admin')}
                         <h2>Správce</h2>
                         <ul>
                             <li><a n:href="SystemSettings:">Nastavení</a></li>
-                            <li><a n:href="User:admin">Uživatelé</a></li>
+                            <li><a n:href="Overwiev:users">Uživatelé</a></li>
+                            <li><a n:href="Overwiev:servers">Servery</a></li>
                         </ul>
                     {/if}
                 </div>
