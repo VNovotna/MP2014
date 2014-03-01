@@ -5,6 +5,7 @@ body {
     padding: 0;
     background: #FFF;
     color: #222;
+    overflow-y: scroll;
 }
 
 #header {
