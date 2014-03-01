@@ -10,9 +10,9 @@
             </tr>
             <tr n:foreach="$backups as $file" n:class="$iterator->odd ? odd : even">
                 <td>{$file}</td>
-                <td><a n:href="download! $file">stáhnout</a></td>
-                <td><a n:href='restoreBackup! $file' class="ajax">obnovit</a></td>
-                <td><a n:href='deleteBackup! $file' class="ajax icon delete">smazat</a></td>
+                <td><a n:href="download! $file" class="icon download">stáhnout</a></td>
+                <td><a n:href='restoreBackup! $file' class="ajax icon tick">obnovit</a></td>
+                <td><a n:href='deleteBackup! $file' class="ajax icon cross">smazat</a></td>
             </tr>
         </tbody>
     </table>
