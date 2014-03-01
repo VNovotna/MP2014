@@ -19,12 +19,16 @@ abstract class SecuredPresenter extends BasePresenter {
     /** @var string */
     protected $runtimeHash;
 
+    /** @var string server ip */
+    protected $hostIp;
+
     protected function startup() {
         parent::startup();
         if (!$this->user->isLoggedIn()) {
             $this->flashMessage("Na zobrazení této stránky je potřeba se přihlásit", "error");
             $this->redirect('Sign:in');
         } else {
+            $this->hostIp = filter_input(INPUT_SERVER, 'SERVER_ADDR');
             //set authorizator
             $this->user->setAuthorizator($this->defineACL());
             $this->serverRepo = $this->context->serverRepository;
@@ -75,8 +79,8 @@ abstract class SecuredPresenter extends BasePresenter {
         //rules
         $acl->allow('player', 'status', 'view');
         $acl->allow('op', array('server-settings', 'permissions'), 'view');
-        $acl->allow('op', 'commands', 'edit');
-        $acl->allow('owner', array('server-settings', 'backup', 'permissions', 'update', 'delete'), 'edit');
+        $acl->allow('op', array('commands', 'backup'), 'edit');
+        $acl->allow('owner', array('server-settings', 'permissions', 'update', 'delete'), 'edit');
         $acl->allow('admin'); //alow everything 
         return $acl;
     }

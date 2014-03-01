@@ -15,6 +15,10 @@ class SystemSettingsPresenter extends SecuredPresenter {
     protected function startup() {
         parent::startup();
         $this->configModel = $this->context->systemConfigModel;
+        if (!$this->user->isAllowed('system')) {
+            $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
+            $this->redirect('Homepage:');
+        }
     }
 
     /**

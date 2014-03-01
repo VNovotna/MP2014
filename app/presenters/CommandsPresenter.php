@@ -36,7 +36,7 @@ class CommandsPresenter extends SecuredPresenter {
             $params = $this->serverRepo->getRunParams($this->selectedServerId);
             $out = $this->serverCmd->startServer($params->path, $params->executable, $this->runtimeHash);
             if ($out === array()) {
-                $this->flashMessage('Server naběhl. Adresa pro připojení:'. $_SERVER['REMOTE_ADDR'].':'.$params->port, 'success');
+                $this->flashMessage('Server naběhl. Adresa pro připojení: '.$this->hostIp.':'.$params->port, 'success');
             } else {
                 $this->flashMessage(implode(" \n", $out), 'error');
             }

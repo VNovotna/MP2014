@@ -111,6 +111,7 @@ class CreatePresenter extends SecuredPresenter {
 
     public function renderSummary() {
         $this->template->params = $this->serverRepo->getRunParams($this->selectedServerId);
+        $this->template->hostIp = $this->hostIp;
         $this->flashMessage("Server byl úspěšně vytvořen. Níže jsou nějaké detaily, které se mohou hodit.", 'success');
     }
 
