@@ -30,10 +30,10 @@ class UserRepository extends Repository {
         $password = \Authenticator::calculateHash($password);
         try {
             return $this->getTable()->insert(array(
-                'username' => $username,
-                'password' => $password,
-                'mcname' => $mcnick
-            ))->getPrimary();
+                        'username' => $username,
+                        'password' => $password,
+                        'mcname' => $mcnick
+                    ))->getPrimary();
         } catch (\PDOException $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
@@ -68,11 +68,12 @@ class UserRepository extends Repository {
             'password' => Authenticator::calculateHash($password)
         ));
     }
-/**
- * 
- * @param int $id user id
- * @param string $mcname new MC nick
- */
+
+    /**
+     * 
+     * @param int $id user id
+     * @param string $mcname new MC nick
+     */
     public function setMcNick($id, $mcname) {
         $this->getTable()->where(array('id' => $id))
                 ->update(array('mcname' => $mcname));
@@ -85,4 +86,13 @@ class UserRepository extends Repository {
     public function findAllInRole($role) {
         return $this->findAll()->where("role LIKE $role");
     }
+
+    /**
+     * @param int $userId
+     * @return array server_id => role
+     */
+    public function getPermissions($userId) {
+        return $this->getTable('permission')->where(array('user_id' => $userId))->fetchPairs('server_id', 'role');
+    }
+
 }

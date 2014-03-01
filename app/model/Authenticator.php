@@ -24,8 +24,7 @@ class Authenticator extends \Nette\Object implements Security\IAuthenticator {
         list($username, $password) = $credentials;
         $row = $this->database->table('user')->where('username', $username)->fetch();
         // serverId => role
-        $roles = $this->database->table('permission')->where('user_id', $row->id)
-                ->fetchPairs('server_id', 'role');
+        $roles = $this->database->table('permission')->where('user_id', $row->id)->fetchPairs('server_id', 'role');
 
         if (!$row) {
             throw new Security\AuthenticationException('The username is incorrect.', self::IDENTITY_NOT_FOUND);
@@ -37,7 +36,7 @@ class Authenticator extends \Nette\Object implements Security\IAuthenticator {
         if ($row->role == 'admin') {
             return new Nette\Security\Identity($row->id, 'admin', $arr);
         } else {
-            return new Nette\Security\Identity($row->id, 'else', $arr);
+            return new Nette\Security\Identity($row->id, 'player', $arr);
         }
     }
 

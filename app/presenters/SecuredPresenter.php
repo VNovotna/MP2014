@@ -27,12 +27,10 @@ abstract class SecuredPresenter extends BasePresenter {
         } else {
             //set authorizator
             $this->user->setAuthorizator($this->defineACL());
-            //repo
             $this->serverRepo = $this->context->serverRepository;
             //check persistent
-            $this->checkServerOwner();
             $this->checkPersistent();
-            $this->switchRoles($this->selectedServerId);
+            //$this->switchRoles($this->selectedServerId);
             //check if is server running
             $this->runtimeHash = $this->serverRepo->getRuntimeHash($this->selectedServerId);
             $this->isServerAlive();
@@ -52,16 +50,9 @@ abstract class SecuredPresenter extends BasePresenter {
             $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
             if (count($servers) != 0) {
                 $srv = $servers->fetch();
-                $this->selectedServerId = $srv->id;
                 $this->flashMessage("Vybrán server $srv->name ", 'info');
+                $this->handleSwitchServer($srv->id);
             }
-        }
-    }
-
-    private function checkServerOwner() {
-        $server = $this->serverRepo->findBy(array('user_id' => $this->user->id, 'id' => $this->selectedServerId));
-        if (count($server) == 0) {
-            $this->selectedServerId = 0;
         }
     }
 
@@ -106,24 +97,25 @@ abstract class SecuredPresenter extends BasePresenter {
     }
 
     private function switchRoles($id) {
-        if (isset($this->user->identity->serverRoles[$id])) {
-            $newRoles = array($this->user->identity->serverRoles[$id]);
+        $newRoles = $this->context->userRepository->getPermissions($this->user->id);
+        if ($newRoles !== array()) {
             if ($this->user->isInRole('admin')) {
-                $newRoles[] = 'admin';
+                $this->user->identity->roles = array('admin');
+            } else {
+                $this->user->identity->roles = array($newRoles[$id]);
             }
-            $this->user->getIdentity()->roles = $newRoles;
         }
     }
 
     public function beforeRender() {
-        $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
+        $serversIds = array_keys($this->context->userRepository->getPermissions($this->user->id));
         if ($this->selectedServerId != 0) {
             $srvname = $this->serverRepo->findBy(array('id' => $this->selectedServerId))->fetch();
             $this->template->activeServer = $srvname->name;
         } else {
             $this->template->activeServer = NULL;
         }
-        $this->template->userServers = $servers;
+        $this->template->userServers = $this->serverRepo->findBy(array('id'=>$serversIds));
         $this->template->running = $this->runtimeHash != NULL ? TRUE : FALSE;
     }
 
