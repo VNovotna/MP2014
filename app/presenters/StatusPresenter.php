@@ -23,7 +23,9 @@ class StatusPresenter extends SecuredPresenter {
     }
 
     public function renderDefault() {
-        $path = $this->serverRepo->getPath($this->selectedServerId);
+        $params = $this->serverRepo->getRunParams($this->selectedServerId);
+        $path = $params['path'];
+        $this->template->address = $this->hostIp.":".$params['port'];
         try {
             $logModel = new LogModel($path . 'logs/');
             $this->template->logs = LogModel::makeColorful($logModel->getAll());

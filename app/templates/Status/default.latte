@@ -2,9 +2,9 @@
 
 <h1 n:block=title>Stav serveru</h1>
 {if $running}
-    Server is running<br>
+    <span class="icon info">Server běží na adrese {$address}</span><br>
 {else}
-    Server is down<br>
+    <span class="icon cross">Server je vypnutý</span><br>
 {/if}
 <fieldset>
     <legend>log:</legend>
