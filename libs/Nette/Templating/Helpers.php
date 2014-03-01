@@ -35,6 +35,7 @@ class Helpers
 		'reverse' =>  'Nette\Utils\Strings::reverse',
 		'replacere' => 'Nette\Utils\Strings::replace',
 		'url' => 'rawurlencode',
+		'escapeurl' => 'rawurlencode',
 		'striptags' => 'strip_tags',
 		'substr' => 'Nette\Utils\Strings::substring',
 		'repeat' => 'str_repeat',
@@ -146,7 +147,7 @@ class Helpers
 	 */
 	public static function safeUrl($s)
 	{
-		return preg_match('#^(https?://.+|ftp://.+|mailto:.+|[^:]+)\z#i', $s) ? $s : '';
+		return preg_match('~^(?:(?:https?|ftp)://[^@]+(?:/.*)?|mailto:.+|[/?#].*|[^:]+)\z~i', $s) ? $s : '';
 	}
 
 
@@ -188,7 +189,7 @@ class Helpers
 
 	/**
 	 * Date/time formatting.
-	 * @param  string|int|DateTime
+	 * @param  string|int|DateTime|DateInterval
 	 * @param  string
 	 * @return string
 	 */
@@ -200,6 +201,10 @@ class Helpers
 
 		if (!isset($format)) {
 			$format = self::$dateFormat;
+		}
+
+		if ($time instanceof \DateInterval) {
+			return $time->format($format);
 		}
 
 		$time = Nette\DateTime::from($time);

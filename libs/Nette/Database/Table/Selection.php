@@ -568,11 +568,15 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 	protected function saveCacheState()
 	{
 		if ($this->observeCache === $this && $this->cache && !$this->sqlBuilder->getSelect() && $this->accessedColumns !== $this->previousAccessedColumns) {
-			$previousAccessed = (array) $this->cache->load($this->getGeneralCacheKey());
-			$accessed = (array) $this->accessedColumns;
-			$needSave = array_intersect_key($accessed, $previousAccessed) !== $accessed;
+			$previousAccessed = $this->cache->load($this->getGeneralCacheKey());
+			$accessed = $this->accessedColumns;
+			$needSave = is_array($accessed) && is_array($previousAccessed)
+				? array_intersect_key($accessed, $previousAccessed) !== $accessed
+				: $accessed !== $previousAccessed;
+
 			if ($needSave) {
-				$this->cache->save($this->getGeneralCacheKey(), $previousAccessed + $accessed);
+				$save = is_array($accessed) && is_array($previousAccessed) ? $previousAccessed + $accessed : $accessed;
+				$this->cache->save($this->getGeneralCacheKey(), $save);
 				$this->previousAccessedColumns = NULL;
 			}
 		}
@@ -646,26 +650,35 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 		}
 
 		if ($selectColumn && !$this->sqlBuilder->getSelect() && $this->previousAccessedColumns && ($key === NULL || !isset($this->previousAccessedColumns[$key]))) {
+			$this->previousAccessedColumns = array();
+
 			if ($this->sqlBuilder->getLimit()) {
 				$generalCacheKey = $this->generalCacheKey;
-				$primaries = array();
+				$sqlBuilder = $this->sqlBuilder;
+
+				$primaryValues = array();
 				foreach ((array) $this->rows as $row) {
 					$primary = $row->getPrimary();
-					$primaries[] = is_array($primary) ? array_values($primary) : $primary;
+					$primaryValues[] = is_array($primary) ? array_values($primary) : $primary;
 				}
-			}
-			$this->previousAccessedColumns = array();
-			$this->emptyResultSet(FALSE);
-			if ($this->sqlBuilder->getLimit()) {
+
+				$this->emptyResultSet(FALSE);
+				$this->sqlBuilder = clone $this->sqlBuilder;
 				$this->sqlBuilder->setLimit(NULL, NULL);
-				$this->wherePrimary($primaries);
+				$this->wherePrimary($primaryValues);
+
 				$this->generalCacheKey = $generalCacheKey;
+				$this->execute();
+				$this->sqlBuilder = $sqlBuilder;
+			} else {
+				$this->emptyResultSet(FALSE);
+				$this->execute();
 			}
+
 			$this->dataRefreshed = TRUE;
 
-			if ($key === NULL) {
-				// we need to move iterator in resultset
-				$this->execute();
+			// move iterator to specific key
+			if (isset($currentKey)) {
 				while (key($this->data) !== $currentKey) {
 					next($this->data);
 				}
@@ -714,12 +727,19 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 		}
 
 		$return = $this->connection->query($this->sqlBuilder->buildInsertQuery(), $data);
+		$this->loadRefCache();
 
 		if ($data instanceof Nette\Database\SqlLiteral || $this->primary === NULL) {
+			unset($this->refCache['referencing'][$this->getGeneralCacheKey()][$this->getSpecificCacheKey()]);
 			return $return->getRowCount();
 		}
 
 		$primaryKey = $this->connection->getInsertId($this->getPrimarySequence());
+		if ($primaryKey === FALSE) {
+			unset($this->refCache['referencing'][$this->getGeneralCacheKey()][$this->getSpecificCacheKey()]);
+			return $return->getRowCount();
+		}
+
 		if (is_array($this->getPrimary())) {
 			$primaryKey = array();
 
@@ -740,7 +760,6 @@ class Selection extends Nette\Object implements \Iterator, IRowContainer, \Array
 			->wherePrimary($primaryKey)
 			->fetch();
 
-		$this->loadRefCache();
 		if ($this->rows !== NULL) {
 			if ($signature = $row->getSignature(FALSE)) {
 				$this->rows[$signature] = $row;
