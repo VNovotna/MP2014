@@ -65,15 +65,19 @@ abstract class SecuredPresenter extends BasePresenter {
         $acl->addRole('admin');
         //resource
         $acl->addResource('status');
-        $acl->addResource('commands'); //ops rights + backup
+        $acl->addResource('commands');
         $acl->addResource('server-settings');
+        $acl->addResource('backup');
+        $acl->addResource('permissions');
+        $acl->addResource('update');
+        $acl->addResource('delete');
         $acl->addResource('system');
         //rules
         $acl->allow('player', 'status', 'view');
+        $acl->allow('op', array('server-settings', 'permissions'), 'view');
         $acl->allow('op', 'commands', 'edit');
-        $acl->allow('op', 'server-settings', 'view');
-        $acl->allow('owner', 'server-settings', 'edit');
-        $acl->allow('admin');
+        $acl->allow('owner', array('server-settings', 'backup', 'permissions', 'update', 'delete'), 'edit');
+        $acl->allow('admin'); //alow everything 
         return $acl;
     }
 
@@ -115,7 +119,7 @@ abstract class SecuredPresenter extends BasePresenter {
         } else {
             $this->template->activeServer = NULL;
         }
-        $this->template->userServers = $this->serverRepo->findBy(array('id'=>$serversIds));
+        $this->template->userServers = $this->serverRepo->findBy(array('id' => $serversIds));
         $this->template->running = $this->runtimeHash != NULL ? TRUE : FALSE;
     }
 
