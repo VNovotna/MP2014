@@ -138,13 +138,19 @@ class ServerRepository extends Repository {
             $path = $this->createFolder($path, $serverFolder, $port);
         }
         try {
-            return $this->getTable()->insert(array(
+            $id = $this->getTable()->insert(array(
                         'user_id' => $user_id,
                         'path' => $path,
                         'executable' => $executable,
                         'name' => $name,
                         'port' => $port
                     ))->getPrimary();
+            $this->getTable('permission')->insert(array(
+                'user_id' => $user_id,
+                'server_id' => $id,
+                'role' => 'owner'
+            ));
+            return $id;
         } catch (\PDOException $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode());
         }
