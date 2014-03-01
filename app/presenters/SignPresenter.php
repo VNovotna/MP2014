@@ -56,16 +56,14 @@ class SignPresenter extends BasePresenter {
                 ->addRule(Form::FILLED, 'Zadejte prosím uživatelské jméno.')
                 ->addRule(Form::PATTERN, 'Login musí obsahovat pouze malá písmena bez diakritiky a čísla.', '[a-z_0-9]+')
                 ->addRule(Form::MAX_LENGTH, 'Login může být maximálně %d znaků dlouhý', 20);
-
+        $form->addText('mcname', 'Minecraft jméno:');
+        $form['span'] = new InfoSpan('', 'Minecraft jméno nemá tvar emailu.', 'icon info');
         $form->addPassword('password', 'Heslo:')
                 ->addRule(Form::FILLED, 'Zadejte prosím heslo.')
                 ->addRule(Form::MIN_LENGTH, 'Heslo musí mít alespoň %d znaků.', 6);
-
         $form->addPassword('verify', 'Ověření hesla:')
                 ->addRule(Form::EQUAL, 'Hesla se neshodují.', $form['password']);
-
         $form->addSubmit('send', 'Registrovat');
-
         $form->onSuccess[] = $this->signUpFormSubmitted;
         return $form;
     }
@@ -77,7 +75,7 @@ class SignPresenter extends BasePresenter {
         try {
             $values = $form->getValues();
             if ($this->userRepo->findByName($values->username) == FALSE) {
-                $this->userRepo->addUser($values->username, $values->password);
+                $this->userRepo->addUser($values->username, $values->password, $values->mcname);
                 $this->flashMessage('Uživatel zaregistrován', 'success');
                 $this->redirect('Sign:in');
             } else {
