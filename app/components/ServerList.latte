@@ -1,0 +1,27 @@
+{if count($servers) > 0}
+<table>
+    <thead>
+        <tr>
+            <th>id</th>
+            <th>Jméno</th>
+            <th>Verze</th>
+            <th>Port</th>
+            <th>Stav</th>
+            <th n:if="!$userId">Uživatel</th>
+        </tr>
+    </thead>
+    {snippet list}
+    <tbody>
+        <tr n:foreach="$servers as $server" n:class="$iterator->odd ? odd : even">
+            <td>{$server->id}</td>
+            <td>{$server->name}</td>
+            <td>{$server->executable|getVersion}</td>
+            <td>{$server->port}</td>
+            <td>{if $server->runhash}<span class='icon tick'>on</span>{else}<span class='icon cross'>off</span>{/if}</td>
+            <td n:if="!$userId">{$server->user->username}</td>
+            <td><a n:href="delete! $server->id" class="ajax icon delete" onclick="return confirm('Vážně?')">smazat</a></td>
+        </tr>
+    </tbody>
+    {/snippet}
+</table>
+{/if}

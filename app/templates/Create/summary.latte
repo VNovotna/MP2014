@@ -5,7 +5,7 @@
     <tbody>
         <tr><td>Jméno serveru:</td><td>{$params->name}</td></tr>
         <tr><td>Adresa pro připojení:</td><td>{$_SERVER['REMOTE_ADDR']}:{$params->port}</td></tr>
-        <tr><td>Verze:</td><td>{$version}</td></tr>
+        <tr><td>Verze:</td><td>{$params->executable|getVersion}</td></tr>
         <tr><td>Umístění:</td><td>{$params->path}</td></tr>
     </tbody>
 </table>

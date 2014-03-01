@@ -32,7 +32,7 @@ class CreatePresenter extends SecuredPresenter {
      */
     protected function createComponentNewServerForm() {
         $form = new Form();
-        $form->addGroup();
+        $form->addGroup('Vytvořit nový server');
         $form->addText('name', "Jméno serveru:")
                 ->addRule(Form::FILLED, "Server musíte nějak pojmenovat.")
                 ->addRule(Form::PATTERN, 'Jméno serveru musí obsahovat pouze písmena bez diakritiky a čísla.', '[a-zA-Z_0-9]+');
@@ -85,7 +85,8 @@ class CreatePresenter extends SecuredPresenter {
         $updates->setForImmediateUse($this->serverRepo, $this->newServerId, "Create:summary");
         return $updates;
     }
-    public function handleDowComplete($newServerId){
+
+    public function handleDowComplete($newServerId) {
         $this->handleSwitchServer($newServerId, FALSE);
         $this->redirect('summary');
     }
@@ -95,13 +96,22 @@ class CreatePresenter extends SecuredPresenter {
         $this->path = $this->serverRepo->getPath($newServerId);
     }
 
+    public function beforeRender() {
+        parent::beforeRender();
+        $this->template->registerHelper('getVersion', '\gameUpdateModel::getVersionFromFileName');
+    }
+
+    public function createComponentServerList() {
+        return new ServerList($this->serverRepo, $this->user->id);
+    }
+
     public function renderDownload($newServerId) {
         $this->template->newServerId = $newServerId;
     }
-    public function renderSummary(){
+
+    public function renderSummary() {
         $this->template->params = $this->serverRepo->getRunParams($this->selectedServerId);
         $this->flashMessage("Server byl úspěšně vytvořen. Níže jsou nějaké detaily, které se mohou hodit.", 'success');
-        $this->template->version = $this->context->gameUpdateModel->getVersionFromFileName($this->template->params->executable);
     }
 
 }
