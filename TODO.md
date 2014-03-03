@@ -1,6 +1,5 @@
 TODO
 
-* Commands: make start/stop button bigger and more colorful [eye candy, usability]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup [todo]
 * GameSettings: check if user not changed the port number in server.properties [todo]
@@ -17,6 +16,7 @@ TODO
 
 DONE
 
+* Commands: make start/stop button bigger and more colorful [eye candy, usability] (just a little)
 * All resources: check if everybody have access to the right places [todo]
 * SystemConfig: create some more better(shorter) way how to access config [todo, top priority] (as array)
 * Create: There are no way how to create new server [todo]
