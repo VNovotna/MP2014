@@ -21,7 +21,7 @@ class VersionManagerPresenter extends SecuredPresenter {
 
     protected function startup() {
         parent::startup();
-        if (!$this->user->isAllowed('server-settings', 'edit')) {
+        if (!$this->user->isAllowed('update', 'edit')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }

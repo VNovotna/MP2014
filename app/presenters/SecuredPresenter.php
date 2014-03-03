@@ -34,7 +34,6 @@ abstract class SecuredPresenter extends BasePresenter {
             $this->serverRepo = $this->context->serverRepository;
             //check persistent
             $this->checkPersistent();
-            //$this->switchRoles($this->selectedServerId);
             //check if is server running
             $this->runtimeHash = $this->serverRepo->getRuntimeHash($this->selectedServerId);
             $this->isServerAlive();

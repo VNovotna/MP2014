@@ -16,6 +16,10 @@ class PermissionsPresenter extends SecuredPresenter {
         parent::startup();
         $this->userRepo = $this->context->userRepository;
         $this->permissionRepo = $this->context->permissionRepository;
+        if (!$this->user->isAllowed('permissions')) {
+            $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
+            $this->redirect('Homepage:');
+        }
     }
 
     public function actionDefault() {
@@ -38,7 +42,7 @@ class PermissionsPresenter extends SecuredPresenter {
     public function handleDeop($userId) {
         if ($this->permissionRepo->removeOpFromServer($this->selectedServerId, $userId, $this->runtimeHash)) {
             $this->flashMessage('Uživatel už není operátorem', 'success');
-        }else{
+        } else {
             $this->flashMessage('Něco se pokazilo', 'error');
         }
     }
@@ -50,7 +54,7 @@ class PermissionsPresenter extends SecuredPresenter {
         $values = $form->getValues();
         $usId = $this->userRepo->findByName($values->newOp)->getPrimary();
         if ($usId != FALSE) {
-            if ($this->permissionRepo->addOpToServer($this->selectedServerId, $usId,  $this->runtimeHash)) {
+            if ($this->permissionRepo->addOpToServer($this->selectedServerId, $usId, $this->runtimeHash)) {
                 $this->flashMessage('Operátor přidán', 'success');
             } else {
                 $this->flashMessage('Uživatel už je operátorem!', 'error');

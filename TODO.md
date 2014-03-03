@@ -3,7 +3,6 @@ TODO
 * Commands: make start/stop button bigger and more colorful [eye candy, usability]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup [todo]
-* All resources: check if everybody have access to the right places [todo]
 * GameSettings: check if user not changed the port number in server.properties [todo]
 * GameSettings: disable path and executable setting when common storage is in use
 * None: There is no way how to delete server [todo]
@@ -18,6 +17,7 @@ TODO
 
 DONE
 
+* All resources: check if everybody have access to the right places [todo]
 * SystemConfig: create some more better(shorter) way how to access config [todo, top priority] (as array)
 * Create: There are no way how to create new server [todo]
 * freePort.sh: in unused (used in ServerCommander in little degrading way... )
