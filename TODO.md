@@ -1,8 +1,7 @@
 TODO
 
 * VersionManager: make download() more secure [todo]
-* Commands: check if port is free on startup and if it's correct [todo]
-* GameSettings: check if user not changed the port number in server.properties [todo]
+* Commands: check if port is free on startup and offer alternative port [todo]
 * GameSettings: disable path and executable setting when common storage is in use [todo]
 * None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
@@ -17,6 +16,7 @@ TODO
 
 DONE
 
+* GameSettings: check if user not changed the port number in server.properties [todo]
 * Commands: make start/stop button bigger and more colorful [eye candy, usability] (just a little)
 * All resources: check if everybody have access to the right places [todo]
 * SystemConfig: create some more better(shorter) way how to access config [todo, top priority] (as array)

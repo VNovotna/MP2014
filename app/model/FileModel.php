@@ -63,5 +63,18 @@ class FileModel {
         throw Nette\NotImplementedException;
         return FALSE;
     }
+    
+        /**
+     * check if user violated lines that shouldn't be changed by using preg_replace
+     * @param string $data
+     * @param array $unchangeableLines format: array('patern'=>'replacement', 'patern'=>'replacement')
+     * @return string
+     */
+    public static function checkUnchangeableLines($data, $unchangeableLines){
+        $paterns = array_keys($unchangeableLines);
+        $replacements = array_values($unchangeableLines);
+        return preg_replace($paterns, $replacements, $data);
+    }
+
 
 }

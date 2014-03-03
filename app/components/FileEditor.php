@@ -18,16 +18,21 @@ class FileEditor extends Nette\Application\UI\Control {
     /** @var bool */
     private $allowedToEdit;
 
+    /** @var array */
+    private $unchangeableLines;
+
     /**
      * @param string $filePath
      * @param FileModel $fileModel
      * @param bool $allowedToEdit
+     * @param array $unchangeableLines format: array('patern'=>'replacement', 'patern'=>'replacement'); passed to preg_replace
      */
-    public function __construct($filePath, $fileModel, $allowedToEdit) {
+    public function __construct($filePath, $fileModel, $allowedToEdit, $unchangeableLines = array()) {
         parent::__construct();
         $this->filePath = $filePath;
         $this->fileModel = $fileModel;
         $this->allowedToEdit = $allowedToEdit;
+        $this->unchangeableLines = $unchangeableLines;
     }
 
     /**
@@ -58,7 +63,8 @@ class FileEditor extends Nette\Application\UI\Control {
     public function serverPropsFormSubmitted(Form $form) {
         if ($this->allowedToEdit) {
             $content = $form->getValues()->props;
-            $this->fileModel->write($content, $this->filePath);
+            $data = $this->fileModel->checkUnchangeableLines($content, $this->unchangeableLines);
+            $this->fileModel->write($data, $this->filePath);
             $this->getPresenter()->flashMessage('Nastavení aktualizováno.', 'success');
         } else {
             $this->flashMessage('Nemáte právo editovat nastavení.', 'error');

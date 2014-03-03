@@ -80,7 +80,11 @@ class GameSettingsPresenter extends SecuredPresenter {
      * @return FileEditor Component
      */
     protected function createComponentServerProps() {
-        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'server.properties', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
+        return new FileEditor(
+                $this->serverRepo->getPath($this->selectedServerId) . 'server.properties',
+                $this->fileModel, 
+                $this->user->isAllowed('server-settings', 'edit'),
+                array('/server-port=[0-9]*/'=>'server-port='.$this->serverRepo->getRunParams($this->selectedServerId)['port']));
     }
 
     /**
