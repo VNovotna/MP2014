@@ -1,13 +1,14 @@
 TODO
 
 * VersionManager: make download() more secure [todo]
-* Commands: check if port is free on startup [todo]
+* Commands: check if port is free on startup and if it's correct [todo]
 * GameSettings: check if user not changed the port number in server.properties [todo]
-* GameSettings: disable path and executable setting when common storage is in use
+* GameSettings: disable path and executable setting when common storage is in use [todo]
 * None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * Permissions: problem with ops without application account (they are deleted) [bug, confusing]
 * Administration: There should be some interface for editing configuration file [todo, usability]
+* English translation [todo]
 * Udates: use already downloaded files, from some safe storage - probably add option to disable online updates [todo, low priority]
 * Backup: Get rid of phar dependency [low priority]
 * Backup: upload progress bar [usability, eye candy, low priority]

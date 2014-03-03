@@ -24,7 +24,7 @@
         </div>
         <div id='page-prop'>
             {control serverProps}
-            Poznámka: Pro uplatnění změn v <i>server.properties</i> je nutné restartovat sever.
+            <span class="icon warning">Neměňte port serveru. Umírají kvůli tomu koťátka.</span>
         </div>
         <div id='page-ips'>
             {control bannedIPs}
@@ -36,6 +36,7 @@
             {control whiteList}
         </div>
     </div>
+    <span class="icon info">Pro uplatnění změn je nutné restartovat sever.</span>
 </div>
 
 {/block}
