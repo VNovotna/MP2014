@@ -5,7 +5,6 @@ TODO
 * GameSettings: disable path and executable setting when common storage is in use [todo]
 * None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
-* Permissions: problem with ops without application account (they are deleted) [bug, confusing]
 * Administration: There should be some interface for editing configuration file [todo, usability]
 * English translation [todo]
 * Udates: use already downloaded files, from some safe storage - probably add option to disable online updates [todo, low priority]
@@ -16,6 +15,7 @@ TODO
 
 DONE
 
+* Permissions: problem with ops without application account (they are deleted) [bug, confusing] (they are no longer deleted)
 * GameSettings: check if user not changed the port number in server.properties [todo]
 * Commands: make start/stop button bigger and more colorful [eye candy, usability] (just a little)
 * All resources: check if everybody have access to the right places [todo]

@@ -129,12 +129,33 @@ class PermissionRepository extends Repository {
      */
     private function writeOpsToFile($serverId) {
         $path = $this->serverRepo->getPath($serverId);
+        $db = $this->readOpsFromDb($serverId);
+        $file = $this->readOpsFromFile($path);
+        $write = array_unique(array_merge($db, $file));
+        $this->fileModel->write(implode("\n", $write), $path . 'ops.txt', TRUE);
+    }
+
+    /**
+     * @param int $serverId
+     * @return array
+     */
+    private function readOpsFromDb($serverId) {
         $ops = $this->findAllOps($serverId);
-        $write = "";
+        $result = array();
         foreach ($ops as $op) {
-            $write .= $op->user->mcname . "\n";
+            $result[] = $op->user->mcname;
         }
-        $this->fileModel->write($write, $path . 'ops.txt', TRUE);
+        return $result;
+    }
+
+    /**
+     * @param string $path
+     * @return array of existing ops 
+     */
+    private function readOpsFromFile($path) {
+        $ops = $this->fileModel->open($path . 'ops.txt', TRUE);
+        array_walk($ops, create_function('&$val', '$val = trim($val);'));
+        return $ops;
     }
 
 }

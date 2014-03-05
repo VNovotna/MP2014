@@ -32,7 +32,11 @@ class PermissionsPresenter extends SecuredPresenter {
      */
     protected function createComponentNewPermForm() {
         $form = new Nette\Application\UI\Form();
-        $users = $this->userRepo->findAll()->where('user.mcname NOT NULL')->fetchPairs('username', 'username');
+        $data = $this->userRepo->findAll()->where('user.mcname NOT NULL');
+        $users = array();
+        foreach ($data as $user) {
+            $users[$user->username] = $user->username .' ('.$user->mcname.')';
+        }
         $form->addSelect('newOp', 'uživatel: ', $users);
         $form->addSubmit('send', 'Přidat');
         $form->onSuccess[] = $this->newPermFormSubmitted;

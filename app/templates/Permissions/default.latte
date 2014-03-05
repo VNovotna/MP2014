@@ -6,13 +6,15 @@
     <thead>
         <tr>
             <th>login</th>
+            <th>MC nick</th>
             <th>oprávnění</th>
         </tr>
     </thead>
     <tbody>
         <tr n:foreach="$lines as $line" n:class="$iterator->odd ? odd : even">
             <td>{$line->user->username}</td>
-            <td>{$line->role}</td>
+            <td>{$line->user->mcname}</td>
+            <td>{$line->role == 'op' ? 'operátor' : 'majitel'}</td>
             <td><a n:if="$line->role!='owner'" class="icon delete" n:href="deop! $line->user_id">odstranit</a></td>
         </tr>
     </tbody>
@@ -27,13 +29,13 @@
         {form newPermForm}
             <tr>
                 <td>
-                    jméno: {input newOp}
+                    jméno (mc nick): {input newOp}
                     {input send}
                 </td>
             </tr>
         {/form}
     </tbody>
 </table>
-
-<span class="icon info">Je možné přidávat pouze operátory.</span><br>
-<span class="icon info">Změny provedené zde se automaticky projeví i ve hře.</span>
+<span class="icon warning">Pro správu operátorů se doporučuje používat pouze toto rozhraní.</span><br>
+<span class="icon info">Pokud přidáte operátora ze hry, nebude mít přístup k webovému rozhraní.</span><br>
+<span class="icon info">Je možné přidávat pouze operátory, kteří mají vyplnění minecraft nick.</span>
