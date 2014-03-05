@@ -1,5 +1,6 @@
 TODO
 
+
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup and offer alternative port [todo]
 * GameSettings: disable path and executable setting when common storage is in use [todo]
