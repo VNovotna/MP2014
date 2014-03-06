@@ -1,5 +1,6 @@
 TODO
 
+* GameSettings: new minecraft version (14w10) changes format of config files. The're json now. Intervention needed. [todo, top priority]
 * Config file: some values are unused eg number of backups and executable [todo]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup and offer alternative port [todo]
