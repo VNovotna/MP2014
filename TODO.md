@@ -1,8 +1,8 @@
 TODO
 
+* Config file: some values are unused eg number of backups and executable [todo]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup and offer alternative port [todo]
-* GameSettings: disable path and executable setting when common storage is in use [todo]
 * None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * Administration: There should be some interface for editing configuration file [todo, usability]
@@ -15,6 +15,7 @@ TODO
 
 DONE
 
+* GameSettings: disable path and executable setting when common storage is in use [todo]
 * Permissions: problem with ops without application account (they are deleted) [bug, confusing] (they are no longer deleted)
 * GameSettings: check if user not changed the port number in server.properties [todo]
 * Commands: make start/stop button bigger and more colorful [eye candy, usability] (just a little)
