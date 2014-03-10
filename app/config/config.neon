@@ -30,6 +30,7 @@ common:
         fileModel: FileModel
         gameUpdateModel: GameUpdateModel
         permissionRepository: DB\PermissionRepository
+        UUIDModel: UUIDModel
 
     factories:
 
