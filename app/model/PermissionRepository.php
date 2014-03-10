@@ -21,12 +21,16 @@ class PermissionRepository extends Repository {
     /** @var \FileModel */
     private $fileModel;
 
-    public function __construct(\Nette\Database\Context $database, ServerRepository $serverRepo, \ServerCommander $serverComm, UserRepository $userRepo, \FileModel $fileModel) {
+    /** @var \UUIDModel */
+    private $uuidModel;
+
+    public function __construct(\Nette\Database\Context $database, ServerRepository $serverRepo, \ServerCommander $serverComm, UserRepository $userRepo, \FileModel $fileModel, \UUIDModel $uuidModel) {
         parent::__construct($database);
         $this->serverRepo = $serverRepo;
         $this->serverComm = $serverComm;
         $this->userRepo = $userRepo;
         $this->fileModel = $fileModel;
+        $this->uuidModel = $uuidModel;
     }
 
     /**
@@ -50,7 +54,7 @@ class PermissionRepository extends Repository {
             return FALSE;
         }
         if ($runhash == NULL) {
-            $this->writeOpsToFile($serverId);
+            $this->writeOpsToFile($serverId, FALSE);
         } else {
             $this->callCommand('op', $userId, $runhash);
         }
@@ -67,7 +71,7 @@ class PermissionRepository extends Repository {
     public function removeOpFromServer($serverId, $userId, $runhash = NULL) {
         $this->removeOpFromDb($serverId, $userId);
         if ($runhash == NULL) {
-            $this->writeOpsToFile($serverId);
+            $this->writeOpsToFile($serverId, TRUE);
         } else {
             $this->callCommand('deop', $userId, $runhash);
         }
@@ -126,13 +130,19 @@ class PermissionRepository extends Repository {
     /**
      * Call only when server is NOT running
      * @param int $serverId
+     * @param boolean TRUE if you want to delete op, FALSE if you want to add op
      */
-    private function writeOpsToFile($serverId) {
+    private function writeOpsToFile($serverId, $delete) {
         $path = $this->serverRepo->getPath($serverId);
         $db = $this->readOpsFromDb($serverId);
-        $file = $this->readOpsFromFile($path);
-        $write = array_unique(array_merge($db, $file));
+        $file = $this->readOpsFromFile($path, 'ops.txt');
+        if($delete == TRUE){
+            $write = $db;
+        }else{
+            $write = array_unique(array_merge($db, $file));
+        }
         $this->fileModel->write(implode("\n", $write), $path . 'ops.txt', TRUE);
+        @unlink($path . 'ops.json');
     }
 
     /**
@@ -152,8 +162,8 @@ class PermissionRepository extends Repository {
      * @param string $path
      * @return array of existing ops 
      */
-    private function readOpsFromFile($path) {
-        $ops = $this->fileModel->open($path . 'ops.txt', TRUE);
+    private function readOpsFromFile($path, $file) {
+        $ops = $this->fileModel->open($path . $file, TRUE);
         array_walk($ops, create_function('&$val', '$val = trim($val);'));
         return $ops;
     }
