@@ -8,6 +8,7 @@ TODO
 * Config and VersionManager: find way how to use more regex variants [todo]
 * Administration: There should be some interface for editing configuration file [todo, usability]
 * English translation [todo]
+* Everything: probably use @inject instead of context [todo]
 * Udates: use already downloaded files, from some safe storage - probably add option to disable online updates [todo, low priority]
 * Backup: Get rid of phar dependency [low priority]
 * Backup: upload progress bar [usability, eye candy, low priority]

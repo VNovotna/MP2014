@@ -55,10 +55,10 @@ class UUIDModel extends \Nette\Object {
 
 }
 
-class ProfileNotUniqueException extends Exception {
+class ProfileNotUniqueException extends RuntimeException {
     
 }
 
-class ProfileNotFoundException extends Exception {
+class ProfileNotFoundException extends RuntimeException {
     
 }
