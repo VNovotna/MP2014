@@ -16,8 +16,9 @@ class HomepagePresenter extends SecuredPresenter {
         $nullUsers = $this->userRepository->findBy(array('uuid' => NULL, 'NOT mcname' => NULL));
         try {
             foreach ($nullUsers as $user) {
-                $uuid = $this->uuidModel->getUuid($user->mcname);
-                $this->userRepository->setUUID($user->id, $uuid);
+                $identity = $this->uuidModel->getUuid($user->mcname, TRUE);
+                $this->userRepository->setUUID($user->id, $identity['uuid']);
+                $this->userRepository->setMcNick($user->id, $identity['name']);
             }
         } catch (RuntimeException $exc) {
             //echo nothing critical
