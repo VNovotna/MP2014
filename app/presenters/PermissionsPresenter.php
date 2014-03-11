@@ -6,20 +6,22 @@
  */
 class PermissionsPresenter extends SecuredPresenter {
 
-    /** @var DB\UserRepository */
-    private $userRepo;
+    /** @var DB\UserRepository @inject */
+    public $userRepo;
 
-    /** @var DB\PermissionRepository */
-    private $permissionRepo;
+    /** @var DB\PermissionRepository @inject */
+    public $permissionRepo;
 
     protected function startup() {
         parent::startup();
-        $this->userRepo = $this->context->userRepository;
-        $this->permissionRepo = $this->context->permissionRepository;
         if (!$this->user->isAllowed('permissions')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }
+    }
+    public function beforeRender() {
+        parent::beforeRender();
+        $this->permissionRepo->syncDBwithFile($this->selectedServerId);
     }
 
     public function actionDefault() {

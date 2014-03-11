@@ -17,7 +17,7 @@ TODO
 
 DONE
 
-* Permission: change to take in mind new uuid in ops.json (but it's little ugly)
+* Permission: change to take in mind new uuid in ops.json
 * GameSettings: disable path and executable setting when common storage is in use [todo]
 * Permissions: problem with ops without application account (they are deleted) [bug, confusing] (they are no longer deleted)
 * GameSettings: check if user not changed the port number in server.properties [todo]

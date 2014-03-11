@@ -79,6 +79,21 @@ class PermissionRepository extends Repository {
     }
 
     /**
+     * checks whether someone called deop from game and corrects database
+     * @param int $serverId
+     */
+    public function syncDBwithFile($serverId) {
+        $path = $this->serverRepo->getPath($serverId);
+        $file = $this->getNamesFromJsonArray($this->readOpsFromFile($path, 'ops.json'));
+        $db = $this->getNamesFromJsonArray($this->readOpsFromDb($serverId));
+        $diff = array_diff($db, $file);
+        foreach ($diff as $opName) {
+            $user = $this->userRepo->findBy(array('mcname'=> $opName))->fetch();
+            $this->removeOpFromDb($serverId, $user->id);
+        }
+    }
+
+    /**
      * @param int $serverId
      * @param int $userId
      * @return boolean
@@ -135,37 +150,59 @@ class PermissionRepository extends Repository {
     private function writeOpsToFile($serverId, $delete) {
         $path = $this->serverRepo->getPath($serverId);
         $db = $this->readOpsFromDb($serverId);
-        $file = $this->readOpsFromFile($path, 'ops.txt');
-        if($delete == TRUE){
+        if ($delete == TRUE) {
             $write = $db;
-        }else{
-            $write = array_unique(array_merge($db, $file));
+        } else {
+            $file = $this->readOpsFromFile($path, 'ops.json');
+            $merge = array_merge($db, $file);
+            $write = array_unique($merge, SORT_REGULAR);
         }
-        $this->fileModel->write(implode("\n", $write), $path . 'ops.txt', TRUE);
-        @unlink($path . 'ops.json');
+        $this->fileModel->write(json_encode($write, JSON_PRETTY_PRINT), $path . 'ops.json', TRUE);
     }
 
     /**
      * @param int $serverId
-     * @return array
+     * @return array suitable for json
      */
     private function readOpsFromDb($serverId) {
         $ops = $this->findAllOps($serverId);
         $result = array();
         foreach ($ops as $op) {
-            $result[] = $op->user->mcname;
+            $result[] = array(
+                'uuid' => $op->user->uuid,
+                'name' => $op->user->mcname,
+                'level' => 4);
         }
         return $result;
     }
 
     /**
      * @param string $path
-     * @return array of existing ops 
+     * @return array suitable for json
      */
     private function readOpsFromFile($path, $file) {
-        $ops = $this->fileModel->open($path . $file, TRUE);
-        array_walk($ops, create_function('&$val', '$val = trim($val);'));
+        $opsFile = $this->fileModel->open($path . $file, TRUE);
+        $json = json_decode(implode('', $opsFile));
+        $ops = array();
+        foreach ($json as $record) {
+            $ops[] = array(
+                'uuid' => $record->uuid,
+                'name' => $record->name,
+                'level' => $record->level);
+        }
         return $ops;
+    }
+
+    /**
+     * @param array $jsonLike
+     * @return array of mcnames
+     */
+    private function getNamesFromJsonArray($jsonLike) {
+        $result = array();
+        foreach ($jsonLike as $item) {
+            $result[] = $item['name'];
+        }
+        return $result;
     }
 
 }
