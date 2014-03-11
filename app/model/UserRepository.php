@@ -70,13 +70,20 @@ class UserRepository extends Repository {
     }
 
     /**
-     * 
      * @param int $id user id
      * @param string $mcname new MC nick
      */
     public function setMcNick($id, $mcname) {
         $this->getTable()->where(array('id' => $id))
                 ->update(array('mcname' => $mcname));
+    }
+    /**
+     * @param int $id user id
+     * @param string $uuid minecraft UUID
+     */
+    public function setUUID($id, $uuid){
+                $this->getTable()->where(array('id' => $id))
+                ->update(array('uuid' => $uuid));
     }
 
     /**
