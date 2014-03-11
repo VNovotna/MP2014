@@ -9,26 +9,22 @@ class UUIDModel extends \Nette\Object {
 
     /**
      * @param string $userName
-     * @return string uuid of $usrName
+     * @param boolean $resultAsArray
+     * @return string|array uuid of $usrName or array('uuid' => $uuid, 'name' => $name)
      * @throws ProfileNotUniqueException
      * @throws ProfileNotFoundException
      */
-    public function getUuid($userName) {
+    public function getUuid($userName, $resultAsArray = FALSE) {
         $data = $this->makeRequest($userName);
         if ($data->size > 1) {
             throw new ProfileNotUniqueException;
         }if ($data->size == 0) {
             throw new ProfileNotFoundException;
         }
+        if($resultAsArray){
+            return array('uuid' => $data->profiles[0]->id, 'name' => $data->profiles[0]->name);
+        }
         return $data->profiles[0]->id;
-    }
-
-    /**
-     * @param string $userName
-     * @throws Nette\NotImplementedException
-     */
-    public function getUuids($userName) {
-        throw new Nette\NotImplementedException;
     }
 
     /**
