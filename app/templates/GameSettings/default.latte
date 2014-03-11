@@ -28,12 +28,15 @@
         </div>
         <div id='page-ips'>
             {control bannedIPs}
+            <span n:if="$running" class="icon info">Není dobrý nápad upravovat konfigurační soubory běžícího serveru.</span>
         </div>
         <div id='page-players'>
             {control bannedPlayers}
+            <span n:if="$running" class="icon info">Není dobrý nápad upravovat konfigurační soubory běžícího serveru.</span>
         </div>
         <div id='page-white'>
             {control whiteList}
+            <span n:if="$running" class="icon info">Není dobrý nápad upravovat konfigurační soubory běžícího serveru.</span>
         </div>
     </div>
     <span class="icon info">Pro uplatnění změn je nutné restartovat sever.</span>

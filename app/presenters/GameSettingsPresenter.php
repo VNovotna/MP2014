@@ -92,21 +92,21 @@ class GameSettingsPresenter extends SecuredPresenter {
      * @return FileEditor Component
      */
     protected function createComponentBannedIPs() {
-        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'banned-ips.txt', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
+        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'banned-ips.json', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
     }
 
     /**
      * @return FileEditor Component
      */
     protected function createComponentBannedPlayers() {
-        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'banned-players.txt', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
+        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'banned-players.json', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
     }
 
     /**
      * @return FileEditor Component
      */
     protected function createComponentWhiteList() {
-        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'white-list.txt', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
+        return new FileEditor($this->serverRepo->getPath($this->selectedServerId) . 'whitelist.json', $this->fileModel, $this->user->isAllowed('server-settings', 'edit'));
     }
 
 }

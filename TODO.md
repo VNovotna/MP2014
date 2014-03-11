@@ -1,6 +1,6 @@
 TODO
 
-* GameSettings: new minecraft version (14w10) changes format of config files. The're json now. Intervention needed. [todo, top priority]
+* GameSettings: editing json files directly is not really bfu friendly. [todo]
 * Config file: some values are unused eg number of backups and executable [todo]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup and offer alternative port [todo]
@@ -17,6 +17,7 @@ TODO
 
 DONE
 
+* GameSettings: new minecraft version (14w10) changes format of config files. The're json now. Intervention needed. [todo, top priority]
 * Permission: change to take in mind new uuid in ops.json
 * GameSettings: disable path and executable setting when common storage is in use [todo]
 * Permissions: problem with ops without application account (they are deleted) [bug, confusing] (they are no longer deleted)
