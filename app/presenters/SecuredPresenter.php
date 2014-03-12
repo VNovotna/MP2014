@@ -49,7 +49,7 @@ abstract class SecuredPresenter extends BasePresenter {
     }
 
     private function checkPersistent() {
-        if ($this->selectedServerId == 0) {
+        if ($this->serverRepo->findById($this->selectedServerId)->count() == 0 ){
             $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
             if (count($servers) != 0) {
                 $srv = $servers->fetch();
