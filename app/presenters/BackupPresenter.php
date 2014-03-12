@@ -7,23 +7,23 @@
  */
 class BackupPresenter extends SecuredPresenter {
 
-    /** @var ServerCommander */
-    private $serverCmd;
+    /** @var ServerCommander @inject */
+    public $serverCmd;
 
-    /** @var \DB\ServerRepository */
-    private $serverRepo;
+    /** @var \DB\ServerRepository @inject */
+    public $serverRepo;
 
-    /** @var BackupModel */
-    private $backupModel;
+    /** @var BackupModel @inject */
+    public $backupModel;
+
+    /** @var SystemConfigModel @inject */
+    public $configModel;
 
     /** @var string */
     private $path;
 
     protected function startup() {
         parent::startup();
-        $this->serverCmd = $this->context->serverCommander;
-        $this->serverRepo = $this->context->serverRepository;
-        $this->backupModel = $this->context->backupModel;
         $this->path = $this->serverRepo->getPath($this->selectedServerId);
         if (!$this->user->isAllowed('backup')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
@@ -114,13 +114,14 @@ class BackupPresenter extends SecuredPresenter {
         $fd = new FileDownload();
         $fd->sourceFile = $this->path . 'backups/' . $file;
         $fd->onBeforeDownloaderStarts[] = function($fd) {
-             header('Content-Length: '.$fd->sourceFileSize);
+            header('Content-Length: ' . $fd->sourceFileSize);
         };
         $fd->download();
     }
 
     public function renderDefault() {
         $this->template->backups = $this->backupModel->getBackups($this->path);
+        $this->template->couldMakeNew = $this->configModel['backup']['number'] >= count($this->template->backups);
     }
 
 }

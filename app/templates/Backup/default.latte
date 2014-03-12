@@ -6,7 +6,11 @@
     <table>
         <tbody>
             <tr>
-                <td><a n:href="makeBackup!" class="ajax">Vytvořit novou zálohu</a></td>
+                {if $couldMakeNew}
+                    <td><a n:href="makeBackup!" class="">Vytvořit novou zálohu</a></td>
+                {else}
+                    <td><span class="icon warning">Máte maximální povolený počet záloh.</span></td>
+                {/if}
             </tr>
             <tr n:foreach="$backups as $file" n:class="$iterator->odd ? odd : even">
                 <td>{$file}</td>
@@ -20,5 +24,5 @@
     {form loadBackup class => ajax}
         také můžete nahrát zálohu ručně: {input upload}{input send}<br>
         <span class="icon warning">maximální velikost je však omezena na {! ini_get("upload_max_filesize"); }B.</span>
-        {/form}
+    {/form}
 {/snippet}

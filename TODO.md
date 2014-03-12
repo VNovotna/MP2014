@@ -1,12 +1,13 @@
 TODO
 
+* SystemSettings: admin interface for managing users [todo]
 * GameSettings: editing json files directly is not really bfu friendly. [todo]
-* Config file: some values are unused eg number of backups and executable [todo]
+* Config file: some values are unused eg number of backups and executables [todo]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup and offer alternative port [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * English translation [todo]
-* Everything: probably use @inject instead of context [todo]
+* Everything: probably use @inject instead of context [todo, low priority]
 * Udates: use already downloaded files, from some safe storage - probably add option to disable online updates [todo, low priority]
 * Backup: Get rid of phar dependency [low priority]
 * Backup: upload progress bar [usability, eye candy, low priority]

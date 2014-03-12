@@ -24,7 +24,7 @@ class BackupModel extends Nette\Object {
         $date = new Nette\DateTime();
         $filename = $date->format('Y-m-d_H-i');
         $oldumask = umask(0);
-        mkdir($path.'backups/', 0771);
+        @mkdir($path.'backups/', 0771);
         umask($oldumask);
         if ($this->serverCmd->isServerRunning($runtimeHash)) {
             return $this->backupRunning($path, $runtimeHash, $filename);

@@ -1,5 +1,5 @@
 backup:
-	number: 9
+	number: 8
 	foreign: true
 	
 update:
