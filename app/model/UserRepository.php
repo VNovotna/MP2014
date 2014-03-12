@@ -61,11 +61,11 @@ class UserRepository extends Repository {
 
     /**
      * @param int $id user id
-     * @param string $password
+     * @param string $password unhashed password
      */
     public function setPassword($id, $password) {
         $this->getTable()->where(array('id' => $id))->update(array(
-            'password' => Authenticator::calculateHash($password)
+            'password' => \Authenticator::calculateHash($password)
         ));
     }
 

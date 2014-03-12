@@ -23,21 +23,32 @@ class Authenticator extends \Nette\Object implements Security\IAuthenticator {
     public function authenticate(array $credentials) {
         list($username, $password) = $credentials;
         $row = $this->database->table('user')->where('username', $username)->fetch();
-        // serverId => role
-        $roles = $this->database->table('permission')->where('user_id', $row->id)->fetchPairs('server_id', 'role');
-
         if (!$row) {
             throw new Security\AuthenticationException('The username is incorrect.', self::IDENTITY_NOT_FOUND);
         }
-        if ($row->password !== $this->calculateHash($password, $row->password)) {
+        if (!$this->checkPassword($row->password, $password)) {
             throw new Security\AuthenticationException('The password is incorrect.', self::INVALID_CREDENTIAL);
         }
+        $roles = $this->database->table('permission')->where('user_id', $row->id)->fetchPairs('server_id', 'role');
         $arr = array('username' => $row->username, 'serverRoles' => $roles);
         if ($row->role == 'admin') {
             return new Nette\Security\Identity($row->id, 'admin', $arr);
         } else {
             return new Nette\Security\Identity($row->id, 'player', $arr);
         }
+    }
+
+    /**
+     * check if $passFromForm is same as $passFromDb
+     * @param string $passFromDb
+     * @param string $passFromForm
+     * @return boolean
+     */
+    public static function checkPassword($passFromDb, $passFromForm) {
+        if ($passFromDb === \Authenticator::calculateHash($passFromForm, $passFromDb)) {
+            return TRUE;
+        }
+        return FALSE;
     }
 
     /**

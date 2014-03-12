@@ -55,7 +55,8 @@ class UserPresenter extends SecuredPresenter {
                 ->addRule(Form::FILLED, 'Zadejte prosím heslo.')
                 ->addRule(Form::MIN_LENGTH, 'Heslo musí mít alespoň %d znaků.', 6);
         $form->addPassword('passcheck', 'Nové heslo znovu:')
-                ->addRule(Form::EQUAL, 'Hesla se neshodují.', $form['newpass']);
+                ->addRule(Form::EQUAL, 'Hesla se neshodují.', $form['newpass'])
+                ->setOmitted();
         $form->addSubmit('submit', 'Odeslat');
         $form->onSuccess[] = $this->userCredentialsSubmitted;
         return $form;
@@ -65,12 +66,15 @@ class UserPresenter extends SecuredPresenter {
      * @param Form $form
      */
     public function userCredentialsSubmitted($form) {
-        $this->flashMessage("Not implemented");
-        if ($this->isAjax()) {
-            $this->redrawControl();
+        $values = $form->getValues();
+        $user = $this->userRepo->findById($this->user->id)->fetch();
+        if (Authenticator::checkPassword($user->password, $values->oldpass)) {
+            $this->userRepo->setPassword($this->user->id, $values->newpass);
+            $this->flashMessage('Heslo nastaveno','success');
         } else {
-            $this->redirect('this');
+            $this->flashMessage('Staré heslo bylo zadáno nesprávně', 'error');
         }
+        $this->redirect('this');
     }
 
 }
