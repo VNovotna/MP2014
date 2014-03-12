@@ -11,7 +11,7 @@ class ServerList extends Nette\Application\UI\Control {
 
     /** @var int */
     private $userId;
-    
+
     /** @var ServerCmd */
     private $serverCmd;
 
@@ -28,8 +28,15 @@ class ServerList extends Nette\Application\UI\Control {
     }
 
     public function handleDelete($serverId) {
-        $this->presenter->flashMessage("Not implemented");
-        $this->presenter->redrawControl();
+        $path = $this->serverRepo->getPath($serverId);
+        try {
+            $this->serverRepo->removeServer($serverId);
+            BackupModel::removeDir($path);
+        } catch (Exception $ex) {
+            dump($ex);
+        }
+        $this->presenter->flashMessage("Smazáno.",'success');
+        $this->presenter->redirect('this');
     }
 
     public function handleStop($serverId) {

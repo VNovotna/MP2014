@@ -157,6 +157,21 @@ class ServerRepository extends Repository {
     }
 
     /**
+     * it will remove server from database
+     * @param int $serverId
+     * @return boolean TRUE on success, false otherwise
+     * @throws \RuntimeException
+     */
+    public function removeServer($serverId) {
+        try {
+            $this->getTable()->where('id', $serverId)->delete();
+            return TRUE;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage(), $e->getCode());
+        }
+    }
+
+    /**
      * @param string $path
      * @param string $folderName 
      * @param int $port

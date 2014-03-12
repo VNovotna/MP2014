@@ -4,7 +4,6 @@ TODO
 * Config file: some values are unused eg number of backups and executable [todo]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup and offer alternative port [todo]
-* None: There is no way how to delete server [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * Administration: There should be some interface for editing configuration file [todo, usability]
 * English translation [todo]
@@ -17,6 +16,7 @@ TODO
 
 DONE
 
+* ServerList: There is no way how to delete server [todo]
 * GameSettings: new minecraft version (14w10) changes format of config files. The're json now. Intervention needed. [todo, top priority]
 * Permission: change to take in mind new uuid in ops.json
 * GameSettings: disable path and executable setting when common storage is in use [todo]

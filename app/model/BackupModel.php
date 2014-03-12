@@ -143,7 +143,7 @@ class BackupModel extends Nette\Object {
     }
 
     /**
-     * remove all files in the dir
+     * remove all files in the dir and then the dir itself
      * @param string $path to folder to wipe
      */
     public static function removeDir($dirPath) {
