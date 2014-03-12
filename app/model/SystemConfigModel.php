@@ -39,7 +39,7 @@ class SystemConfigModel extends \Nette\Object implements ArrayAccess {
     public function &offsetGet($offset) {
         return $this->neon{$offset};
     }
-    
+
     public function offsetSet($offset, $value) {
         if (is_null($offset)) {
             throw new Nette\InvalidArgumentException('It\'s not possible to create new config entries!');
@@ -51,8 +51,20 @@ class SystemConfigModel extends \Nette\Object implements ArrayAccess {
     public function offsetUnset($offset) {
         throw new Nette\InvalidArgumentException('It\'s not possible to unset config entries!');
     }
+
     public function __destruct() {
-        file_put_contents(__DIR__.'/../'.$this->neonPath, Utils\Neon::encode($this->neon, Utils\Neon::BLOCK));
+        file_put_contents(__DIR__ . '/../' . $this->neonPath, Utils\Neon::encode($this->neon, Utils\Neon::BLOCK));
+    }
+
+    public static function falseToTwo($values) {
+        foreach ($values as $key1 => $section) {
+            foreach ($section as $key2 => $value) {
+                if ($section[$key2] == FALSE) {
+                    $values[$key1][$key2] = 2;
+                }
+            }
+        }
+        return $values;
     }
 
 }
