@@ -1,6 +1,5 @@
 TODO
 
-* SystemSettings: admin interface for managing users [todo]
 * GameSettings: editing json files directly is not really bfu friendly. [todo]
 * Config file: user upload of minecraft server jars [todo]
 * VersionManager: make download() more secure [todo]
@@ -17,6 +16,7 @@ TODO
 
 DONE
 
+* SystemSettings: admin interface for managing users [todo]
 * Config file: some values are unused eg number of backups and executables [todo]
 * SystemSettings: There should be some interface for editing configuration file [todo, usability]
 * ServerList: There is no way how to delete server [todo]

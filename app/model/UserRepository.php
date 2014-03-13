@@ -39,13 +39,19 @@ class UserRepository extends Repository {
         }
     }
 
-    /**
-     * @param int $id user id
-     * @throws \Nette\InvalidArgumentException
-     */
+/**
+ * @param int $id id of user to be deleted
+ * @return boolean
+ * @throws \RuntimeException
+ * @throws \Nette\InvalidArgumentException
+ */
     public function deleteUser($id) {
         if (is_numeric($id)) {
-            $this->getTable()->where(array('id' => $id))->delete();
+            try {
+                return $this->getTable()->where(array('id' => $id))->delete();
+            } catch (\PDOException $e) {
+                throw new \RuntimeException($e->getMessage(), $e->getCode());
+            }
         } else {
             throw new \Nette\InvalidArgumentException;
         }
@@ -77,12 +83,13 @@ class UserRepository extends Repository {
         $this->getTable()->where(array('id' => $id))
                 ->update(array('mcname' => $mcname));
     }
+
     /**
      * @param int $id user id
      * @param string $uuid minecraft UUID
      */
-    public function setUUID($id, $uuid){
-                $this->getTable()->where(array('id' => $id))
+    public function setUUID($id, $uuid) {
+        $this->getTable()->where(array('id' => $id))
                 ->update(array('uuid' => $uuid));
     }
 
