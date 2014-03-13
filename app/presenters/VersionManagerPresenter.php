@@ -7,14 +7,17 @@
  */
 class VersionManagerPresenter extends SecuredPresenter {
 
-    /** @var \DB\ServerRepository */
-    private $serverRepo;
+    /** @var \DB\ServerRepository @inject */
+    public $serverRepo;
 
-    /** @var GameUpdateModel */
-    private $gameUpdater;
+    /** @var GameUpdateModel @inject */
+    public $gameUpdater;
 
-    /** @var ServerCommander */
-    private $serverCmd;
+    /** @var ServerCommander @inject */
+    public $serverCmd;
+
+    /** @var SystemConfigModel @inject */
+    public $configModel;
 
     /** @var string */
     private $path;
@@ -25,9 +28,6 @@ class VersionManagerPresenter extends SecuredPresenter {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }
-        $this->serverRepo = $this->context->serverRepository;
-        $this->gameUpdater = $this->context->gameUpdateModel;
-        $this->serverCmd = $this->context->serverCommander;
         $this->path = $this->serverRepo->getPath($this->selectedServerId);
     }
 
@@ -75,11 +75,13 @@ class VersionManagerPresenter extends SecuredPresenter {
     }
 
     public function renderDefault() {
+        $this->template->badPath = FALSE;
         try {
             $this->template->avJars = $this->gameUpdater->getAvailableJars($this->path);
+            $this->template->maxJars = $this->configModel['update']['number'] <= count($this->template->avJars);
         } catch (UnexpectedValueException $e) {
             $this->flashMessage('Máte špatně nastavenou cestu!', 'error');
-            $this->template->avJars = array();
+            $this->template->badPath = TRUE;
         }
         $exec = $this->serverRepo->getRunParams($this->selectedServerId)->executable;
         $this->template->active = $this->gameUpdater->getVersionFromFileName($exec);

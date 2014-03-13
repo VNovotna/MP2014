@@ -2,11 +2,12 @@ TODO
 
 * SystemSettings: admin interface for managing users [todo]
 * GameSettings: editing json files directly is not really bfu friendly. [todo]
-* Config file: some values are unused eg number of backups and executables [todo]
+* Config file: user upload of minecraft server jars [todo]
 * VersionManager: make download() more secure [todo]
 * Commands: check if port is free on startup and offer alternative port [todo]
 * Config and VersionManager: find way how to use more regex variants [todo]
 * English translation [todo]
+* Backup: Custom backups names [todo]
 * Everything: probably use @inject instead of context [todo, low priority]
 * Udates: use already downloaded files, from some safe storage - probably add option to disable online updates [todo, low priority]
 * Backup: Get rid of phar dependency [low priority]
@@ -16,6 +17,7 @@ TODO
 
 DONE
 
+* Config file: some values are unused eg number of backups and executables [todo]
 * SystemSettings: There should be some interface for editing configuration file [todo, usability]
 * ServerList: There is no way how to delete server [todo]
 * GameSettings: new minecraft version (14w10) changes format of config files. The're json now. Intervention needed. [todo, top priority]

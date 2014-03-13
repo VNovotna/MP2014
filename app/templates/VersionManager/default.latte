@@ -1,30 +1,36 @@
 
 {block content}
-<h1 n:block=title>Manažer verzí</h1>
-{snippet UpdateList}
-    {default $showUpdates = FALSE}
-    {if $showUpdates}
-        {control updates}
-    {else}
-        <a n:href="showUpdates!" class="ajax">Zkontrolovat aktualizace</a>
-    {/if}
-{/snippet}
-{snippet downloaded}
-<table>
-    <tbody>
-        <tr>
-            <th>Již stažené verze</th>
-        </tr>
-        <tr n:foreach="$avJars as $file => $version" n:class="$iterator->odd ? odd : even">
-            <td>{$version}</td>
-            {if $active == $version}
-                <td><span class='icon info'>aktivní</span></td>
-                <td></td>
+{if !$badPath}
+    <h1 n:block=title>Manažer verzí</h1>
+    {snippet UpdateList}
+        {default $showUpdates = FALSE}
+        {if $showUpdates}
+            {control updates}
+        {else}
+            {if !$maxJars}
+            <a n:href="showUpdates!" class="ajax">Zkontrolovat aktualizace</a>
             {else}
-                <td><a n:href='useFile! $file' class='ajax'>použít</a></td>
-                <td><a n:href='deleteFile! $file' class="ajax icon delete">smazat</a></td>
+                <span class="icon warning">Překročili jste maximální počet stažených verzí. Aktualizace jsou tudíž zakázany.</span>
             {/if}
-        </tr>
-    </tbody>
-</table>
-{/snippet}
+        {/if}
+    {/snippet}
+    {snippet downloaded}
+        <table>
+            <tbody>
+                <tr>
+                    <th>Již stažené verze</th>
+                </tr>
+                <tr n:foreach="$avJars as $file => $version" n:class="$iterator->odd ? odd : even">
+                    <td>{$version}</td>
+                    {if $active == $version}
+                        <td><span class='icon info'>aktivní</span></td>
+                        <td></td>
+                    {else}
+                        <td><a n:href='useFile! $file' class='ajax'>použít</a></td>
+                        <td><a n:href='deleteFile! $file' class="ajax icon delete">smazat</a></td>
+                    {/if}
+                </tr>
+            </tbody>
+        </table>
+    {/snippet}
+{/if}
