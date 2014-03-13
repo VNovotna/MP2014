@@ -9,13 +9,8 @@ use Nette\Application\UI\Form;
  */
 class UserPresenter extends SecuredPresenter {
 
-    /** @var \DB\UserRepository */
-    private $userRepo;
-
-    protected function startup() {
-        parent::startup();
-        $this->userRepo = $this->context->userRepository;
-    }
+    /** @var \DB\UserRepository @inject */
+    public $userRepo;
 
     /**
      * @return \Nette\Application\UI\Form
@@ -70,11 +65,44 @@ class UserPresenter extends SecuredPresenter {
         $user = $this->userRepo->findById($this->user->id)->fetch();
         if (Authenticator::checkPassword($user->password, $values->oldpass)) {
             $this->userRepo->setPassword($this->user->id, $values->newpass);
-            $this->flashMessage('Heslo nastaveno','success');
+            $this->flashMessage('Heslo nastaveno', 'success');
         } else {
             $this->flashMessage('Staré heslo bylo zadáno nesprávně', 'error');
         }
         $this->redirect('this');
+    }
+
+    /**
+     * @return \Nette\Application\UI\Form
+     */
+    public function createComponentPasswordForm() {
+        $form = new Form();
+        $form->addGroup('Heslo');
+        $form->addPassword('newpass', 'Nové heslo:')
+                ->addRule(Form::FILLED, 'Zadejte prosím heslo.')
+                ->addRule(Form::MIN_LENGTH, 'Heslo musí mít alespoň %d znaků.', 6);
+        $form->addHidden('changedId', NULL);
+        $form->addSubmit('submit', 'Odeslat');
+        $form->onSuccess[] = $this->passwordFormSubmitted;
+        return $form;
+    }
+
+    /**
+     * @param \Nette\Application\UI\Form $form
+     */
+    public function passwordFormSubmitted($form) {
+        $values = $form->getValues();
+        if ($this->user->isInRole('admin')) {
+            $this->userRepo->setPassword($values->changedId, $values->newpass);
+            $this->flashMessage('Heslo nastaveno', 'success');
+        }
+    }
+
+    public function renderAdmin($id) {
+        if ($this->user->isInRole('admin')) {
+            $this['passwordForm']['changedId']->setValue($id);
+            $this->template->userData = $this->userRepo->findById($id)->fetch();
+        }
     }
 
 }

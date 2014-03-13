@@ -15,8 +15,8 @@
             <td>{$user->username}</td>
             <td>{$user->mcname}</td>
             <td>{$user->role}</td>
-            <td><a n:href="#" class="icon edit">upravit</a></td>
-            <td><a n:href="#" class="icon cross">smazat</a></td>
+            <td><a n:href="USer:admin $user->id" class="icon edit">upravit</a></td>
+            <td><a n:href="!delete $user->id" class="icon cross">smazat</a></td>
         </tr>
     </tbody>
 </table>
