@@ -2,7 +2,7 @@
 
 /**
  * GameUpdater offers downloading server .jar from minecraft.net and mojang.com
- * Not the best code, but it's working now
+ * 
  * @author viky
  */
 class GameUpdateModel {
@@ -103,7 +103,7 @@ class GameUpdateModel {
 
     /**
      * get version from minecraft server filename
-     * programes quote: it's not very universal method
+     * programer quote: it's not very universal method
      * @param string $filename
      * @return string
      */
