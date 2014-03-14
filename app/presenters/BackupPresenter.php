@@ -122,6 +122,7 @@ class BackupPresenter extends SecuredPresenter {
     public function renderDefault() {
         $this->template->backups = $this->backupModel->getBackups($this->path);
         $this->template->couldMakeNew = $this->configModel['backup']['number'] >= count($this->template->backups);
+        $this->template->foreign = $this->configModel['backup']['foreign'];
     }
 
 }

@@ -20,9 +20,11 @@
             </tr>
         </tbody>
     </table>
+    {if $foreign}
     <hr>            
     {form loadBackup class => ajax}
         také můžete nahrát zálohu ručně: {input upload}{input send}<br>
         <span class="icon warning">maximální velikost je však omezena na {! ini_get("upload_max_filesize"); }B.</span>
     {/form}
+    {/if}
 {/snippet}

@@ -1,6 +1,6 @@
 backup:
 	number: 8
-	foreign: true
+	foreign: false
 	
 update:
 	number: 10
