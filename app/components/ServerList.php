@@ -9,8 +9,8 @@ class ServerList extends Nette\Application\UI\Control {
     /** @var \DB\ServerRepository */
     private $serverRepo;
 
-    /** @var int */
-    private $userId;
+    /** @var \Nette\Security\User */
+    private $user;
 
     /** @var ServerCmd */
     private $serverCmd;
@@ -18,13 +18,13 @@ class ServerList extends Nette\Application\UI\Control {
     /**
      * @param \DB\ServerRepository $serverRepository
      * @param ServerCommander $serverCommander 
-     * @param int $user_id specify when wiev for one user is needed
+     * @param \Nette\Security\User $user
      */
-    public function __construct($serverRepository, $serverCommander, $user_id = NULL) {
+    public function __construct($serverRepository, $serverCommander, $user = NULL) {
         parent::__construct();
         $this->serverRepo = $serverRepository;
         $this->serverCmd = $serverCommander;
-        $this->userId = $user_id;
+        $this->user = $user;
     }
 
     public function handleDelete($serverId) {
@@ -53,14 +53,16 @@ class ServerList extends Nette\Application\UI\Control {
 
     public function render() {
         $this->template->setFile(__DIR__ . '/ServerList.latte');
-        if ($this->userId) {
-            $this->template->servers = $this->serverRepo->findBy(array('user_id' => $this->userId));
+        if ($this->user) {
+            $this->template->servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
         } else {
             $this->template->servers = $this->serverRepo->findAll();
         }
         $this->template->servers->order('id');
-        $this->template->userId = $this->userId;
+        $this->template->userId = $this->user;
         $this->template->registerHelper('getVersion', '\gameUpdateModel::getVersionFromFileName');
+        $this->template->allowedToStop = $this->user->isAllowed('commands', 'edit');
+        $this->template->allowedToDelete = $this->user->isAllowed('delete', 'edit');
         $this->template->render();
     }
 

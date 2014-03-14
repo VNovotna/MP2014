@@ -23,9 +23,9 @@
             </td>
             <td n:if="!$userId">{$server->user->username}</td>
             <td>
-                {if $server->runhash}
+                {if $server->runhash and $allowedToStop}
                     <a n:if="$server->runhash" n:href="stop! $server->id" class="ajax icon delete">vypnout</a>
-                {else}
+                {elseif $allowedToDelete}
                     <a n:href="delete! $server->id" class="ajax icon cross" onclick="return confirm('Vážně? \n Tohle smaže i zálohy.')">smazat</a>
                 {/if}
             </td>

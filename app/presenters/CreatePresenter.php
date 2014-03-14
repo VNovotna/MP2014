@@ -102,7 +102,7 @@ class CreatePresenter extends SecuredPresenter {
     }
 
     public function createComponentServerList() {
-        return new ServerList($this->serverRepo, $this->context->serverCommander,$this->user->id);
+        return new ServerList($this->serverRepo, $this->context->serverCommander,$this->user);
     }
 
     public function renderDownload($newServerId) {
