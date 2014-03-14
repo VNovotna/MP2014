@@ -43,6 +43,14 @@ class PermissionRepository extends Repository {
     }
 
     /**
+     * @param int $userId
+     * @return array server_id => role
+     */
+    public function getPermissions($userId) {
+        return $this->getTable()->where(array('user_id' => $userId))->fetchPairs('server_id', 'role');
+    }
+
+    /**
      * @param int $serverId
      * @param int $userId
      * @param string $runhash nescesary when server is running
@@ -88,7 +96,7 @@ class PermissionRepository extends Repository {
         $db = $this->getNamesFromJsonArray($this->readOpsFromDb($serverId));
         $diff = array_diff($db, $file);
         foreach ($diff as $opName) {
-            $user = $this->userRepo->findBy(array('mcname'=> $opName))->fetch();
+            $user = $this->userRepo->findBy(array('mcname' => $opName))->fetch();
             $this->removeOpFromDb($serverId, $user->id);
         }
     }
@@ -183,14 +191,18 @@ class PermissionRepository extends Repository {
     private function readOpsFromFile($path, $file) {
         $opsFile = $this->fileModel->open($path . $file, TRUE);
         $json = json_decode(implode('', $opsFile));
-        $ops = array();
-        foreach ($json as $record) {
-            $ops[] = array(
-                'uuid' => $record->uuid,
-                'name' => $record->name,
-                'level' => $record->level);
+        if ($json != NULL) {
+            $ops = array();
+            foreach ($json as $record) {
+                $ops[] = array(
+                    'uuid' => $record->uuid,
+                    'name' => $record->name,
+                    'level' => $record->level);
+            }
+            return $ops;
+        } else {
+            return array();
         }
-        return $ops;
     }
 
     /**

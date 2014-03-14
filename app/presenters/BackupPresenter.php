@@ -25,7 +25,7 @@ class BackupPresenter extends SecuredPresenter {
     protected function startup() {
         parent::startup();
         $this->path = $this->serverRepo->getPath($this->selectedServerId);
-        if (!$this->user->isAllowed('backup')) {
+        if (!$this->user->isAllowed('backup', 'edit')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }

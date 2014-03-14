@@ -165,6 +165,7 @@ class ServerRepository extends Repository {
     public function removeServer($serverId) {
         try {
             $this->getTable()->where('id', $serverId)->delete();
+            $this->getTable('permission')->where(array('server_id' => $serverId))->delete();
             return TRUE;
         } catch (\PDOException $e) {
             throw new \RuntimeException($e->getMessage(), $e->getCode());

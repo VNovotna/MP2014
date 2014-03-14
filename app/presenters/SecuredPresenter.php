@@ -19,6 +19,9 @@ abstract class SecuredPresenter extends BasePresenter {
     /** @var string */
     protected $runtimeHash;
 
+    /** @var \DB\PermissionRepository @inject */
+    public $permRepo;
+
     /** @var string server ip */
     protected $hostIp;
 
@@ -49,12 +52,37 @@ abstract class SecuredPresenter extends BasePresenter {
     }
 
     private function checkPersistent() {
-        if ($this->serverRepo->findById($this->selectedServerId)->count() == 0 ){
-            $servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
+        if ($this->serverRepo->findById($this->selectedServerId)->count() == 0) {
+            $servers = $this->permRepo->findBy(array('user_id' => $this->user->id));
             if (count($servers) != 0) {
                 $srv = $servers->fetch();
-                $this->flashMessage("Vybrán server $srv->name ", 'info');
-                $this->handleSwitchServer($srv->id);
+                $this->flashMessage("Vybrán server " . $srv->server->name, 'info');
+                $this->handleSwitchServer($srv->server_id);
+            }
+        }
+    }
+
+    /**
+     * switch selected server and user roles
+     * @param int $serverId serverId
+     * @param boolean $redirect on FALSE you have to redirect manualy 
+     */
+    public function handleSwitchServer($serverId, $redirect = TRUE) {
+        $this->selectedServerId = $serverId;
+        //switch roles
+        $this->switchRoles($serverId);
+        if ($redirect) {
+            $this->redirect('this');
+        }
+    }
+
+    private function switchRoles($serverId) {
+        $newRoles = $this->permRepo->getPermissions($this->user->id);
+        if ($newRoles !== array()) {
+            if ($this->user->isInRole('admin')) {
+                $this->user->identity->roles = array('admin');
+            } else {
+                $this->user->identity->roles = array($newRoles[$serverId]);
             }
         }
     }
@@ -89,33 +117,8 @@ abstract class SecuredPresenter extends BasePresenter {
         $this->redirect('Sign:in');
     }
 
-    /**
-     * switch selected server and user roles
-     * @param int $id
-     * @param boolean $redirect on FALSE you have to redirect manualy 
-     */
-    public function handleSwitchServer($id, $redirect = TRUE) {
-        $this->selectedServerId = $id;
-        //switch roles
-        $this->switchRoles($id);
-        if ($redirect) {
-            $this->redirect('this');
-        }
-    }
-
-    private function switchRoles($id) {
-        $newRoles = $this->context->userRepository->getPermissions($this->user->id);
-        if ($newRoles !== array()) {
-            if ($this->user->isInRole('admin')) {
-                $this->user->identity->roles = array('admin');
-            } else {
-                $this->user->identity->roles = array($newRoles[$id]);
-            }
-        }
-    }
-
     public function beforeRender() {
-        $serversIds = array_keys($this->context->userRepository->getPermissions($this->user->id));
+        $serversIds = array_keys($this->permRepo->getPermissions($this->user->id));
         if ($this->selectedServerId != 0) {
             $srvname = $this->serverRepo->findBy(array('id' => $this->selectedServerId))->fetch();
             $this->template->activeServer = $srvname->name;

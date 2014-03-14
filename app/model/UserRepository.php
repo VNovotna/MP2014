@@ -39,12 +39,12 @@ class UserRepository extends Repository {
         }
     }
 
-/**
- * @param int $id id of user to be deleted
- * @return boolean
- * @throws \RuntimeException
- * @throws \Nette\InvalidArgumentException
- */
+    /**
+     * @param int $id id of user to be deleted
+     * @return boolean
+     * @throws \RuntimeException
+     * @throws \Nette\InvalidArgumentException
+     */
     public function deleteUser($id) {
         if (is_numeric($id)) {
             try {
@@ -99,14 +99,6 @@ class UserRepository extends Repository {
      */
     public function findAllInRole($role) {
         return $this->findAll()->where("role LIKE $role");
-    }
-
-    /**
-     * @param int $userId
-     * @return array server_id => role
-     */
-    public function getPermissions($userId) {
-        return $this->getTable('permission')->where(array('user_id' => $userId))->fetchPairs('server_id', 'role');
     }
 
 }

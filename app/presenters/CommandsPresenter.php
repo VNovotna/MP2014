@@ -17,7 +17,7 @@ class CommandsPresenter extends SecuredPresenter {
         parent::startup();
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
-        if (!$this->user->isAllowed('commands')) {
+        if (!$this->user->isAllowed('commands', 'edit')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }

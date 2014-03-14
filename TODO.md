@@ -1,5 +1,6 @@
 TODO
 
+* @layout: show only avaliable options in menu [todo]
 * GameSettings: editing json files directly is not really bfu friendly. [todo]
 * Config file: user upload of minecraft server jars [todo]
 * VersionManager: make download() more secure [todo]

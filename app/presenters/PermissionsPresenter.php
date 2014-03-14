@@ -14,7 +14,7 @@ class PermissionsPresenter extends SecuredPresenter {
 
     protected function startup() {
         parent::startup();
-        if (!$this->user->isAllowed('permissions')) {
+        if (!$this->user->isAllowed('permissions', 'view') and !$this->user->isAllowed('permissions', 'edit')) {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }
