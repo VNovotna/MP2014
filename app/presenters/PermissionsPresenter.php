@@ -19,14 +19,10 @@ class PermissionsPresenter extends SecuredPresenter {
             $this->redirect('Homepage:');
         }
     }
+
     public function beforeRender() {
         parent::beforeRender();
         $this->permissionRepo->syncDBwithFile($this->selectedServerId);
-    }
-
-    public function actionDefault() {
-        $lines = $this->permissionRepo->findAllOps($this->selectedServerId);
-        $this->template->lines = $lines;
     }
 
     /**
@@ -37,7 +33,7 @@ class PermissionsPresenter extends SecuredPresenter {
         $data = $this->userRepo->findAll()->where('user.mcname NOT NULL');
         $users = array();
         foreach ($data as $user) {
-            $users[$user->username] = $user->username .' ('.$user->mcname.')';
+            $users[$user->username] = $user->username . ' (' . $user->mcname . ')';
         }
         $form->addSelect('newOp', 'uživatel: ', $users);
         $form->addSubmit('send', 'Přidat');
@@ -73,6 +69,11 @@ class PermissionsPresenter extends SecuredPresenter {
         } else {
             $this->redirect('this');
         }
+    }
+
+    public function actionDefault() {
+        $this->template->lines = $this->permissionRepo->findAllOps($this->selectedServerId);
+        $this->template->viewOnly = $this->user->isAllowed('permissions', 'edit') ? FALSE : TRUE;
     }
 
 }

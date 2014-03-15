@@ -193,13 +193,17 @@ class PermissionRepository extends Repository {
             $opsFile = $this->fileModel->open($path . $file, FALSE);
             $json = json_decode(implode('', $opsFile));
             $ops = array();
-            foreach ($json as $record) {
-                $ops[] = array(
-                    'uuid' => $record->uuid,
-                    'name' => $record->name,
-                    'level' => $record->level);
+            if ($json != NULL) {
+                foreach ($json as $record) {
+                    $ops[] = array(
+                        'uuid' => $record->uuid,
+                        'name' => $record->name,
+                        'level' => $record->level);
+                }
+                return $ops;
+            } else {
+                return array();
             }
-            return $ops;
         } catch (\Nette\FileNotFoundException $ex) {
             return array();
         }

@@ -1,6 +1,6 @@
 
 {block content}
-
+{dump}
 <h1 n:block=title>Oprávnění hráčů</h1>
 <table>
     <thead>
@@ -15,27 +15,29 @@
             <td>{$line->user->username}</td>
             <td>{$line->user->mcname}</td>
             <td>{$line->role == 'op' ? 'operátor' : 'majitel'}</td>
-            <td><a n:if="$line->role!='owner'" class="icon delete" n:href="deop! $line->user_id">odstranit</a></td>
+            <td><a n:if="$line->role!='owner' and !$viewOnly" class="icon delete" n:href="deop! $line->user_id">odstranit</a></td>
         </tr>
     </tbody>
 </table>
-<table>
-    <thead>
-        <tr>
-            <th>Přidat operátora</th>
-        </tr>
-    </thead>
-    <tbody>
-        {form newPermForm}
+{if !$viewOnly}
+    <table>
+        <thead>
             <tr>
-                <td>
-                    jméno (mc nick): {input newOp}
-                    {input send}
-                </td>
+                <th>Přidat operátora</th>
             </tr>
-        {/form}
-    </tbody>
-</table>
-<span class="icon warning">Pro správu operátorů se doporučuje používat pouze toto rozhraní.</span><br>
-<span class="icon info">Pokud přidáte operátora ze hry, nebude mít přístup k webovému rozhraní.</span><br>
-<span class="icon info">Je možné přidávat pouze operátory, kteří mají vyplnění minecraft nick.</span>
+        </thead>
+        <tbody>
+            {form newPermForm}
+                <tr>
+                    <td>
+                        jméno (mc nick): {input newOp}
+                        {input send}
+                    </td>
+                </tr>
+            {/form}
+        </tbody>
+    </table>
+    <span class="icon warning">Pro správu operátorů se doporučuje používat pouze toto rozhraní.</span><br>
+    <span class="icon info">Pokud přidáte operátora ze hry, nebude mít přístup k webovému rozhraní.</span><br>
+    <span class="icon info">Je možné přidávat pouze operátory, kteří mají vyplnění minecraft nick.</span>
+{/if}
