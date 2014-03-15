@@ -189,9 +189,9 @@ class PermissionRepository extends Repository {
      * @return array suitable for json
      */
     private function readOpsFromFile($path, $file) {
-        $opsFile = $this->fileModel->open($path . $file, TRUE);
-        $json = json_decode(implode('', $opsFile));
-        if ($json != NULL) {
+        try {
+            $opsFile = $this->fileModel->open($path . $file, FALSE);
+            $json = json_decode(implode('', $opsFile));
             $ops = array();
             foreach ($json as $record) {
                 $ops[] = array(
@@ -200,7 +200,7 @@ class PermissionRepository extends Repository {
                     'level' => $record->level);
             }
             return $ops;
-        } else {
+        } catch (\Nette\FileNotFoundException $ex) {
             return array();
         }
     }
