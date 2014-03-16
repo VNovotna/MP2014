@@ -83,7 +83,10 @@ class SignPresenter extends BasePresenter {
             }
         } catch (AuthenticationException $e) {
             $form->addError($e->getMessage());
+        }catch(\RuntimeException $e){
+            $this->flashMessage($e->getMessage(), 'error');
         }
+         $this->redirect('this');
     }
 
 }
