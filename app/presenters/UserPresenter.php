@@ -21,6 +21,8 @@ class UserPresenter extends SecuredPresenter {
         $form->addGroup('Minecraft nick');
         $form->addText('mcname', 'Minecraft nick: ')
                 ->setDefaultValue($mcname);
+        $form->addHidden('userId')
+                ->setDefaultValue($this->user->id);
         $form->addSubmit('submit', 'Odeslat');
         $form->onSuccess[] = $this->mcNickSubmitted;
         return $form;
@@ -30,7 +32,7 @@ class UserPresenter extends SecuredPresenter {
      * @param Form $form
      */
     public function mcNickSubmitted($form) {
-        $this->userRepo->setMcNick($this->user->id, $form->getValues()->mcname);
+        $this->userRepo->setMcNick($form->getValues()->userId, $form->getValues()->mcname);
         $this->flashMessage("Minecraft nick změněn.", "success");
         if ($this->isAjax()) {
             $this->redrawControl();
@@ -101,6 +103,9 @@ class UserPresenter extends SecuredPresenter {
     public function renderAdmin($id) {
         if ($this->user->isInRole('admin')) {
             $this['passwordForm']['changedId']->setValue($id);
+            $mcname = $this->userRepo->findById($id)->fetch()->mcname;
+            $this['mcNick']['mcname']->setValue($mcname);
+            $this['mcNick']['userId']->setValue($id);
             $this->template->userData = $this->userRepo->findById($id)->fetch();
         }
     }
