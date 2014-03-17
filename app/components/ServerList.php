@@ -35,7 +35,7 @@ class ServerList extends Nette\Application\UI\Control {
         } catch (Exception $ex) {
             dump($ex);
         }
-        $this->presenter->flashMessage("Smazáno.",'success');
+        $this->presenter->flashMessage("Smazáno.", 'success');
         $this->presenter->redirect('this');
     }
 
@@ -55,14 +55,17 @@ class ServerList extends Nette\Application\UI\Control {
         $this->template->setFile(__DIR__ . '/ServerList.latte');
         if ($this->user) {
             $this->template->servers = $this->serverRepo->findBy(array('user_id' => $this->user->id));
+            $this->template->userId = $this->user;
+            $this->template->allowedToStop = $this->user->isAllowed('commands', 'edit');
+            $this->template->allowedToDelete = $this->user->isAllowed('delete', 'edit');
         } else {
             $this->template->servers = $this->serverRepo->findAll();
+            $this->template->userId = FALSE;
+            $this->template->allowedToStop = TRUE;
+            $this->template->allowedToDelete = TRUE;
         }
         $this->template->servers->order('id');
-        $this->template->userId = $this->user;
         $this->template->registerHelper('getVersion', '\gameUpdateModel::getVersionFromFileName');
-        $this->template->allowedToStop = $this->user->isAllowed('commands', 'edit');
-        $this->template->allowedToDelete = $this->user->isAllowed('delete', 'edit');
         $this->template->render();
     }
 
