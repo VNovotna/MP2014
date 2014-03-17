@@ -21,10 +21,23 @@ class UUIDModel extends \Nette\Object {
         }if ($data->size == 0) {
             throw new ProfileNotFoundException;
         }
-        if($resultAsArray){
-            return array('uuid' => $data->profiles[0]->id, 'name' => $data->profiles[0]->name);
+        if ($resultAsArray) {
+            $uuid = $this->repairUUID($data->profiles[0]->id);
+            return array('uuid' => $uuid, 'name' => $data->profiles[0]->name);
         }
         return $data->profiles[0]->id;
+    }
+
+    /**
+     * @param string $uuid
+     * @return string
+     */
+    private function repairUUID($uuid) {
+        $uuid = substr_replace($uuid, "-", 8, 0);
+        $uuid = substr_replace($uuid, "-", 13, 0);
+        $uuid = substr_replace($uuid, "-", 18, 0);
+        $uuid = substr_replace($uuid, "-", 23, 0);
+        return $uuid;
     }
 
     /**
