@@ -163,6 +163,6 @@ class BackupModel extends Nette\Object {
                 }
             }
         }
-        rmdir($dirPath);
+        @rmdir($dirPath);
     }
 }

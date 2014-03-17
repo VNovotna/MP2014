@@ -36,7 +36,7 @@ class CreatePresenter extends SecuredPresenter {
         $form->addText('name', "Jméno serveru:")
                 ->addRule(Form::FILLED, "Server musíte nějak pojmenovat.")
                 ->addRule(Form::PATTERN, 'Jméno serveru musí obsahovat pouze písmena bez diakritiky a čísla.', '[a-zA-Z_0-9]+');
-        if ($this->config['storage']['common'] === 0) {
+        if ($this->config['storage']['common'] == "0") {
             $form->addText('path', 'Cesta v systému souborů:', 36)
                     ->addRule(Form::FILLED, " ")
                     ->addRule(Form::PATTERN, "Toto není platná cesta ke složce, ty začínají a končí lomítkem.", "^/[a-z/]+[/]$");
@@ -64,7 +64,7 @@ class CreatePresenter extends SecuredPresenter {
         if (!in_array($values->name, $servers)) {
             $port = $this->serverRepo->findFreePort();
             try {
-                if ($values->storage === 0) {
+                if ($values->storage == "0") {
                     $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port);
                 } else {
                     $id = $this->serverRepo->addServer($this->user->id, $values->name, $values->path, 'placeholder', $port, $values->name);

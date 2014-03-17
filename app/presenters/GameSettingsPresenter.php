@@ -24,7 +24,7 @@ class GameSettingsPresenter extends SecuredPresenter {
             $this->flashMessage('Nemáte oprávnění pro přístup!', 'error');
             $this->redirect('Homepage:');
         }
-        $this->context->systemConfigModel['storage']['common'] === 0 ? $this->commonStorage = FALSE : $this->commonStorage = TRUE;
+        $this->context->systemConfigModel['storage']['common'] == "0" ? $this->commonStorage = FALSE : $this->commonStorage = TRUE;
         $this->serverRepo = $this->context->serverRepository;
         $this->fileModel = $this->context->fileModel;
     }

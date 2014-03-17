@@ -76,7 +76,7 @@
                                 <li><a n:href="VersionManager:">Aktualizace</a></li>
                             {/if}
                             {/ifset}
-                            {if isset($userServers)}
+                            {if isset($userServers) and isset($activeServer)}
                             <li><a n:href="Create:">Přehled</a></li>
                             {else}
                             <li><a n:href="Create:">Nový server</a></li>
