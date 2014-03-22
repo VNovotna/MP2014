@@ -1,0 +1,9 @@
+{
+    "require": {
+        "php": ">=5.4",
+        "ext-sqlite":"*",
+        "ext-phar":"*",
+        "nette/nette": "~2.1",
+        "jkuchar/bigfiletools": "~1.1"
+    }
+}
