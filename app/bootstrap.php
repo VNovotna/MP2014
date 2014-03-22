@@ -8,10 +8,10 @@ $configurator = new Nette\Config\Configurator;
 
 // Enable Nette Debugger for error visualisation & logging
 //$configurator->setDebugMode(TRUE);
-$configurator->enableDebugger(__DIR__ . '/../log');
+$configurator->enableDebugger(__DIR__ . '/../rwa/log');
 
 // Specify folder for cache
-$configurator->setTempDirectory(__DIR__ . '/../temp');
+$configurator->setTempDirectory(__DIR__ . '/../rwa/temp');
 
 // Enable RobotLoader - this will load all classes automatically
 $configurator->createRobotLoader()

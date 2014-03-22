@@ -13,7 +13,7 @@ class SystemConfigModel extends \Nette\Object implements ArrayAccess {
     private $neon;
 
     /** @var string */
-    private $neonPath = "../app/config/app.neon";
+    private $neonPath = "../rwa/app.neon";
 
     public function __construct() {
         $file = file_get_contents($this->neonPath);

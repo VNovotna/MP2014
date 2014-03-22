@@ -15,7 +15,7 @@ common:
         application:
             errorPresenter: Error
         database:
-            dsn: 'sqlite:%appDir%/sql.sqlite'
+            dsn: 'sqlite:%appDir%/../rwa/sql.sqlite'
         session:
             expiration: 32 days
     services:
