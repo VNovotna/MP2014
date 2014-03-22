@@ -11,4 +11,4 @@ Instructions
 * $ cd mc-server-wrapper
 * $ curl -sS https://getcomposer.org/installer | php
 * $ php composer.phar install
-* then point your web server to www/ folder of this project
+* then point your web server to www/ folder of this project. '# ln -s /path/to/mc-server-wrapper/www/ /var/www/mcsw' should be enough
