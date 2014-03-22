@@ -14,3 +14,4 @@ Instructions
 * then point your web server to www/ folder of this project. eg. '# ln -s /path/to/mc-server-wrapper/www/ /var/www/mcsw'
 * make sure that *rwa/* folder is writable to web server. eg. '$ chown user:www-data rwa/ -R && chmod 771 rwa/ -R'
 * log in to aplication like user *admin* with password *admin1*
+* head into Admin -> Settings and check it, storage is the most important

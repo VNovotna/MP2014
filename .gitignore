@@ -2,3 +2,5 @@
 /nbproject/
 /vendor/
 /www/adminer/
+/rwa/temp/cache/
+/rwa/temp/sessions/
