@@ -1,22 +1,28 @@
 {block content}
 <h1 n:block="title">Uživatelé</h1>
-<table>
-    <thead>
-        <tr>
-            <th>id</th>
-            <th>username</th>
-            <th>MC name</th>
-            <th>Role</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr n:foreach="$users as $user" n:class="$iterator->odd ? odd : even">
-            <td>{$user->id}</td>
-            <td>{$user->username}</td>
-            <td>{$user->mcname}</td>
-            <td>{$user->role}</td>
-            <td><a n:href="USer:admin $user->id" class="icon edit">upravit</a></td>
-            <td><a n:href="!delete $user->id" class="icon cross">smazat</a></td>
-        </tr>
-    </tbody>
-</table>
+{snippet usersTable}
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>username</th>
+                <th>MC name</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr n:foreach="$users as $user" n:class="$iterator->odd ? odd : even">
+                <td>{$user->id}</td>
+                <td>{$user->username}</td>
+                <td>{$user->mcname}</td>
+                {if $user->role == 'admin'}
+                    <td><a n:href="removeAdmin! $user->id" class='icon cross ajax'>odebrat admina</a></td>
+                {else}
+                    <td><a n:href="addAdmin! $user->id" class='icon tick ajax'>přidat admina</a></td>
+                {/if}
+                <td><a n:href="USer:admin $user->id" class="icon edit">upravit</a></td>
+                <td><a n:href="!delete $user->id" class="icon cross">smazat</a></td>
+            </tr>
+        </tbody>
+    </table>
+{/snippet}

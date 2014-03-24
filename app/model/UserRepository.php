@@ -35,7 +35,7 @@ class UserRepository extends Repository {
                         'mcname' => $mcnick
                     ))->getPrimary();
         } catch (\PDOException $e) {
-            throw new \RuntimeException($e->getMessage(), $e->getCode());
+            throw new \RuntimeException($e->getMessage());
         }
     }
 
@@ -50,7 +50,7 @@ class UserRepository extends Repository {
             try {
                 return $this->getTable()->where(array('id' => $id))->delete();
             } catch (\PDOException $e) {
-                throw new \RuntimeException($e->getMessage(), $e->getCode());
+                throw new \RuntimeException($e->getMessage());
             }
         } else {
             throw new \Nette\InvalidArgumentException;
@@ -58,11 +58,32 @@ class UserRepository extends Repository {
     }
 
     /**
-     * @param int $id user id
-     * @param string $role
+     * @param int $id
+     * @throws \RuntimeException
      */
-    public function setRole($id, $role) {
-        $this->getTable()->where(array('id' => $id))->update(array('role' => $role));
+    public function addSystemAdmin($id) {
+        try {
+            $this->getTable()->where(array('id' => $id))->update(array('role' => 'admin'));
+        } catch (\PDOException $e) {
+            throw new \RuntimeException($e->getMessage());
+        }
+    }
+
+    /**
+     * @param int $id
+     * @throws \RuntimeException
+     * @throws \Nette\InvalidStateException
+     */
+    public function removeSystemAdmin($id) {
+        if (count($this->findAllInRole('admin')) > 1) {
+            try {
+                $this->getTable()->where(array('id' => $id))->update(array('role' => ''));
+            } catch (\PDOException $e) {
+                throw new \RuntimeException($e->getMessage());
+            }
+        } else {
+            throw new \Nette\InvalidStateException("There must be at least one admin.");
+        }
     }
 
     /**
@@ -98,7 +119,7 @@ class UserRepository extends Repository {
      * @return Nette\Database\Table\Selection
      */
     public function findAllInRole($role) {
-        return $this->findAll()->where("role LIKE $role");
+        return $this->findAll()->where("role LIKE ?", $role);
     }
 
 }

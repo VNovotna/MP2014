@@ -29,6 +29,24 @@ class OverwievPresenter extends SecuredPresenter {
         } catch (\RuntimeException $ex) {
             $this->flashMessage('Chyba: ' . $ex->getMessage(), 'error');
         }
+        $this->redirect('this');
+    }
+
+    public function handleAddAdmin($id) {
+        $this->userRepo->addSystemAdmin($id);
+        $this->flashMessage('Admin přidán', 'success');
+        $this->redrawControl();
+        $this->redrawControl();
+    }
+
+    public function handleRemoveAdmin($id) {
+        try {
+            $this->userRepo->removeSystemAdmin($id);
+            $this->flashMessage('Admin odebrán', 'success');
+        } catch (Nette\InvalidStateException $ex) {
+            $this->flashMessage('V aplikaci musí být alespoň jeden administrátor', 'error');
+        }
+        $this->redrawControl();
     }
 
     public function renderUsers() {
