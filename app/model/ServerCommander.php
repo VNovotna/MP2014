@@ -35,17 +35,32 @@ class ServerCommander extends \Nette\Object {
      * @throws \Nette\InvalidStateException
      */
     public function startServer($jarPath, $jarName, $runtimeHash) {
-        //should check if screen with specified name is not running already
+        $lastEdit = filectime($jarPath . 'logs/latest.log');
         if ($this->isServerRunning($runtimeHash)) {
             throw new \Nette\InvalidStateException;
-        } else {
+        } else {     
             $exec = './../libs/start.sh ' . $jarPath . ' ' . $jarName . ' ' . $runtimeHash;
             exec($exec, $output);
             if ($this->isServerRunning($runtimeHash)) {
-                sleep(4);
+                $this->waitUntilFileIsChanged($jarPath . 'logs/latest.log', $lastEdit);
                 return $output;
             } else {
                 return array('something somewhere went terribly wrong');
+            }
+        }
+    }
+    /**
+     * blocks for 20 seconds or until file in $filePath is modified
+     * @param string $filePath
+     * @param int $lastEdit unix timestamp
+     */
+    private function waitUntilFileIsChanged($filePath, $lastEdit) {
+        for ($i = 0; $i < 40; $i++) {
+            clearstatcache();
+            if ($lastEdit < filectime($filePath)) {
+                break;
+            } else {
+                usleep(500000);
             }
         }
     }
