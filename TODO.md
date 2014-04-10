@@ -16,6 +16,7 @@ TODO
 
 DONE
 
+* Status: make autorefresh more clear and do not refresh whole log, just add the new lines [todo] (it's cleaner but adding new lines only is imposible)
 * @layout: show only avaliable options in menu [todo] (done long time ago)
 * SystemSettings: admin interface for managing users [todo]
 * Config file: some values are unused eg number of backups and executables [todo]

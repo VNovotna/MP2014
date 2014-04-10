@@ -18,13 +18,16 @@
         </div>
     {/snippet}
 </fieldset>
-<span class="icon info" id="refresh-on">
-    Logy se automaticky obnovují. Kliknutím <a onclick="clearTimeout(t); $('#refresh-on').hide(); $('#refresh-off').show();">sem</a> to zakážete.
-</span>
-<span class="icon download" id="refresh-off" style="display:none">
-    <a n:href="reload!" class="ajax">Načíst znovu</a>
-</span>
-
+{if $running}
+    <span class="icon info" id="refresh-on">
+        Logy se automaticky obnovují. Kliknutím <a onclick="clearTimeout(t);
+                $('#refresh-on').hide();
+                $('#refresh-off').show();">sem</a> to zakážete.
+    </span>
+    <span class="icon download" id="refresh-off" style="display:none">
+        <a n:href="reload!" class="ajax" id="refr-link">Načíst znovu</a>
+    </span>
+{/if}
 {/block}
 {block head}
 <style>
@@ -38,34 +41,17 @@
 </style>
 {/block}
 {block scripts}
-<script>
-jQuery.extend({
-    nette: {
-        updateSnippet: function(id, html) {
-            $("#" + id).fadeTo("fast", 0.5, function() {
-                $(this).html(html).fadeTo("fast", 1);
-            });
-         },
-         success: function(payload) {
-            if (payload.snippets) {
-                for (var i in payload.snippets) {
-                    jQuery.nette.updateSnippet(i, payload.snippets[i]);
-                }
-            }
-        }
-    }
-});
-jQuery.ajaxSetup({
-    success: jQuery.nette.success
-});
-function reload() {
-    $.ajax({ url: "?selectedServerId={!$control->selectedServerId}&do=reload"});
-    t = setTimeout(function() {
-        reload();
-    }, 10000);
-}
-t = setTimeout(function() {
-    reload();
-}, 10000);
-</script>
+{if $running}
+    <script>
+        function reload() {
+            $("#refr-link").click();
+            t = setTimeout(function() {
+                reload();
+            }, 10000);
+         }
+         t = setTimeout(function() {
+            reload();
+         }, 10000);
+    </script>
+{/if}
 {/block}

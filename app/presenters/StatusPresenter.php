@@ -18,16 +18,16 @@ class StatusPresenter extends SecuredPresenter {
         $this->serverCmd = $this->context->serverCommander;
         $this->serverRepo = $this->context->serverRepository;
     }
-    public function handleReload(){
+
+    public function handleReload() {
         $this->redrawControl('log');
     }
 
     public function renderDefault() {
         $params = $this->serverRepo->getRunParams($this->selectedServerId);
-        $path = $params['path'];
-        $this->template->address = $this->hostIp.":".$params['port'];
+        $this->template->address = $this->hostIp . ":" . $params['port'];
         try {
-            $logModel = new LogModel($path . 'logs/');
+            $logModel = new LogModel($params['path'] . 'logs/');
             $this->template->logs = LogModel::makeColorful($logModel->getAll());
         } catch (UnexpectedValueException $e) {
             $this->template->logs = array('nic nenalezeno');
