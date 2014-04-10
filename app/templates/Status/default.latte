@@ -52,6 +52,11 @@
          t = setTimeout(function() {
             reload();
          }, 10000);
+            $.nette.ext('spinner-hide', {
+                before: function(settings, ui, e) {
+                    $('#ajax-spinner').hide();
+                }
+            });
     </script>
 {/if}
 {/block}
