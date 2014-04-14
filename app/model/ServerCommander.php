@@ -31,38 +31,44 @@ class ServerCommander extends \Nette\Object {
      * @param string $jarPath absolute path to server folder
      * @param string $jarName name of server .jar
      * @param string $runtimeHash hash that indentifies server
-     * @return array usually empty array if command was successfull
+     * @return array empty array if command was successfull
      * @throws \Nette\InvalidStateException
      */
     public function startServer($jarPath, $jarName, $runtimeHash) {
         $lastEdit = filectime($jarPath . 'logs/latest.log');
         if ($this->isServerRunning($runtimeHash)) {
             throw new \Nette\InvalidStateException;
-        } else {     
+        } else {
             $exec = './../libs/start.sh ' . $jarPath . ' ' . $jarName . ' ' . $runtimeHash;
             exec($exec, $output);
             if ($this->isServerRunning($runtimeHash)) {
-                $this->waitUntilFileIsChanged($jarPath . 'logs/latest.log', $lastEdit);
-                return $output;
+                if ($this->waitUntilFileIsChanged($jarPath . 'logs/latest.log', $lastEdit)) {
+                    return array();
+                } else {
+                    return array("timeout");
+                }
             } else {
-                return array('something somewhere went terribly wrong');
+                return $output === array() ? array('screen terminated! Is .jar name correct?') : $output;
             }
         }
     }
+
     /**
      * blocks for 20 seconds or until file in $filePath is modified
      * @param string $filePath
      * @param int $lastEdit unix timestamp
+     * @return boolean FALSE on timeout
      */
     private function waitUntilFileIsChanged($filePath, $lastEdit) {
         for ($i = 0; $i < 40; $i++) {
             clearstatcache();
             if ($lastEdit < filectime($filePath)) {
-                break;
+                return TRUE;
             } else {
                 usleep(500000);
             }
         }
+        return FALSE;
     }
 
     /**
