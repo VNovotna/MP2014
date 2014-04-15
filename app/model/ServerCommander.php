@@ -35,7 +35,7 @@ class ServerCommander extends \Nette\Object {
      * @throws \Nette\InvalidStateException
      */
     public function startServer($jarPath, $jarName, $runtimeHash) {
-        $lastEdit = filectime($jarPath . 'logs/latest.log');
+        $lastEdit = @filectime($jarPath . 'logs/latest.log');
         if ($this->isServerRunning($runtimeHash)) {
             throw new \Nette\InvalidStateException;
         } else {
@@ -62,7 +62,7 @@ class ServerCommander extends \Nette\Object {
     private function waitUntilFileIsChanged($filePath, $lastEdit) {
         for ($i = 0; $i < 40; $i++) {
             clearstatcache();
-            if ($lastEdit < filectime($filePath)) {
+            if ($lastEdit < @filectime($filePath)) {
                 return TRUE;
             } else {
                 usleep(500000);
