@@ -1,3 +1,6 @@
+<script>
+    var dowActive;
+</script>
 <table>
     {if $dowJars !== array()}
         <tr>
@@ -5,9 +8,25 @@
         </tr>
         <tr n:foreach="$dowJars as $url => $version" n:class="$iterator->odd ? odd : even">
             <td>{$version}</td>
-            <td><a n:href='download! $url, $version' class="icon download ajax">stáhnout</a></td>
+            <td><a n:href='download! $url, $version' class="icon download ajax" onclick="$('#progress').show(); dowActive=1; reload();">stáhnout</a></td>
         </tr>
     {else}
         <tr><td>Nepodařilo se najít nic ke stažení.</td></tr>
     {/if}
 </table>
+<script>
+function reload() {
+    $.post("../prog.txt", function(data) {
+        $('#progress').html(data + "%");
+    }, "text");
+    if (dowActive === 1) {
+        t = setTimeout(function() { reload();}, 1111);
+    }
+}
+$.nette.ext('stop-prog-bar', {
+    complete: function() {
+        dowActive = 0;
+        $('#progress').hide();
+    }
+});
+</script>

@@ -26,7 +26,13 @@
                 height: 75%;
                 padding: 0px;
                 background: rgba(255,255,255,0.8) url('../images/spinner.gif') no-repeat 50% 50%;
-                z-index: 123456;
+                z-index: 123;
+            }
+            #progress{
+                display: none;
+                position: absolute;
+                left: 48.5%;
+                top: 54%;
             }
         </style>
         {block head}{/block}
@@ -96,7 +102,9 @@
                 {snippet flashMessages}
                     <div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
                 {/snippet}
-                <div id='ajax-spinner'></div>
+                <div id='ajax-spinner'>
+                    <span id="progress"></span>
+                </div>
                 {include #content}
             </div>
             <div id="footer">
@@ -110,10 +118,9 @@
         <script>
             $(function() {
                 $.nette.init();
-                    });
+            });
             $.nette.ext('spinner', {
-                init: function() {},
-                before: function(settings, ui, e) {
+                start: function() {
                     $('#ajax-spinner').css('height', $('#content').css('height'));
                     $('#ajax-spinner').show();
                 },

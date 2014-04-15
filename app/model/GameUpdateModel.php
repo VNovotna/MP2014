@@ -5,8 +5,9 @@
  * 
  * @author viky
  */
-class GameUpdateModel extends Nette\Object{
+class GameUpdateModel extends Nette\Object {
 
+    /** @var array() */
     private $config;
 
     public function __construct(SystemConfigModel $configModel) {
@@ -77,11 +78,34 @@ class GameUpdateModel extends Nette\Object{
      * @return string filename 
      */
     public function download($url, $path, $version) {
-        set_time_limit(0);
-        $raw = file_get_contents($url);
-        $name =  'minecraft_server.' . $version . '.jar';
-        file_put_contents($path . $name, $raw);
+        set_time_limit(600);
+        $name = 'minecraft_server.' . $version . '.jar';
+        $fp = fopen($path . $name, 'w');
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'GameUpdateModel::progress');
+        curl_setopt($ch, CURLOPT_NOPROGRESS, false); // needed to make progress function work
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_exec($ch);
+        curl_close($ch);
+        fclose($fp);
         return $name;
+    }
+
+    private static function progress($resource, $download_size, $downloaded, $upload_size, $uploaded) {
+        static $lastProg;
+        if ($download_size > 0) {
+            $currentProg = floor($downloaded / $download_size * 100);
+            if ($currentProg > $lastProg) {
+                $lastProg = $currentProg;
+                if ($currentProg != 100) {
+                    file_put_contents("prog.txt", $currentProg);
+                } else {
+                    file_put_contents("prog.txt", "0");
+                }
+            }
+        }
     }
 
     /**

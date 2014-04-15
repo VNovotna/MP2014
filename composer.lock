@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "ec38d9706d35aa59076999504cb2a0b8",
+    "hash": "a1deab7043e76a0b561f5821b7dbd7b4",
     "packages": [
         {
             "name": "jkuchar/bigfiletools",
@@ -119,7 +119,10 @@
 
     ],
     "platform": {
-        "php": ">=5.4"
+        "php": ">=5.4",
+        "ext-pdo_sqlite": "*",
+        "ext-phar": "*",
+        "ext-curl": "*"
     },
     "platform-dev": [
 

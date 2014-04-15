@@ -2,7 +2,7 @@ System requirements
 -------------------
 * Unix like operating system
 * git (or you can download the source manualy)
-* curl
+* curl and curl php extension
 * Web server cabable of running php >=5.4
 
 Instructions
