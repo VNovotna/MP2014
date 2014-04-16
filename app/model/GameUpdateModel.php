@@ -78,15 +78,16 @@ class GameUpdateModel extends Nette\Object {
      * @return string filename 
      */
     public function download($url, $path, $version) {
-        set_time_limit(600);
         $name = 'minecraft_server.' . $version . '.jar';
         $fp = fopen($path . $name, 'w');
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
         //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'GameUpdateModel::progress');
         curl_setopt($ch, CURLOPT_NOPROGRESS, false); // needed to make progress function work
         curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 800);
         curl_exec($ch);
         curl_close($ch);
         fclose($fp);

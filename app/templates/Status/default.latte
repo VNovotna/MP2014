@@ -6,7 +6,7 @@
 {else}
     <span class="icon cross">Server je vypnutý</span><br>
 {/if}
-<fieldset>
+<fieldset id="log">
     <legend>log:</legend>
     {snippet log}
         <div style="width: 698px; max-height: 400px; overflow-y: scroll; overflow-x: hidden; position: relative; top:-10px;">
@@ -53,8 +53,12 @@
             reload();
          }, 10000);
             $.nette.ext('spinner-hide', {
-                before: function(settings, ui, e) {
+                start: function() {
                     $('#ajax-spinner').hide();
+                    $('#log').fadeTo("fast", 0.4);
+                },
+                complete: function(){
+                    $('#log').fadeTo("fast", 1);
                 }
             });
     </script>
