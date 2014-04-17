@@ -136,7 +136,7 @@ class ServerRepository extends Repository {
         $this->checkPathValidity($path);
         if ($serverFolder != NULL) {
             $path = $this->createFolder($path, $serverFolder, $port);
-        }else{
+        } else {
             $this->createServerProps($path, $port);
         }
         try {
@@ -206,6 +206,9 @@ class ServerRepository extends Repository {
     public function findFreePort() {
         $ports = $this->getTable()->fetchPairs('id', 'port');
         sort($ports);
+        if (count($ports) == 0) {
+            return 25565;
+        }
         $i = $ports[array_keys($ports)[0]];
         foreach ($ports as $port) {
             if ($i != $port) {
