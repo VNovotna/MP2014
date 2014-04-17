@@ -21,7 +21,7 @@
                     <td><a n:href="addAdmin! $user->id" class='icon tick ajax'>přidat admina</a></td>
                 {/if}
                 <td><a n:href="USer:admin $user->id" class="icon edit">upravit</a></td>
-                <td><a n:href="!delete $user->id" class="icon cross">smazat</a></td>
+                <td><a n:if="$user->role != 'admin'" n:href="delete! $user->id" class="icon cross">smazat</a></td>
             </tr>
         </tbody>
     </table>
