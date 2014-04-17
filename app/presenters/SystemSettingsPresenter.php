@@ -90,8 +90,8 @@ class SystemSettingsPresenter extends SecuredPresenter {
         $form = new Form();
         $form->addGroup('úložiště');
         $form->addText('common', "Úložistě herních dat:")
-                ->addRule(Form::FILLED, "Musíte vyplnit 0 nebo cestu v systému končí lomítkem");
-        $form['info'] = new InfoSpan('', 'Vyplňte 0 nebo cestu v systému končí lomítkem', 'icon info');
+                ->addRule(Form::FILLED, "Musíte vyplnit 0 nebo cestu v systému končící lomítkem");
+        $form['info'] = new InfoSpan('', 'Vyplňte 0 nebo cestu v systému končící lomítkem', 'icon info');
         $form->addSubmit('send', 'Uložit');
         $form->setDefaults($this->configModel['storage']);
         $form->onSuccess[] = $this->settingsStorageSubmitted;
