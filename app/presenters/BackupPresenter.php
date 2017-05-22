@@ -37,6 +37,7 @@ class BackupPresenter extends SecuredPresenter {
     protected function createComponentLoadBackup() {
         $form = new \Nette\Application\UI\Form();
         $form->addUpload('upload', 'Zip archiv se zálohou:')
+                ->setRequired()
                 ->addRule(\Nette\Application\UI\Form::MIME_TYPE, "Soubor musí být zip archiv", "application/zip");
         $form->addSubmit('send', 'Nahrát');
         $form->onSuccess[] = $this->loadBackupSubmitted;

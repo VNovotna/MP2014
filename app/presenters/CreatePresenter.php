@@ -98,7 +98,7 @@ class CreatePresenter extends SecuredPresenter {
 
     public function beforeRender() {
         parent::beforeRender();
-        $this->template->registerHelper('getVersion', '\gameUpdateModel::getVersionFromFileName');
+        $this->template->registerHelper('getVersion', '\GameUpdateModel::getVersionFromFileName');
     }
 
     public function createComponentServerList() {
