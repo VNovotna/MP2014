@@ -62,6 +62,7 @@ class SignPresenter extends BasePresenter {
                 ->addRule(Form::FILLED, 'Zadejte prosím heslo.')
                 ->addRule(Form::MIN_LENGTH, 'Heslo musí mít alespoň %d znaků.', 6);
         $form->addPassword('verify', 'Ověření hesla:')
+                ->setRequired()
                 ->addRule(Form::EQUAL, 'Hesla se neshodují.', $form['password']);
         $form->addSubmit('send', 'Registrovat');
         $form->onSuccess[] = $this->signUpFormSubmitted;

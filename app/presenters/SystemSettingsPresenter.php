@@ -28,6 +28,7 @@ class SystemSettingsPresenter extends SecuredPresenter {
         $form->addGroup('aktualizace');
         $form->addText('number', "Max. počet uložených .jar:")
                 ->setAttribute('type', 'number')
+                ->setRequired()
                 ->addRule(Form::INTEGER, "Hodnota musí být číslo.");
         $form->addRadioList('foreign', "Povolit nahrávat vlastní .jar:", array('1' => 'TRUE', '2' => 'FALSE'));
         $form->addText('stable', 'Zdroje stabilních aktualizací:', 36);
@@ -61,6 +62,7 @@ class SystemSettingsPresenter extends SecuredPresenter {
         $form->addGroup('zálohy');
         $form->addText('number', "Max. počet uložených záloh:")
                 ->setAttribute('type', 'number')
+                ->setRequired()
                 ->addRule(Form::INTEGER, "Hodnota musí být číslo.");
         $form->addRadioList('foreign', "Povolit nahrávat vlastních záloh:", array('1' => 'TRUE', '2' => 'FALSE'));
         $form->addSubmit('send', 'Uložit');
@@ -114,6 +116,7 @@ class SystemSettingsPresenter extends SecuredPresenter {
         $form->addGroup('MC server');
         $form->addText('number', "Maximální počet serverů na hráče:")
                 ->setAttribute('type', 'number')
+                ->setRequired()
                 ->addRule(Form::INTEGER, "Hodnota musí být číslo.");
         $form->addSubmit('send', 'Uložit');
         $form->setDefaults($this->configModel->getConfig('server'));
