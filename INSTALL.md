@@ -3,7 +3,7 @@ System requirements
 * Unix like operating system
 * git (or you can download the source manualy)
 * curl and curl php extension
-* Web server cabable of running php >=5.4
+* Web server cabable of running php >=7.1
 * GNU screen
 * java (for Minecraft)
 

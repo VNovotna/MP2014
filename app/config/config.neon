@@ -4,37 +4,29 @@
 # If you don't protect this directory from direct web access, anybody will be able to see your passwords.
 # http://nette.org/security-warning
 #
-common:
-    parameters:
+parameters:
 
-    php:
-        date.timezone: Europe/Prague
-        zlib.output_compression: yes
+php:
+    date.timezone: Europe/Prague
+    zlib.output_compression: yes
 
-    nette:
-        application:
-            errorPresenter: Error
-        database:
-            dsn: 'sqlite:%appDir%/../rwa/sql.sqlite'
-        session:
-            expiration: 32 days
-    services:
-        routerFactory: RouterFactory
-        router: @routerFactory::createRouter
-        systemConfigModel: SystemConfigModel
-        userRepository: DB\UserRepository
-        serverRepository: DB\ServerRepository
-        authenticator: Authenticator
-        serverCommander: ServerCommander
-        backupModel: BackupModel
-        fileModel: FileModel
-        gameUpdateModel: GameUpdateModel
-        permissionRepository: DB\PermissionRepository
-        UUIDModel: UUIDModel
-
-    factories:
-
-
-production < common:
-
-development < common:
+nette:
+    application:
+        errorPresenter: Error
+    database:
+        dsn: 'sqlite:%appDir%/../rwa/sql.sqlite'
+    session:
+        expiration: 32 days
+services:
+    routerFactory: RouterFactory
+    router: @routerFactory::createRouter
+    systemConfigModel: SystemConfigModel
+    userRepository: DB\UserRepository
+    serverRepository: DB\ServerRepository
+    authenticator: Authenticator
+    serverCommander: ServerCommander
+    backupModel: BackupModel
+    fileModel: FileModel
+    gameUpdateModel: GameUpdateModel
+    permissionRepository: DB\PermissionRepository
+    UUIDModel: UUIDModel

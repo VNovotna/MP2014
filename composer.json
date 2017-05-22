@@ -1,10 +1,10 @@
 {
     "require": {
-        "php": ">=5.4",
+        "php": ">=7.1",
         "ext-pdo_sqlite":"*",
         "ext-phar":"*",
         "ext-curl":"*",
-        "nette/nette": "~2.1",
+        "nette/nette": "^2.4",
         "jkuchar/bigfiletools": "~1.1"
     }
 }
